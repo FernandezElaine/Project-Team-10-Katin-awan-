@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Projects | Katin-awan Admin</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/feedback.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+
+    <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a class="active" href="admin-projects.html">Projects</a>
+        <a href="admin-budget.html">Budget</a>
+        <a href="admin-expenses.html">Expenses</a>
+        <a href="admin-documents.html">Documents/OCR</a>
+        <a href="admin-map.html">Map</a>
+        <a href="admin-feedback.html">Feedback</a>
+        <a href="admin-users.html">Users</a>
+        <a href="admin-audit.html">Audit Logs</a>
+        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Admin Module</span>
+        <h1>Manage Projects</h1>
+        <p>
+            Add, update, monitor, and delete barangay project records including
+            budget, status, timeline, contractor, bidder, and completion percentage.
+        </p>
+    </div>
+
+    <div class="hero-seal">🏗️</div>
+</section>
+
+<main class="public-container">
+
+    <!-- Form and Summary -->
+    <section class="public-grid">
+
+        <div class="public-panel">
+            <h3>Add / Update Project</h3>
+
+            <input type="hidden" id="projectId">
+
+            <label>Project Title</label>
+            <input type="text" id="projectTitle" class="admin-input" placeholder="Example: Road Repair Project">
+
+            <label>Description</label>
+            <textarea id="projectDescription" class="admin-input" rows="4" placeholder="Enter project description"></textarea>
+
+            <label>Budget</label>
+            <input type="number" id="projectBudget" class="admin-input" placeholder="Example: 850000">
+
+            <label>Timeline / Due Date</label>
+            <input type="text" id="projectTimeline" class="admin-input" placeholder="Example: Dec 2025">
+
+            <label>Status</label>
+            <select id="projectStatus" class="admin-input">
+                <option value="Planned">Planned</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Completed">Completed</option>
+                <option value="Pending">Pending</option>
+            </select>
+
+            <label>Completion Percentage</label>
+            <input type="number" id="projectProgress" class="admin-input" placeholder="Example: 65" min="0" max="100">
+
+            <label>Contractor / Bidder</label>
+            <input type="text" id="projectContractor" class="admin-input" placeholder="Example: ABC Construction">
+
+            <div class="dashboard-actions">
+                <button onclick="saveProject()" class="public-blue-btn">Save Project</button>
+                <button onclick="clearProjectForm()" class="public-green-btn">Clear</button>
+            </div>
+        </div>
+
+        <div class="public-panel">
+            <h3>Project Summary</h3>
+            <div class="report-item"><b>Total Projects</b><p id="totalProjects">0</p></div>
+            <div class="report-item"><b>Ongoing Projects</b><p id="ongoingProjects">0</p></div>
+            <div class="report-item"><b>Completed Projects</b><p id="completedProjects">0</p></div>
+            <div class="report-item"><b>Total Budget</b><p id="totalBudget">₱0</p></div>
+        </div>
+
+    </section>
+
+    <!-- Search and Filter -->
+    <section class="tools-card">
+        <div class="tools-row">
+            <input type="text" id="adminProjectSearch" placeholder="Search projects by title, category, location, contractor..." onkeyup="searchAdminProjects()">
+
+            <select id="adminProjectFilter" onchange="filterAdminProjects()">
+                <option value="All">All Status</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Completed">Completed</option>
+                <option value="Planned">Planned</option>
+                <option value="Pending">Pending</option>
+            </select>
+        </div>
+    </section>
+
+    <!-- Project Cards -->
+    <section id="adminProjectList" class="documents-grid">
+        <!-- Admin JS will dynamically insert cards here -->
+    </section>
+
+    <!-- Admin Project Details Modal -->
+    <div id="adminProjectDetailsModal" class="project-modal">
+        <div class="project-modal-content">
+            <button class="project-modal-close" onclick="closeAdminProjectDetailsModal()">X</button>
+
+            <span id="adminProjectDetailsStatus" class="status-badge"></span>
+
+            <h2 id="adminProjectDetailsTitle"></h2>
+
+            <p id="adminProjectDetailsCategory" class="project-modal-category"></p>
+
+            <div class="project-modal-section">
+                <h4>Description</h4>
+                <p id="adminProjectDetailsDescription"></p>
+            </div>
+
+            <div class="project-modal-grid">
+                <div class="project-modal-item"><b>Budget</b><p id="adminProjectDetailsBudget"></p></div>
+                <div class="project-modal-item"><b>Location</b><p id="adminProjectDetailsLocation"></p></div>
+                <div class="project-modal-item"><b>Contractor</b><p id="adminProjectDetailsContractor"></p></div>
+                <div class="project-modal-item"><b>Bidder</b><p id="adminProjectDetailsBidder"></p></div>
+                <div class="project-modal-item"><b>Timeline</b><p id="adminProjectDetailsTimeline"></p></div>
+                <div class="project-modal-item"><b>Progress</b><p id="adminProjectDetailsProgress"></p></div>
+            </div>
+
+            <div class="project-modal-progress">
+    <div class="public-progress">
+        <div id="adminProjectDetailsProgressBar"></div>
+    </div>
+</div>
+
+<div class="project-modal-actions">
+    <button id="adminProjectEditBtn" class="public-blue-btn">Edit Project</button>
+    <button id="adminProjectDeleteBtn" class="danger-btn">Delete Project</button>
+</div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/admin-auth.js"></script>
+<script src="../js/admin-projects.js"></script>
+
+</body>
+</html>

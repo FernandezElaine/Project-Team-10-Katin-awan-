@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+
+    <nav>
+        <a class="active" href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-projects.html">Projects</a>
+        <a href="admin-budget.html">Budget</a>
+        <a href="admin-expenses.html">Expenses</a>
+        <a href="admin-documents.html">Documents/OCR</a>
+        <a href="admin-map.html">Map</a>
+        <a href="admin-feedback.html">Feedback</a>
+        <a href="admin-users.html">Users</a>
+        <a href="admin-audit.html">Audit Logs</a>
+        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Administrator Panel</span>
+        <h1>Welcome, <span id="adminName">Administrator</span></h1>
+        <p>
+            Manage barangay projects, budgets, expenses, documents, OCR reviews,
+            user roles, and community feedback.
+        </p>
+    </div>
+
+    <div class="hero-seal">🛠️</div>
+</section>
+
+<main class="public-container">
+
+    <section class="section-title">
+        <h2>Admin Overview</h2>
+        <p>Quick summary of system records and items requiring review.</p>
+    </section>
+
+    <section class="search-bar-section">
+        <input
+            type="text"
+            id="adminGlobalSearch"
+            placeholder="🔍 Search projects, expenses, users..."
+            onkeyup="handleAdminGlobalSearch()">
+        <div id="adminGlobalSearchResults" class="search-results"></div>
+    </section>
+
+    <section class="public-stats">
+        <div class="public-stat-card">
+            <div>
+                <p>Total Users</p>
+               <h3 id="adminTotalUsers">0</h3>
+                <span class="blue-text">Residents and admins</span>
+            </div>
+            <div class="stat-icon blue-bg">👥</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Total Projects</p>
+            <h3 id="adminTotalProjects">0</h3>
+                <span class="green-text">Active project records</span>
+            </div>
+            <div class="stat-icon green-bg">🏗️</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Pending Feedback</p>
+            <h3 id="adminPendingFeedback">0</h3>
+                <span class="blue-text">Needs review</span>
+            </div>
+            <div class="stat-icon yellow-bg">📢</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>OCR Reviews</p>
+        <h3 id="adminOcrReviews">0</h3>
+                <span class="green-text">Needs validation</span>
+            </div>
+            <div class="stat-icon cyan-bg">🔍</div>
+        </div>
+    </section>
+
+    <section class="public-grid">
+        <div class="public-panel">
+            <h3>Management Actions</h3>
+
+            <div class="dashboard-actions">
+                <button class="public-blue-btn" onclick="window.location.href='admin-projects.html'">
+                    Manage Projects
+                </button>
+
+                <button class="public-green-btn" onclick="window.location.href='admin-budget.html'">
+                    Manage Budget
+                </button>
+            </div>
+
+            <div class="dashboard-actions">
+                <button class="public-blue-btn" onclick="window.location.href='admin-feedback.html'">
+                    Review Feedback
+                </button>
+
+                <button class="public-green-btn" onclick="window.location.href='admin-documents.html'">
+                    Review OCR
+                </button>
+            </div>
+        </div>
+
+        <div class="public-panel">
+            <h3>Recent Admin Activity</h3>
+
+            <div class="report-item">
+                <b>Project status updated</b>
+                <p>Health Center Renovation changed to 65% completion.</p>
+            </div>
+
+            <div class="report-item">
+                <b>Budget alert created</b>
+                <p>Infrastructure expenses exceeded expected monthly spending.</p>
+            </div>
+
+            <div class="report-item">
+                <b>Feedback reviewed</b>
+                <p>Road repair delay marked as Under Review.</p>
+            </div>
+        </div>
+    </section>
+<section class="dashboard-map-wrapper">
+    <div class="section-title">
+        <h2>Project Location Map</h2>
+        <p>View barangay project locations and community photos across Bogo City.</p>
+    </div>
+
+    <div class="dashboard-map-layout">
+        <div class="dashboard-map-card">
+            <div id="adminDashboardMap" style="height: 400px;"></div>
+        </div>
+
+        <div class="dashboard-map-info">
+            <h3>Barangay Information</h3>
+
+            <div class="map-info-row">
+                <b>Address</b>
+                <p>Barangay Hall, Bogo City, Cebu</p>
+            </div>
+
+            <div class="map-info-row">
+                <b>Phone</b>
+                <p>(032) 123-4567</p>
+            </div>
+
+            <div class="map-info-row">
+                <b>Email</b>
+                <p>info@katinawanportal.gov.ph</p>
+            </div>
+
+            <div class="map-info-row">
+                <b>Office Hours</b>
+                <p>Monday-Friday<br>8:00 AM - 5:00 PM</p>
+            </div>
+
+            <div class="map-note">
+                Click any marker on the map to view project photo and details.
+            </div>
+        </div>
+    </div>
+
+    
+</section>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</main>
+
+<<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/admin-auth.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/admin-dashboard-map.js"></script>
+</body>
+</html>

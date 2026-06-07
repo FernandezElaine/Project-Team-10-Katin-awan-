@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Analysis - Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/projects.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="../index.html" class="public-logo">🏛️ Katin-awan Portal</a>
+
+    <nav>
+        <a href="dashboard.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a href="expenses.html">Expenses</a>
+        <a href="documents.html">Documents</a>
+        <a href="map.html">Map</a>
+        <a class="active" href="uploads.html">OCR Analysis</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="feedback.html">Feedback</a>
+<span id="authArea"></span>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <h1>OCR Analysis</h1>
+    <p>Upload receipts, invoices, or documents and extract text for expense validation.</p>
+</section>
+
+<main class="public-container">
+
+    <section class="ocr-layout">
+
+        <div class="ocr-upload-card">
+            <h3>Upload Receipt or Document</h3>
+
+            <div class="ocr-dropbox">
+                <div class="ocr-icon">📄</div>
+                <p>Select an image receipt for OCR scanning</p>
+
+                <input type="file" id="ocrFile" accept="image/*">
+            </div>
+
+            <button onclick="runOCR()">Run OCR Analysis</button>
+
+            <div id="ocrProgress"></div>
+        </div>
+
+        <div class="ocr-result-card">
+            <h3>OCR Result</h3>
+
+            <div id="ocrResult">
+                <p class="muted-text">No document scanned yet.</p>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="documents-grid ocr-history">
+        <div class="document-card">
+            <div class="doc-icon">✅</div>
+
+            <div>
+                <h3>Road Repair Materials Receipt</h3>
+                <p>OCR Confidence: 94%</p>
+                <span>Validated</span>
+            </div>
+
+            <button>Details</button>
+        </div>
+
+        <div class="document-card">
+            <div class="doc-icon">⚠️</div>
+
+            <div>
+                <h3>Construction Materials Invoice</h3>
+                <p>OCR Confidence: 76%</p>
+                <span>Needs Review</span>
+            </div>
+
+            <button>Details</button>
+        </div>
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="../js/main.js"></script>
+<script src="../js/uploads.js"></script>
+
+</body>
+</html>

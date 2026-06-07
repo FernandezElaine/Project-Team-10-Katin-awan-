@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katin-awan Dashboard</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="../index.html" class="public-logo">🏛️ Katin-awan Portal</a>
+
+    <nav>
+        <a class="active" href="dashboard.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a href="expenses.html">Expenses</a>
+        <a href="documents.html">Documents</a>
+        <a href="map.html">Map</a>
+        <a href="uploads.html">OCR Analysis</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="feedback.html">Feedback</a>
+        <span id="authArea"></span>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Budget Tracking Dashboard</span>
+
+        <h1>Katin-awan Transparency Portal</h1>
+
+        <p>
+            Track barangay budgets, projects, documents, expenses, and public reports
+            through one centralized transparency platform.
+        </p>
+
+        <div class="hero-actions">
+            <a href="#budget" class="hero-btn light">View Budget</a>
+            <a href="projects.html" class="hero-btn outline">Explore Projects</a>
+        </div>
+    </div>
+
+    <div class="hero-seal">🛡️</div>
+</section>
+
+<main class="public-container">
+
+    <section id="budget" class="section-title">
+        <h2>Budget Tracking Dashboard</h2>
+        <p>Transparent view of barangay financial allocations and expenditures.</p>
+    </section>
+
+    <section class="search-bar-section">
+        <input
+            type="text"
+            id="globalSearch"
+            placeholder="🔍 Search projects, expenses, documents..."
+            onkeyup="handleGlobalSearch()">
+        <div id="globalSearchResults" class="search-results"></div>
+    </section>
+
+    <section class="public-stats">
+        <div class="public-stat-card">
+            <div>
+                <p>Total Budget</p>
+                <h3 id="dashboardTotalBudget">₱0</h3>
+<span class="green-text" id="dashboardBudgetSummary">Loading budget...</span>
+            </div>
+            <div class="stat-icon blue-bg">💳</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Funds Utilized</p>
+                <h3>₱3,150,000</h3>
+                <span class="blue-text">59.6% of total budget</span>
+            </div>
+            <div class="stat-icon yellow-bg">💵</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Remaining Funds</p>
+               <h3 id="dashboardRemainingFunds">₱0</h3>
+<span class="blue-text" id="dashboardRemainingSummary">Loading remaining funds...</span>
+            </div>
+            <div class="stat-icon green-bg">🐖</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Active Projects</p>
+               <h3 id="dashboardActiveProjects">0</h3>
+<span class="green-text" id="dashboardProjectSummary">Loading projects...</span>
+            </div>
+            <div class="stat-icon cyan-bg">🏗️</div>
+        </div>
+    </section>
+
+    <section class="public-grid">
+        <div class="public-panel large-panel">
+            <h3>Budget Allocation by Category</h3>
+
+            <div class="budget-public-content">
+                <div class="public-donut"></div>
+
+                <div class="public-budget-list">
+                    <div><span class="c-blue"></span> Infrastructure <b>₱2.6M</b></div>
+                    <div><span class="c-green"></span> Health Services <b>₱900K</b></div>
+                    <div><span class="c-orange"></span> Education <b>₱700K</b></div>
+                    <div><span class="c-red"></span> Social Services <b>₱500K</b></div>
+                    <div><span class="c-gray"></span> Environment <b>₱400K</b></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="public-panel">
+            <h3>Documents & Reports</h3>
+
+            <div class="report-item">
+                <b>📄 Financial Reports</b>
+                <p>Quarterly and annual budget reports.</p>
+            </div>
+
+            <div class="report-item">
+                <b>📊 Budget Documents</b>
+                <p>Budget allocations and expenditure summaries.</p>
+            </div>
+
+            <div class="report-item">
+                <b>🧾 Receipts & Transactions</b>
+                <p>Expense records and uploaded receipts.</p>
+            </div>
+
+            <div class="report-item">
+                <b>📑 Contracts & Procurement</b>
+                <p>Project contracts, quotations, and bidder records.</p>
+            </div>
+
+            <div class="dashboard-actions">
+                <button class="public-blue-btn" onclick="window.location.href='documents.html'">
+                    📄 Documents
+                </button>
+
+                <button class="public-green-btn" onclick="goToProtectedPage('uploads.html')">
+                    🔍 OCR Analysis
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section class="public-grid dashboard-extra">
+        <div class="public-panel alert-panel">
+            <h3>⚠️ Budget Alert</h3>
+            <p>Infrastructure expenses exceeded the expected spending percentage this month.</p>
+            <h2>+18%</h2>
+            <small>Compared to previous month</small>
+        </div>
+
+        <div class="public-panel">
+            <h3>Recent Activity</h3>
+
+            <div class="report-item">
+                <b>New expense added</b>
+                <p>Road Repair Materials — ₱45,000</p>
+            </div>
+
+            <div class="report-item">
+                <b>Project progress updated</b>
+                <p>Health Center Renovation updated to 65%</p>
+            </div>
+
+            <div class="report-item">
+                <b>New document uploaded</b>
+                <p>Q3 Financial Report.pdf</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard-map-wrapper">
+        <div class="section-title">
+            <h2>Project Location Map</h2>
+            <p>View barangay project locations and community photos across Bogo City.</p>
+        </div>
+
+        <div class="dashboard-map-layout">
+            <div class="dashboard-map-card">
+                <div id="dashboardMap"></div>
+            </div>
+
+            <div class="dashboard-map-info">
+                <h3>Barangay Information</h3>
+
+                <div class="map-info-row">
+                    <b>Address</b>
+                    <p>Barangay Hall, Bogo City, Cebu</p>
+                </div>
+
+                <div class="map-info-row">
+                    <b>Phone</b>
+                    <p>(032) 123-4567</p>
+                </div>
+
+                <div class="map-info-row">
+                    <b>Email</b>
+                    <p>info@katinawanportal.gov.ph</p>
+                </div>
+
+                <div class="map-info-row">
+                    <b>Office Hours</b>
+                    <p>Monday-Friday<br>8:00 AM - 5:00 PM</p>
+                </div>
+
+                <div class="map-note">
+                    Click any marker on the map to view project photo and details.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-title">
+        <h2>Project Progress Overview</h2>
+        <p>Track the latest barangay development projects.</p>
+        <section class="public-projects" id="dashboardProjectOverview"></section>
+    </section>
+
+
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+
+<script>
+async function goToProtectedPage(page) {
+    const { data } = await supabaseClient.auth.getSession();
+
+    if (!data.session) {
+        alert("Please log in first before using this feature.");
+        window.location.href = "login.html?redirect=" + page;
+        return;
+    }
+
+    window.location.href = page;
+}
+</script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/dashboard-map.js"></script>
+<script src="../js/dashboard.js"></script>
+
+</body>
+</html>

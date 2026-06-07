@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expenses - Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/projects.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="dashboard.html" class="public-logo">🏛️ Katin-awan Portal</a>
+
+    <nav>
+        <a href="dashboard.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a class="active" href="expenses.html">Expenses</a>
+        <a href="documents.html">Documents</a>
+        <a href="map.html">Map</a>
+        <a href="uploads.html">OCR Analysis</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="feedback.html">Feedback</a>
+        <span id="authArea"></span>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <span class="module-badge">Expense Analysis and Validation</span>
+    <h1>Expense Monitoring</h1>
+    <p>Review barangay expenditures with validation status, transaction records, and review flags.</p>
+</section>
+
+<main class="public-container">
+
+    <section class="public-stats">
+        <div class="public-stat-card">
+            <div>
+                <p>Total Expenses</p>
+                <h3 id="totalExpenses">₱0</h3>
+                <span class="blue-text">Recorded expenditures</span>
+            </div>
+            <div class="stat-icon blue-bg">💰</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Valid Records</p>
+                <h3 id="validCount">0</h3>
+                <span class="green-text">Validated records</span>
+            </div>
+            <div class="stat-icon green-bg">✅</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Flagged</p>
+                <h3 id="flaggedCount">0</h3>
+                <span class="red-text">Needs review</span>
+            </div>
+            <div class="stat-icon yellow-bg">⚠️</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Pending</p>
+                <h3 id="pendingCount">0</h3>
+                <span class="blue-text">For checking</span>
+            </div>
+            <div class="stat-icon cyan-bg">⏳</div>
+        </div>
+    </section>
+
+    <section class="warning-box">
+        <b>⚠ Expense Review Notice</b>
+        <p>Validation status helps identify unusual, incomplete, or inconsistent expense records for review.</p>
+    </section>
+
+    <section class="tools-card">
+        <div>
+            <h3>Expense Records</h3>
+            <p>Search by title, description, category, amount, or validation status.</p>
+        </div>
+
+        <div class="tools-row">
+            <input 
+                type="text" 
+                id="expenseSearch" 
+                placeholder="Search expenses..." 
+                onkeyup="searchExpenses()">
+
+            <select id="expenseFilter" onchange="filterExpenses()">
+                <option value="All">All Status</option>
+                <option value="Valid">Valid</option>
+                <option value="Flagged">Flagged</option>
+                <option value="Pending">Pending</option>
+            </select>
+        </div>
+    </section>
+
+    <section class="expense-table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Expense Title</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>File</th>
+                </tr>
+            </thead>
+
+            <tbody id="expenseTable">
+                <!-- Expenses from Supabase will appear here -->
+            </tbody>
+        </table>
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+<script src="../js/expenses.js"></script>
+
+</body>
+</html>

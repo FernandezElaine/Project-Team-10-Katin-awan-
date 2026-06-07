@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Users | Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+
+    <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-projects.html">Projects</a>
+        <a href="admin-budget.html">Budget</a>
+        <a href="admin-expenses.html">Expenses</a>
+        <a href="admin-documents.html">Documents/OCR</a>
+        <a href="admin-map.html">Map</a>
+        <a href="admin-feedback.html">Feedback</a>
+        <a class="active" href="admin-users.html">Users</a>
+        <a href="admin-audit.html">Audit Logs</a>
+        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Admin Module</span>
+        <h1>Manage Users</h1>
+        <p>
+            View resident and administrator accounts, manage user roles, and monitor account status
+            for role-based access control.
+        </p>
+    </div>
+
+    <div class="hero-seal">👥</div>
+</section>
+
+<main class="public-container">
+
+    <section class="public-stats">
+        <div class="public-stat-card">
+            <div>
+                <p>Total Users</p>
+                <h3 id="totalUsers">0</h3>
+                <span class="blue-text">All accounts</span>
+            </div>
+            <div class="stat-icon blue-bg">👥</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Admins</p>
+                <h3 id="adminUsers">0</h3>
+                <span class="green-text">Administrator accounts</span>
+            </div>
+            <div class="stat-icon green-bg">🛠️</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Residents</p>
+                <h3 id="residentUsers">0</h3>
+                <span class="blue-text">Resident accounts</span>
+            </div>
+            <div class="stat-icon cyan-bg">🏠</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Inactive</p>
+                <h3 id="inactiveUsers">0</h3>
+                <span class="blue-text">Disabled accounts</span>
+            </div>
+            <div class="stat-icon yellow-bg">⏸️</div>
+        </div>
+    </section>
+
+    <section class="section-title">
+        <h2>User Records</h2>
+        <p>List of registered users in the Katin-awan portal.</p>
+    </section>
+
+    <section class="tools-card">
+        <div class="tools-row">
+            <input
+                type="text"
+                id="adminUserSearch"
+                placeholder="Search users by name, email, role, or status..."
+                onkeyup="searchAdminUsers()">
+
+            <select id="adminUserFilter" onchange="filterAdminUsers()">
+                <option value="All">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="resident">Resident</option>
+            </select>
+        </div>
+    </section>
+
+    <section id="usersContainer" class="users-grid">
+        <!-- Users will appear here -->
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/admin-auth.js"></script>
+<script src="../js/admin-users.js"></script>
+
+</body>
+</html>

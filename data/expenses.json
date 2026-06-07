@@ -1,0 +1,42 @@
+[
+  {
+    "description": "Cement and gravel delivery",
+    "vendor": "CebuMat Supplies",
+    "category": "Materials",
+    "amount": 250000,
+    "date": "Feb 10, 2025",
+    "status": "Valid"
+  },
+  {
+    "description": "Labor wages - February",
+    "vendor": "JMG Construction",
+    "category": "Labor",
+    "amount": 180000,
+    "date": "Feb 28, 2025",
+    "status": "Valid"
+  },
+  {
+    "description": "Medical equipment purchase",
+    "vendor": "MedEquip PH",
+    "category": "Equipment",
+    "amount": 200000,
+    "date": "Nov 15, 2024",
+    "status": "Valid"
+  },
+  {
+    "description": "Equipment rental - backhoe",
+    "vendor": "Heavy Rentals Inc",
+    "category": "Equipment",
+    "amount": 85000,
+    "date": "Mar 5, 2025",
+    "status": "Flagged"
+  },
+  {
+    "description": "Classroom furniture",
+    "vendor": "FurniCraft",
+    "category": "Materials",
+    "amount": 50000,
+    "date": "Mar 20, 2025",
+    "status": "Pending"
+  }
+]

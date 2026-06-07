@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Chatbot - Katin-awan</title>
+
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="../css/dashboard.css">
+<link rel="stylesheet" href="../css/projects.css">
+<link rel="stylesheet" href="../css/chatbot.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="../index.html" class="public-logo">🏛️ Katin-awan Portal</a>
+
+    <nav>
+        <a href="dashboard.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a href="expenses.html">Expenses</a>
+        <a href="documents.html">Documents</a>
+        <a href="uploads.html">OCR Analysis</a>
+        <a class="active" href="chatbot.html">Chatbot</a>
+        <a href="feedback.html">Feedback</a>
+        <span id="authArea"></span>
+    </nav>
+</header>
+
+<section class="page-hero chatbot-hero">
+    <span class="module-badge">AI-Powered Multilingual Chatbot</span>
+    <h1>AI Transparency Assistant</h1>
+    <p>Ask about budgets, projects, documents, expenses, feedback, or OCR validation.</p>
+</section>
+
+<main class="public-container">
+
+    <section class="chatbot-grid">
+
+        <aside class="chatbot-suggestions">
+            <h3>Suggested Questions</h3>
+            <p>Click a question to start chatting.</p>
+
+            <button onclick="askQuestion('What projects are ongoing?')">🏗️ What projects are ongoing?</button>
+            <button onclick="askQuestion('What is the total budget?')">💰 What is the total budget?</button>
+            <button onclick="askQuestion('Any flagged expenses?')">⚠️ Any flagged expenses?</button>
+            <button onclick="askQuestion('What is OCR?')">🔍 What is OCR?</button>
+            <button onclick="askQuestion('Where can I view documents?')">📄 Where can I view documents?</button>
+            <button onclick="askQuestion('How can I send feedback?')">📢 How can I send feedback?</button>
+        </aside>
+
+        <section class="chatbot-area">
+
+            <div class="chatbot-topbar">
+                <div>
+                    <h3>Katin-awan Assistant</h3>
+                    <p>Online · Ready to answer resident inquiries</p>
+                </div>
+
+                <div class="bot-avatar">🤖</div>
+            </div>
+
+            <div class="chat-language">
+                <span>Language:</span>
+                <button onclick="setLanguage('english')" class="lang-btn active">English</button>
+                <button onclick="setLanguage('tagalog')" class="lang-btn">Tagalog</button>
+                <button onclick="setLanguage('bisaya')" class="lang-btn">Bisaya</button>
+            </div>
+
+            <div id="chatMessages" class="chat-messages">
+                <div class="chat-message bot">
+                    Hello! I can help you understand barangay budgets, projects, expenses, documents, and OCR results.
+                </div>
+            </div>
+
+            <div class="chat-input-row">
+                <input 
+                    type="text" 
+                    id="chatInput" 
+                    placeholder="Type your question here..."
+                    onkeydown="if(event.key==='Enter'){sendMessage()}">
+
+                <button onclick="sendMessage()">Send</button>
+            </div>
+
+        </section>
+
+    </section>
+
+</main>
+
+<script src="../js/main.js"></script>
+<script src="../js/chatbot.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Expenses | Katin-awan Admin</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+
+    <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-projects.html">Projects</a>
+        <a href="admin-budget.html">Budget</a>
+        <a class="active" href="admin-expenses.html">Expenses</a>
+        <a href="admin-documents.html">Documents/OCR</a>
+        <a href="admin-map.html">Map</a>
+        <a href="admin-feedback.html">Feedback</a>
+        <a href="admin-users.html">Users</a>
+        <a href="admin-audit.html">Audit Logs</a>
+        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Admin Module</span>
+        <h1>Manage Expenses</h1>
+        <p>
+            Add, update, validate, and delete barangay expense records including
+            receipts, amounts, categories, and review status.
+        </p>
+    </div>
+
+    <div class="hero-seal">💰</div>
+</section>
+
+<main class="public-container">
+
+    <section class="public-grid">
+
+        <div class="public-panel">
+            <h3>Add / Update Expense</h3>
+
+            <form id="expenseForm">
+                <input type="hidden" id="expenseId">
+
+                <label>Expense Title</label>
+                <input type="text" id="expenseTitle" class="admin-input" placeholder="Example: Road Repair Materials">
+
+                <label>Category</label>
+                <select id="expenseCategory" class="admin-input">
+                    <option value="Infrastructure">Infrastructure</option>
+                    <option value="Supplies">Supplies</option>
+                    <option value="Health">Health</option>
+                    <option value="Education">Education</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <label>Amount</label>
+                <input type="number" id="expenseAmount" class="admin-input" placeholder="Example: 7500">
+
+                <label>Status</label>
+                <select id="expenseStatus" class="admin-input">
+                    <option value="Pending">Pending</option>
+                    <option value="Valid">Valid</option>
+                    <option value="Flagged">Flagged</option>
+                </select>
+
+                <label>Description</label>
+                <textarea id="expenseDescription" class="admin-input" rows="4" placeholder="Enter expense description"></textarea>
+
+                <label>Receipt / File URL</label>
+                <input type="text" id="expenseFileUrl" class="admin-input" placeholder="Paste receipt or document link">
+
+                <div class="dashboard-actions">
+                    <button type="submit" class="public-blue-btn">Save Expense</button>
+                    <button type="button" onclick="clearExpenseForm()" class="public-green-btn">Clear</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="public-panel">
+            <h3>Expense Summary</h3>
+
+            <div class="report-item">
+                <b>Total Expenses</b>
+                <p id="totalExpenseAmount">₱0</p>
+            </div>
+
+            <div class="report-item">
+                <b>Valid Records</b>
+                <p id="validExpenses">0</p>
+            </div>
+
+            <div class="report-item">
+                <b>Pending Reviews</b>
+                <p id="pendingExpenses">0</p>
+            </div>
+
+            <div class="report-item">
+                <b>Flagged Records</b>
+                <p id="flaggedExpenses">0</p>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="section-title">
+        <h2>Expense Records</h2>
+        <p>List of barangay expenses managed by the administrator.</p>
+    </section>
+
+    <section class="tools-card">
+        <div class="tools-row">
+            <input
+                type="text"
+                id="adminExpenseSearch"
+                placeholder="Search expenses by title, category, description, or status..."
+                onkeyup="searchAdminExpenses()">
+
+            <select id="adminExpenseFilter" onchange="filterAdminExpenses()">
+                <option value="All">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Valid">Valid</option>
+                <option value="Flagged">Flagged</option>
+            </select>
+        </div>
+    </section>
+
+    <section id="expensesContainer" class="documents-grid">
+        <!-- Expenses will appear here -->
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/admin-auth.js"></script>
+<script src="../js/admin-expenses.js"></script>
+
+</body>
+</html>

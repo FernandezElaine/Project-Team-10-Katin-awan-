@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Logs | Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+
+    <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-projects.html">Projects</a>
+        <a href="admin-budget.html">Budget</a>
+        <a href="admin-expenses.html">Expenses</a>
+        <a href="admin-documents.html">Documents/OCR</a>
+        <a href="admin-map.html">Map</a>
+        <a href="admin-feedback.html">Feedback</a>
+        <a href="admin-users.html">Users</a>
+        <a class="active" href="admin-audit.html">Audit Logs</a>
+        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Admin Module</span>
+        <h1>Audit Logs</h1>
+        <p>
+            Track administrator activities, system changes, and record updates for transparency,
+            accountability, and security monitoring.
+        </p>
+    </div>
+
+    <div class="hero-seal">📋</div>
+</section>
+
+<main class="public-container">
+
+    <section class="public-stats">
+        <div class="public-stat-card">
+            <div>
+                <p>Total Logs</p>
+                <h3 id="totalLogs">0</h3>
+                <span class="blue-text">Recorded actions</span>
+            </div>
+            <div class="stat-icon blue-bg">📋</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Project Actions</p>
+                <h3 id="projectLogs">0</h3>
+                <span class="green-text">Project changes</span>
+            </div>
+            <div class="stat-icon green-bg">🏗️</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Document Actions</p>
+                <h3 id="documentLogs">0</h3>
+                <span class="blue-text">Document changes</span>
+            </div>
+            <div class="stat-icon cyan-bg">📄</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>User Actions</p>
+                <h3 id="userLogs">0</h3>
+                <span class="blue-text">User management</span>
+            </div>
+            <div class="stat-icon yellow-bg">👥</div>
+        </div>
+    </section>
+
+    <section class="section-title">
+        <h2>Audit Records</h2>
+        <p>List of administrative actions recorded by the system.</p>
+    </section>
+
+    <section class="tools-card">
+        <div class="tools-row">
+            <input
+                type="text"
+                id="adminAuditSearch"
+                placeholder="Search logs by action, module, details, or user ID..."
+                onkeyup="searchAdminAudit()">
+
+            <select id="adminAuditFilter" onchange="filterAdminAudit()">
+                <option value="All">All Modules</option>
+                <option value="Projects">Projects</option>
+                <option value="Documents">Documents</option>
+                <option value="Expenses">Expenses</option>
+                <option value="Feedback">Feedback</option>
+                <option value="Users">Users</option>
+                <option value="Budget">Budget</option>
+            </select>
+        </div>
+    </section>
+
+    <section id="auditContainer" class="audit-grid">
+        <!-- Audit logs will appear here -->
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/admin-auth.js"></script>
+<script src="../js/admin-audit.js"></script>
+
+</body>
+</html>

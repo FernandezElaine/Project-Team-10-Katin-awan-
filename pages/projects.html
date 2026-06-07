@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/projects.css">
+
+    <script src="../js/main.js" defer></script>
+    <script src="../js/projects.js" defer></script>
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="dashboard.html" class="public-logo">🏛️ Katin-awan Portal</a>
+
+    <nav>
+        <a href="dashboard.html">Home</a>
+        <a class="active" href="projects.html">Projects</a>
+        <a href="expenses.html">Expenses</a>
+        <a href="documents.html">Documents</a>
+        <a href="map.html">Map</a>
+        <a href="uploads.html">OCR Analysis</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="feedback.html">Feedback</a>
+   <span id="authArea"></span>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <span class="module-badge">Project Listing and Status Updates</span>
+    <h1>Barangay Projects</h1>
+    <p>Track project progress, contractors, budgets, timelines, bidders, and implementation status.</p>
+</section>
+
+<main class="public-container">
+
+    <section class="public-stats">
+        <div class="public-stat-card">
+            <div>
+                <p>Total Projects</p>
+                <h3 id="totalProjectsCount">0</h3>
+                <span class="blue-text">All recorded projects</span>
+            </div>
+            <div class="stat-icon blue-bg">🏗️</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Ongoing</p>
+                <h3>7</h3>
+                <span class="green-text">Currently monitored</span>
+            </div>
+            <div class="stat-icon green-bg">🔄</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Completed</p>
+               <h3 id="completedProjectsCount">0</h3>
+                <span class="green-text">Finished projects</span>
+            </div>
+            <div class="stat-icon cyan-bg">✅</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Planned</p>
+              <h3 id="plannedProjectsCount">0</h3>
+                <span class="blue-text">For implementation</span>
+            </div>
+            <div class="stat-icon yellow-bg">📌</div>
+        </div>
+    </section>
+
+    <section class="tools-card">
+        <div>
+            <h3>Project Records</h3>
+            <p>Search or filter barangay projects by implementation status.</p>
+        </div>
+
+        <div class="tools-row">
+            <input 
+                type="text" 
+                id="projectSearch" 
+                placeholder="Search project name, contractor, or category..." 
+                onkeyup="searchProjects()">
+
+            <select id="projectFilter" onchange="filterProjects()">
+                <option value="All">All Status</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Completed">Completed</option>
+                <option value="Planned">Planned</option>
+            </select>
+        </div>
+    </section>
+
+    <section class="project-page-grid" id="projectList"></section>
+
+    <!-- Project Details Modal -->
+    <div id="projectDetailsModal" class="project-modal">
+        <div class="project-modal-content">
+            <button class="project-modal-close" onclick="closeProjectDetailsModal()">X</button>
+
+            <span id="projectDetailsStatus" class="status-badge"></span>
+
+            <h2 id="projectDetailsTitle"></h2>
+
+            <p id="projectDetailsCategory" class="project-modal-category"></p>
+
+            <div class="project-modal-section">
+                <h4>Description</h4>
+                <p id="projectDetailsDescription"></p>
+            </div>
+
+            <div class="project-modal-grid">
+                <div class="project-modal-item">
+                    <b>Budget</b>
+                    <p id="projectDetailsBudget"></p>
+                </div>
+                <div class="project-modal-item">
+                    <b>Location</b>
+                    <p id="projectDetailsLocation"></p>
+                </div>
+                <div class="project-modal-item">
+                    <b>Contractor</b>
+                    <p id="projectDetailsContractor"></p>
+                </div>
+                <div class="project-modal-item">
+                    <b>Bidder</b>
+                    <p id="projectDetailsBidder"></p>
+                </div>
+                <div class="project-modal-item">
+                    <b>Timeline</b>
+                    <p id="projectDetailsTimeline"></p>
+                </div>
+                <div class="project-modal-item">
+                    <b>Progress</b>
+                    <p id="projectDetailsProgress"></p>
+                </div>
+            </div>
+
+            <div class="project-modal-progress">
+                <div class="public-progress">
+                    <div id="projectDetailsProgressBar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+
+<script src="../js/main.js"></script>
+<script src="../js/projects.js"></script>
+</body>
+</html>

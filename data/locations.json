@@ -1,0 +1,39 @@
+[
+  {
+    "name": "Bogo City Hall Area",
+    "description": "Main city center reference point in Bogo City.",
+    "lat": 11.0517,
+    "lng": 124.0055,
+    "photos": [
+      "../assets/images/bogo-city-1.jpg"
+    ]
+  },
+  {
+    "name": "Barangay Health Center Renovation",
+    "description": "Ongoing health center improvement project.",
+    "lat": 11.0535,
+    "lng": 124.0078,
+    "photos": [
+      "../assets/images/health-center-1.jpg",
+      "../assets/images/health-center-2.jpg"
+    ]
+  },
+  {
+    "name": "Road Concreting Phase 2",
+    "description": "Ongoing road concreting project for better access.",
+    "lat": 11.0488,
+    "lng": 124.0021,
+    "photos": [
+      "../assets/images/road-project-1.jpg"
+    ]
+  },
+  {
+    "name": "Solar Street Lighting Project",
+    "description": "Planned solar-powered street lighting project.",
+    "lat": 11.0562,
+    "lng": 124.0112,
+    "photos": [
+      "../assets/images/street-light-1.jpg"
+    ]
+  }
+]

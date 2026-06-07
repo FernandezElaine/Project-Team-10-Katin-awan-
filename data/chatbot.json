@@ -1,0 +1,104 @@
+[
+  {
+    "keywords": ["barangay captain", "captain", "kapitan", "barangay official"],
+    "english": "The barangay captain information can be displayed here once the official barangay profile is added to the system.",
+    "tagalog": "Maaaring ilagay dito ang impormasyon ng barangay captain kapag naidagdag na ang opisyal na barangay profile sa system.",
+    "bisaya": "Ang impormasyon sa barangay captain mahimong ibutang dinhi kung ma-add na ang opisyal nga barangay profile sa system."
+  },
+  {
+    "keywords": ["bogo", "location", "where", "address"],
+    "english": "The barangay is located within Bogo City, Cebu. Exact barangay address can be updated in the system profile.",
+    "tagalog": "Ang barangay ay matatagpuan sa loob ng Bogo City, Cebu. Maaaring i-update ang eksaktong address sa system profile.",
+    "bisaya": "Ang barangay nahimutang sulod sa Bogo City, Cebu. Ang eksaktong address mahimong i-update sa system profile."
+  },
+  {
+    "keywords": ["total budget", "budget", "allocation"],
+    "english": "The current total barangay budget shown in the portal is ₱5,280,000.",
+    "tagalog": "Ang kasalukuyang total barangay budget na ipinapakita sa portal ay ₱5,280,000.",
+    "bisaya": "Ang kasamtangang total barangay budget nga makita sa portal kay ₱5,280,000."
+  },
+  {
+    "keywords": ["spent", "utilized", "used funds", "expenses"],
+    "english": "The current funds utilized are ₱3,150,000, which is around 59.6% of the total budget.",
+    "tagalog": "Ang nagamit na pondo ay ₱3,150,000, o humigit-kumulang 59.6% ng total budget.",
+    "bisaya": "Ang nagamit nga pondo kay ₱3,150,000, mga 59.6% sa total budget."
+  },
+  {
+    "keywords": ["remaining", "remaining funds", "left"],
+    "english": "The remaining barangay funds shown in the system are ₱2,130,000.",
+    "tagalog": "Ang natitirang pondo ng barangay na ipinapakita sa system ay ₱2,130,000.",
+    "bisaya": "Ang nahabilin nga pondo sa barangay nga makita sa system kay ₱2,130,000."
+  },
+  {
+    "keywords": ["ongoing project", "ongoing", "active project"],
+    "english": "The ongoing projects include Barangay Health Center Renovation, Nutrition Supplement Program, and Road Concreting Phase 2.",
+    "tagalog": "Ang mga kasalukuyang proyekto ay Barangay Health Center Renovation, Nutrition Supplement Program, at Road Concreting Phase 2.",
+    "bisaya": "Ang nagpadayon nga mga proyekto mao ang Barangay Health Center Renovation, Nutrition Supplement Program, ug Road Concreting Phase 2."
+  },
+  {
+    "keywords": ["completed project", "completed", "finished"],
+    "english": "The Computer Literacy Program is listed as completed.",
+    "tagalog": "Ang Computer Literacy Program ay nakalista bilang completed.",
+    "bisaya": "Ang Computer Literacy Program kay nakalista nga completed."
+  },
+  {
+    "keywords": ["planned project", "planned", "future project"],
+    "english": "Planned projects include Drainage System Installation and Solar Street Lighting Project.",
+    "tagalog": "Ang mga planong proyekto ay Drainage System Installation at Solar Street Lighting Project.",
+    "bisaya": "Ang planado nga mga proyekto mao ang Drainage System Installation ug Solar Street Lighting Project."
+  },
+  {
+    "keywords": ["health center", "renovation"],
+    "english": "The Barangay Health Center Renovation is ongoing with 65% progress and a budget of ₱850,000.",
+    "tagalog": "Ang Barangay Health Center Renovation ay ongoing na may 65% progress at budget na ₱850,000.",
+    "bisaya": "Ang Barangay Health Center Renovation kay nagpadayon nga adunay 65% progress ug budget nga ₱850,000."
+  },
+  {
+    "keywords": ["road", "concreting", "sitio lawis"],
+    "english": "Road Concreting Phase 2 is ongoing with 75% progress, located at Sitio Lawis.",
+    "tagalog": "Ang Road Concreting Phase 2 ay ongoing na may 75% progress at matatagpuan sa Sitio Lawis.",
+    "bisaya": "Ang Road Concreting Phase 2 kay nagpadayon nga adunay 75% progress sa Sitio Lawis."
+  },
+  {
+    "keywords": ["street light", "street lights", "lighting", "solar"],
+    "english": "The Solar Street Lighting Project is currently planned and will cover the main roads.",
+    "tagalog": "Ang Solar Street Lighting Project ay kasalukuyang planned at sasakop sa main roads.",
+    "bisaya": "Ang Solar Street Lighting Project kay planado pa ug mag-cover sa main roads."
+  },
+  {
+    "keywords": ["drainage", "flood"],
+    "english": "The Drainage System Installation is a planned infrastructure project for Purok 3.",
+    "tagalog": "Ang Drainage System Installation ay isang planned infrastructure project para sa Purok 3.",
+    "bisaya": "Ang Drainage System Installation kay planado nga infrastructure project para sa Purok 3."
+  },
+  {
+    "keywords": ["flagged", "flagged expense", "ai status"],
+    "english": "There is currently 1 flagged expense that needs review by the administrator.",
+    "tagalog": "Mayroong 1 flagged expense na kailangang i-review ng administrator.",
+    "bisaya": "Naay 1 flagged expense nga kinahanglan i-review sa administrator."
+  },
+  {
+    "keywords": ["document", "download", "forms", "clearance", "permit"],
+    "english": "You can download barangay forms, permits, and reports from the Documents page.",
+    "tagalog": "Maaari kang mag-download ng barangay forms, permits, at reports sa Documents page.",
+    "bisaya": "Maka-download ka og barangay forms, permits, ug reports sa Documents page."
+  },
+  {
+    "keywords": ["ocr", "receipt", "upload", "scan"],
+    "english": "The OCR module reads uploaded receipts or documents, extracts text, detects amounts, and helps validate expenses.",
+    "tagalog": "Ang OCR module ay bumabasa ng uploaded receipts o documents, kumukuha ng text, nagde-detect ng amount, at tumutulong sa pag-validate ng expenses.",
+    "bisaya": "Ang OCR module mobasa sa uploaded receipts o documents, mokuha og text, mo-detect og amount, ug motabang sa pag-validate sa expenses."
+  },
+  {
+    "keywords": ["confidence", "ocr confidence"],
+    "english": "OCR confidence shows how accurate the extracted text is. A low confidence score may require manual review.",
+    "tagalog": "Ang OCR confidence ay nagpapakita kung gaano ka-accurate ang extracted text. Kapag mababa ito, kailangan ng manual review.",
+    "bisaya": "Ang OCR confidence nagpakita kung unsa ka-accurate ang extracted text. Kung ubos kini, kinahanglan og manual review."
+  },
+  {
+    "keywords": ["feedback", "complaint", "concern", "suggestion"],
+    "english": "Residents can submit suggestions, complaints, praise, or project issues through the Feedback page.",
+    "tagalog": "Maaaring magsumite ang residents ng suggestions, complaints, praise, o project issues sa Feedback page.",
+    "bisaya": "Ang residents mahimong mo-submit og suggestions, complaints, praise, o project issues sa Feedback page."
+  }
+]
