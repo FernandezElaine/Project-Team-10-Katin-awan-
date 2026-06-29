@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Feedback | Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+
+    <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-projects.html">Projects</a>
+        <a href="admin-budget.html">Budget</a>
+        <a href="admin-expenses.html">Expenses</a>
+        <a href="admin-documents.html">Documents/OCR</a>
+        <a href="admin-map.html">Map</a>
+        <a class="active" href="admin-feedback.html">Feedback</a>
+        <a href="admin-users.html">Users</a>
+        <a href="admin-audit.html">Audit Logs</a>
+        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Admin Module</span>
+        <h1>Manage Feedback</h1>
+        <p>
+            Review community concerns, suggestions, complaints, and project-related feedback
+            submitted by residents.
+        </p>
+    </div>
+
+    <div class="hero-seal">📢</div>
+</section>
+
+<main class="public-container">
+
+    <section class="search-bar-section">
+        <input type="text" id="adminGlobalSearch" placeholder="🔍 Search projects, expenses, users..." onkeyup="handleAdminGlobalSearch()">
+        <button class="search-btn" onclick="handleAdminGlobalSearch()">Search</button>
+        <div id="adminGlobalSearchResults" class="search-results"></div>
+    </section>
+
+    <section class="public-stats">
+        <div class="public-stat-card">
+            <div>
+                <p>Total Feedback</p>
+                <h3 id="totalFeedback">0</h3>
+                <span class="blue-text">All submissions</span>
+            </div>
+            <div class="stat-icon blue-bg">📢</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Resolved</p>
+                <h3 id="resolvedFeedback">0</h3>
+                <span class="green-text">Completed reviews</span>
+            </div>
+            <div class="stat-icon green-bg">✅</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Under Review</p>
+                <h3 id="reviewFeedback">0</h3>
+                <span class="blue-text">Being checked</span>
+            </div>
+            <div class="stat-icon cyan-bg">🔍</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Pending</p>
+                <h3 id="pendingFeedback">0</h3>
+                <span class="blue-text">Needs action</span>
+            </div>
+            <div class="stat-icon yellow-bg">⏳</div>
+        </div>
+    </section>
+
+    <section class="section-title">
+        <h2>Feedback Records</h2>
+        <p>List of resident feedback managed by the administrator.</p>
+    </section>
+
+    <section class="tools-card">
+        <div class="tools-row">
+            <input
+                type="text"
+                id="adminFeedbackSearch"
+                placeholder="Search feedback by subject, category, message, or status..."
+                onkeyup="searchAdminFeedback()">
+
+            <select id="adminFeedbackFilter" onchange="filterAdminFeedback()">
+                <option value="All">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Under Review">Under Review</option>
+                <option value="Resolved">Resolved</option>
+            </select>
+        </div>
+    </section>
+
+    <section id="feedbackContainer" class="feedback-grid">
+        <!-- Feedback records will appear here -->
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/admin-auth.js"></script>
+<script src="../js/admin-feedback.js"></script>
+<script src="../js/admin-dashboard-map.js"></script>
+
+</body>
+</html>

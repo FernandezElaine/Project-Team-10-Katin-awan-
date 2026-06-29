@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Project Map | Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+    <style>
+        #adminMap {
+            width: 100%;
+            height: 620px;
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .admin-map-card {
+            background: white;
+            padding: 24px;
+            border-radius: 22px;
+            box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+        }
+
+        .admin-map-note {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 16px 18px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            color: #1e3a8a;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+
+    <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-projects.html">Projects</a>
+        <a href="admin-budget.html">Budget</a>
+        <a href="admin-expenses.html">Expenses</a>
+        <a href="admin-documents.html">Documents/OCR</a>
+        <a class="active" href="admin-map.html">Map</a>
+        <a href="admin-feedback.html">Feedback</a>
+        <a href="admin-users.html">Users</a>
+        <a href="admin-audit.html">Audit Logs</a>
+        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Admin Project Map</span>
+        <h1>Manage Project Locations & Photos</h1>
+        <p>
+            Click the map to add a project marker. Click an existing marker to edit,
+            delete, or upload project photos.
+        </p>
+    </div>
+
+    <div class="hero-seal">🗺️</div>
+</section>
+
+
+<main class="public-container">
+
+    <section class="search-bar-section">
+        <input type="text" id="adminGlobalSearch" placeholder="🔍 Search projects, expenses, users..." onkeyup="handleAdminGlobalSearch()">
+        <button class="search-btn" onclick="handleAdminGlobalSearch()">Search</button>
+        <div id="adminGlobalSearchResults" class="search-results"></div>
+    </section>
+
+    <section class="section-title">
+        <h2>Interactive Project Map</h2>
+        <p>Admin can add, update, delete, and attach photos to project locations.</p>
+    </section>
+
+    <div class="admin-map-note">
+        Tip: Click anywhere on the map to add a new project marker.
+    </div>
+
+    <section class="admin-map-card">
+        <div id="adminMap"></div>
+    </section>
+<div class="admin-map-note">
+    <button id="toggleAddMarkerBtn" onclick="toggleAddMarkerMode()" class="public-blue-btn">
+        Enable Add Marker Mode
+    </button>
+    <span id="addMarkerStatus">Add marker mode is OFF. You can safely click markers to edit/delete.</span>
+</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/admin-auth.js"></script>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/admin-dashboard-map.js"></script>
+
+</body>
+</html>
