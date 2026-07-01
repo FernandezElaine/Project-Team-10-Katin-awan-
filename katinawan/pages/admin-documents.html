@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Documents | Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+
+    <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-projects.html">Projects</a>
+        <a href="admin-budget.html">Budget</a>
+        <a href="admin-expenses.html">Expenses</a>
+        <a class="active" href="admin-documents.html">Documents/OCR</a>
+        <a href="admin-map.html">Map</a>
+        <a href="admin-feedback.html">Feedback</a>
+        <a href="admin-users.html">Users</a>
+        <a href="admin-audit.html">Audit Logs</a>
+        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Admin Module</span>
+        <h1>Manage Documents & OCR Records</h1>
+        <p>
+            Add, update, review, and delete barangay documents including financial reports, receipts, contracts, project files, and OCR records.
+        </p>
+    </div>
+
+    <div class="hero-seal">📄</div>
+</section>
+
+<main class="public-container">
+
+    <section class="search-bar-section">
+        <input type="text" id="adminGlobalSearch" placeholder="🔍 Search projects, expenses, users..." onkeyup="handleAdminGlobalSearch()">
+        <button class="search-btn" onclick="handleAdminGlobalSearch()">Search</button>
+        <div id="adminGlobalSearchResults" class="search-results"></div>
+    </section>
+
+    <section class="public-grid">
+
+        <!-- Left Panel: Add Document -->
+        <div class="public-panel">
+            <h3>Add / Update Document</h3>
+
+            <form id="addDocumentForm">
+                <input type="hidden" id="docId">
+
+                <label>Title</label>
+                <input type="text" id="docTitle" placeholder="Example: Q3 2025 Financial Report" required>
+
+                <label>Category</label>
+                <select id="docCategory" required>
+                    <option value="Financial Report">Financial Report</option>
+                    <option value="Budget Document">Budget Document</option>
+                    <option value="Receipt">Receipt</option>
+                    <option value="Project Document">Project Document</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <label>Description</label>
+                <textarea id="docDescription" rows="4" placeholder="Enter document description"></textarea>
+<label>Upload Document File</label>
+<input
+    type="file"
+    id="docFile"
+    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+
+<input type="hidden" id="existingDocFileUrl">
+
+<small>
+    Upload PDF, Word, Excel, or image files. OCR extracted text is managed below under OCR Records.
+</small>
+                <div class="dashboard-actions">
+                    <button type="submit" class="public-blue-btn">Save Document</button>
+                    <button type="button" onclick="clearDocumentForm()" class="public-green-btn">Clear</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Right Panel: Summary -->
+        <div class="public-panel">
+            <h3>Document Summary</h3>
+
+            <div class="report-item">
+                <b>Total Documents</b>
+                <p id="totalDocuments">0</p>
+            </div>
+
+            <div class="report-item">
+                <b>Financial Reports</b>
+                <p id="financialReports">0</p>
+            </div>
+
+            <div class="report-item">
+                <b>Receipts</b>
+                <p id="receiptDocuments">0</p>
+            </div>
+
+            <div class="report-item">
+                <b>Project Documents</b>
+                <p id="projectDocuments">0</p>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="section-title">
+        <h2>Document Records & OCR Records</h2>
+        <p>List of barangay documents managed by the administrator.</p>
+    </section>
+
+    <!-- Search and Filter -->
+    <section class="tools-card">
+        <div class="tools-row">
+            <input
+                type="text"
+                id="adminDocumentSearch"
+                placeholder="Search documents by title, category, or description..."
+                onkeyup="searchAdminDocuments()">
+<select id="adminDocumentFilter" onchange="filterAdminDocuments()">
+    <option value="All">All Categories</option>
+    <option value="OCR Record">OCR Records</option>
+    <option value="Financial Report">Financial Report</option>
+    <option value="Budget Document">Budget Document</option>
+    <option value="Receipt">Receipt</option>
+    <option value="Project Document">Project Document</option>
+    <option value="Contract">Contract</option>
+    <option value="Other">Other</option>
+</select>
+        </div>
+    </section>
+
+    <!-- Documents List -->
+    <section id="documentsContainer" class="documents-grid">
+        <!-- Populated dynamically by admin-documents.js -->
+    </section>
+
+<div id="ocrReviewModal" class="project-modal">
+    <div class="project-modal-content">
+        <button class="project-modal-close" onclick="closeOCRReviewModal()">X</button>
+
+        <h2>Review OCR Record</h2>
+
+        <input type="hidden" id="ocrReviewId">
+
+        <p><b>File:</b> <span id="ocrReviewFileName"></span></p>
+        <p><b>Detected Vendor:</b> <span id="ocrReviewVendor"></span></p>
+        <p><b>Detected Amount:</b> <span id="ocrReviewAmount"></span></p>
+        <p><b>Confidence:</b> <span id="ocrReviewConfidence"></span></p>
+
+        <label>Extracted / Corrected Text</label>
+        <textarea id="ocrCorrectedText" class="admin-input" rows="10"></textarea>
+
+        <label>Status</label>
+        <select id="ocrReviewStatus" class="admin-input">
+            <option value="Validated Expense">Validated Expense</option>
+            <option value="Needs Admin Review">Needs Admin Review</option>
+            <option value="Flagged for Review">Flagged for Review</option>
+        </select>
+
+        <div class="dashboard-actions">
+            <button class="public-blue-btn" onclick="saveOCRReview()">Save Review</button>
+            <button class="public-green-btn" onclick="closeOCRReviewModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/admin-auth.js"></script>
+<script src="../js/admin-documents.js"></script>
+<script src="../js/admin-dashboard-map.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+</body>
+</html>
