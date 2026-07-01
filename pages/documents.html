@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documents - Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="../index.html" class="public-logo">🏛️ Katin-awan Portal</a>
+
+    <nav>
+        <a href="dashboard.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a href="expenses.html">Expenses</a>
+        <a class="active" href="documents.html">Documents</a>
+        <a href="map.html">Map</a>
+        <a href="uploads.html">OCR Analysis</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="feedback.html">Feedback</a>
+        <span id="authArea"></span>
+    </nav>
+</header>
+
+<section class="public-hero documents-hero">
+    <div>
+        <span class="module-badge">Public Records</span>
+        <h1>Public Documents</h1>
+        <p>
+            View barangay financial reports, budget files, receipts, project records,
+            contracts, and other transparency documents.
+        </p>
+    </div>
+
+    <div class="hero-seal">📄</div>
+</section>
+
+<main class="public-container">
+
+    <section class="section-title">
+        <h2>Document Records</h2>
+        <p>Search and view official barangay documents uploaded by the administrator.</p>
+    </section>
+
+    <section class="tools-card">
+        <div class="tools-row">
+            <input
+                type="text"
+                id="documentSearch"
+                placeholder="Search documents by title, category, or description..."
+                onkeyup="searchDocuments()">
+
+            <select id="documentFilter" onchange="filterDocuments()">
+                <option value="All">All Categories</option>
+                <option value="Financial Report">Financial Report</option>
+                <option value="Budget Document">Budget Document</option>
+                <option value="Receipt">Receipt</option>
+                <option value="Project Document">Project Document</option>
+                <option value="Contract">Contract</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+    </section>
+
+    <section id="documentsList" class="documents-grid">
+        <!-- Documents from Supabase will appear here -->
+    </section>
+
+    <section class="section-title" style="margin-top: 50px;">
+        <h2>Transparency Logs</h2>
+        <p>View public activity records showing non-sensitive updates made by the administrator.</p>
+    </section>
+
+    <section class="tools-card">
+        <div class="tools-row">
+            <input
+                type="text"
+                id="logSearch"
+                placeholder="Search logs by action, module, or details..."
+                onkeyup="searchTransparencyLogs()">
+
+            <select id="logFilter" onchange="filterTransparencyLogs()">
+                <option value="All">All Modules</option>
+                <option value="Projects">Projects</option>
+                <option value="Documents">Documents</option>
+                <option value="Expenses">Expenses</option>
+                <option value="Feedback">Feedback</option>
+                <option value="Budget">Budget</option>
+            </select>
+        </div>
+    </section>
+
+    <section id="transparencyLogsList" class="documents-grid">
+        <!-- Public audit logs from Supabase will appear here -->
+    </section>
+
+    <!-- Document Details Modal -->
+    <div id="documentModal" class="document-modal">
+        <div class="document-modal-content">
+            <button class="document-modal-close" onclick="closeDocumentModal()">X</button>
+
+            <span id="documentModalCategory" class="document-modal-category"></span>
+            <h2 id="documentModalTitle"></h2>
+            <p id="documentModalDate" class="document-modal-date"></p>
+
+            <div id="documentModalDescription" class="document-modal-description"></div>
+
+            <button id="documentModalViewBtn" class="public-blue-btn">
+                Open Document
+            </button>
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+<script src="../js/documents.js"></script>
+
+</body>
+</html>

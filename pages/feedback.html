@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback - Katin-awan</title>
+
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="../css/dashboard.css">
+<link rel="stylesheet" href="../css/projects.css">
+<link rel="stylesheet" href="../css/feedback.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="../index.html" class="public-logo">🏛️ Katin-awan Portal</a>
+
+    <nav>
+        <a href="dashboard.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a href="expenses.html">Expenses</a>
+        <a href="documents.html">Documents</a>
+        <a href="map.html">Map</a>
+        <a href="uploads.html">OCR Analysis</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a class="active" href="feedback.html">Feedback</a>
+       <span id="authArea"></span>
+    </nav>
+</header>
+
+<section class="page-hero feedback-hero">
+    <span class="module-badge">Community Participation</span>
+    <h1>Community Feedback</h1>
+    <p>Submit concerns, suggestions, complaints, or project-related reports securely.</p>
+</section>
+
+<main class="public-container">
+
+    <section class="feedback-summary">
+        <div class="feedback-stat">
+            <h3>24</h3>
+            <p>Total Feedback</p>
+        </div>
+
+        <div class="feedback-stat">
+            <h3>12</h3>
+            <p>Resolved</p>
+        </div>
+
+        <div class="feedback-stat">
+            <h3>8</h3>
+            <p>Under Review</p>
+        </div>
+
+        <div class="feedback-stat">
+            <h3>4</h3>
+            <p>Pending</p>
+        </div>
+    </section>
+
+    <section class="feedback-page-grid">
+
+        <div class="feedback-form-card">
+            <h3>Submit Feedback</h3>
+            <p class="feedback-note">You may submit anonymously or include your name later when backend is connected.</p>
+
+            <label>Subject *</label>
+            <input type="text" id="feedbackSubject" placeholder="Example: Concern about road repair project">
+
+            <label>Category *</label>
+            <select id="feedbackCategory">
+                <option value="">Select category</option>
+                <option value="Suggestion">Suggestion</option>
+                <option value="Complaint">Complaint</option>
+                <option value="Praise">Praise</option>
+                <option value="Project Issue">Project Issue</option>
+                <option value="Expense Concern">Expense Concern</option>
+                <option value="Document Concern">Document Concern</option>
+            </select>
+
+            <label>Message *</label>
+            <textarea id="feedbackMessage" rows="6" placeholder="Describe your feedback in detail..."></textarea>
+
+            <div class="anonymous-box">
+                <label>
+                    <input type="checkbox" id="feedbackAnonymous" checked>
+                    Submit anonymously
+                </label>
+            </div>
+
+            <button onclick="submitFeedback()">Submit Feedback</button>
+
+            <div id="feedbackSuccess" class="feedback-success">
+                ✅ Feedback submitted successfully.
+            </div>
+        </div>
+
+        <div class="feedback-list-card">
+            <div class="feedback-list-header">
+                <div>
+                    <h3>Recent Community Feedback</h3>
+                    <p>Sample public feedback records for transparency.</p>
+                </div>
+            </div>
+
+            <div id="feedbackList">
+                <div class="feedback-item">
+                    <div class="feedback-item-top">
+                        <b>Road repair delay</b>
+                        <span class="status-review">Under Review</span>
+                    </div>
+                    <p>Resident reported slow progress on the barangay road repair project.</p>
+                    <small>Category: Project Issue · Anonymous</small>
+                </div>
+
+                <div class="feedback-item">
+                    <div class="feedback-item-top">
+                        <b>Request for more budget reports</b>
+                        <span class="status-pending">Pending</span>
+                    </div>
+                    <p>Resident requested clearer monthly budget summaries.</p>
+                    <small>Category: Suggestion · Anonymous</small>
+                </div>
+
+                <div class="feedback-item">
+                    <div class="feedback-item-top">
+                        <b>Health center renovation update</b>
+                        <span class="status-resolved">Resolved</span>
+                    </div>
+                    <p>Concern about missing project update was reviewed and posted.</p>
+                    <small>Category: Project Issue · Anonymous</small>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+
+<script src="../js/main.js"></script>
+<script src="../js/feedback.js"></script>
+</body>
+</html>

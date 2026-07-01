@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Katin-awan Transparency Portal</title>
+
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/landing.css">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js" defer></script>
+<script src="js/main.js" defer></script>
+<script src="js/landing.js" defer></script>
+</head>
+<body>
+
+<header class="landing-nav">
+    <a href="index.html" class="landing-logo">
+        <span>🏛️</span>
+        <div>
+            <b>Katin-awan</b>
+            <small>Transparency Portal</small>
+        </div>
+    </a>
+
+    <nav>
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <a href="pages/dashboard.html">Portal</a>
+        <a href="pages/login.html">Login</a>
+        <a href="pages/register.html">Create Account</a>
+
+        <!-- Hidden by default, shown only if URL has ?admin=true -->
+        <button id="adminLoginButton" onclick="showAdminLogin()">Admin Login</button>
+    </nav>
+</header>
+
+<section class="landing-hero">
+    <div class="landing-text">
+        <span class="landing-badge">Barangay Transparency Portal</span>
+
+        <h1>Transparent Barangay Budget and Project Monitoring</h1>
+
+        <p>
+            Katin-awan helps residents access barangay budgets, expenses,
+            project progress, public documents, and community feedback
+            in one secure and user-friendly platform.
+        </p>
+
+        <div class="landing-actions">
+            <a href="pages/dashboard.html" class="main-action">View Portal</a>
+            <a href="pages/login.html" class="second-action">Login</a>
+            <a href="pages/register.html" class="second-action">Create Account</a>
+        </div>
+
+        <div class="hero-mini-stats">
+            <div>
+                <b>₱5.28M</b>
+                <span>Total Budget</span>
+            </div>
+
+            <div>
+                <b>14</b>
+                <span>Active Projects</span>
+            </div>
+
+            <div>
+                <b>24</b>
+                <span>Feedback Records</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="landing-card">
+        <div class="card-header">
+            <div>
+                <h3>Portal Overview</h3>
+                <p>Core transparency modules</p>
+            </div>
+            <span>📋</span>
+        </div>
+
+        <div class="overview-item">
+            <span>📊</span>
+            <div>
+                <b>Budget Tracking</b>
+                <p>View allocation, spending, and remaining funds.</p>
+            </div>
+        </div>
+
+        <div class="overview-item">
+            <span>🏗️</span>
+            <div>
+                <b>Project Monitoring</b>
+                <p>Track progress, contractors, status, and locations.</p>
+            </div>
+        </div>
+
+        <div class="overview-item">
+            <span>📄</span>
+            <div>
+                <b>Documents and OCR</b>
+                <p>Review records and validate uploaded receipts.</p>
+            </div>
+        </div>
+
+        <div class="overview-item">
+            <span>🤖</span>
+            <div>
+                <b>AI Assistance</b>
+                <p>Ask questions in English, Tagalog, or Bisaya.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="features" class="landing-features">
+    <div class="section-heading">
+        <span>System Modules</span>
+        <h2>Features Designed for Barangay Transparency</h2>
+        <p>Built for residents, barangay officials, and public accountability.</p>
+    </div>
+
+    <div class="landing-feature-grid">
+        <div class="landing-feature-card">
+            <span>📊</span>
+            <h3>Budget Dashboard</h3>
+            <p>Displays budget allocation, expenses, remaining funds, and visual reports.</p>
+        </div>
+
+        <div class="landing-feature-card">
+            <span>🏗️</span>
+            <h3>Project Tracking</h3>
+            <p>Shows project progress, timeline, bidder, contractor, location, and status.</p>
+        </div>
+
+        <div class="landing-feature-card">
+            <span>💰</span>
+            <h3>Expense Monitoring</h3>
+            <p>Lists barangay expenses with validation status such as valid or flagged.</p>
+        </div>
+
+        <div class="landing-feature-card">
+            <span>🔍</span>
+            <h3>OCR Analysis</h3>
+            <p>Allows receipt or document upload with OCR extraction and confidence level.</p>
+        </div>
+
+        <div class="landing-feature-card">
+            <span>🤖</span>
+            <h3>Multilingual Chatbot</h3>
+            <p>Answers common resident questions about budgets, projects, and services.</p>
+        </div>
+
+        <div class="landing-feature-card">
+            <span>📢</span>
+            <h3>Community Feedback</h3>
+            <p>Lets residents submit concerns, suggestions, and anonymous reports.</p>
+        </div>
+    </div>
+</section>
+
+<section id="about" class="landing-about">
+    <div class="about-text">
+        <span>About the Project</span>
+        <h2>Built to promote openness, accountability, and citizen participation.</h2>
+
+        <p>
+            Katin-awan is a transparency portal designed to provide clear access
+            to barangay budget information, project updates, expense records,
+            uploaded documents, and resident feedback.
+        </p>
+
+        <a href="pages/dashboard.html">Open Public Portal</a>
+    </div>
+
+    <div class="about-box">
+        <div>
+            <h3>Resident Access</h3>
+            <p>Residents can view public transparency information and log in to access interactive features.</p>
+        </div>
+
+        <div>
+            <h3>Admin Access</h3>
+            <p>Barangay staff can manage project, expense, user, feedback, and document records through secured admin access.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Hidden Admin Login Modal -->
+<div id="adminModal" class="modal">
+    <div class="modal-content">
+        <h2>Administrator Login</h2>
+        <p>Enter your administrator email anNd password.</p>
+
+        <input type="email" id="adminUser" placeholder="Admin Email">
+        <input type="password" id="adminPass" placeholder="Password">
+
+        <button onclick="adminLogin()" class="btn-primary">Login</button>
+        <button class="close-btn" onclick="closeModal()">Close</button>
+
+        <small>Administrator access only.</small>
+    </div>
+</div>
+
+</body>
+</html>

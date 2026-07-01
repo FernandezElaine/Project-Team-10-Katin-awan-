@@ -1,0 +1,1024 @@
+.admin-badge {
+    background: #dc2626;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 800;
+    font-size: 13px;
+}
+
+.public-nav button.logout-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.public-nav button.logout-btn:hover {
+    background: #dc2626;
+}
+.admin-input {
+    width: 100%;
+    padding: 13px 14px;
+    margin: 8px 0 16px;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+}
+
+.admin-input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.public-panel label {
+    display: block;
+    font-weight: 800;
+    color: #0f172a;
+    margin-top: 8px;
+}
+
+.admin-card-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.admin-card-actions button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 11px 16px;
+    border-radius: 10px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.admin-card-actions button:hover {
+    background: #1d4ed8;
+}
+
+.admin-card-actions .danger-btn {
+    background: #ef4444;
+}
+
+.admin-card-actions .danger-btn:hover {
+    background: #dc2626;
+}
+.map-admin-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+.map-admin-content {
+    background: white;
+    width: 100%;
+    max-width: 620px;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: 20px;
+    padding: 28px;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+}
+
+.map-admin-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.map-admin-content h2 {
+    margin-top: 0;
+    color: #0f172a;
+}
+
+.map-admin-content label {
+    display: block;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 14px 0 7px;
+}
+
+.map-admin-content input,
+.map-admin-content textarea,
+.map-admin-content select {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+}
+
+.map-admin-content input:focus,
+.map-admin-content textarea:focus,
+.map-admin-content select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.existing-photo-list {
+    margin: 16px 0;
+}
+
+.existing-photo-list img {
+    width: 100px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.map-edit-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.map-edit-btn:hover {
+    background: #1d4ed8;
+}
+
+.map-delete-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.map-delete-btn:hover {
+    background: #dc2626;
+}
+.map-admin-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+.map-admin-content {
+    background: white;
+    width: 100%;
+    max-width: 620px;
+    max-height: 88vh;
+    overflow-y: auto;
+    border-radius: 20px;
+    padding: 28px;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+}
+
+.map-admin-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.map-admin-content h2 {
+    margin-top: 0;
+}
+
+.map-admin-content label {
+    display: block;
+    font-weight: 800;
+    margin: 14px 0 7px;
+}
+
+.map-admin-content input,
+.map-admin-content textarea,
+.map-admin-content select {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+}
+
+.existing-photo-list {
+    margin: 16px 0;
+}
+
+.existing-photo-list img {
+    width: 100px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.map-edit-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.map-delete-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.admin-map-note {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    padding: 16px 18px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    color: #1e3a8a;
+    font-weight: 700;
+}
+
+/* Expandable Project Card Styles */
+.project-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    background: white;
+}
+
+.project-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.project-card-header:hover {
+    background: #f9fafb;
+}
+
+.project-card-title {
+    flex: 1;
+}
+
+.project-card-title h3 {
+    margin: 0 0 6px;
+    color: #0f172a;
+    font-size: 18px;
+}
+
+.view-details-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.view-details-btn:hover {
+    background: #1d4ed8;
+}
+
+.project-card-details {
+    padding: 0 20px 20px;
+    border-top: 1px solid #e5e7eb;
+    background: #fafafa;
+}
+
+.project-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.project-detail-item {
+    background: white;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.project-detail-item b {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.project-detail-item p {
+    margin: 0;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.project-detail-description {
+    margin-top: 16px;
+    background: white;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+}
+
+.project-detail-description b {
+    display: block;
+    color: #64748b;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.project-detail-description p {
+    margin: 0;
+    color: #334155;
+    line-height: 1.5;
+}
+
+.project-progress-bar {
+    margin-top: 16px;
+}
+
+.project-progress-bar .public-progress {
+    height: 12px;
+    background: #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.project-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb, #3b82f6);
+    border-radius: 6px;
+    transition: width 0.3s;
+}
+
+.project-card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.project-card-actions button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.project-card-actions button:hover {
+    background: #1d4ed8;
+}
+
+.project-card-actions .danger-btn {
+    background: #ef4444;
+}
+
+.project-card-actions .danger-btn:hover {
+    background: #dc2626;
+}
+
+/* Admin Documents Styling */
+.admin-documents {
+    display: flex;
+    gap: 24px;
+    padding: 24px;
+    flex-wrap: wrap;
+}
+
+.document-form-card,
+.document-list-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #dbeafe;
+    box-shadow: 0 4px 12px rgba(15,23,42,.05);
+    flex: 1 1 400px;
+}
+
+.document-form-card h3,
+.document-list-card h3 {
+    margin-bottom: 16px;
+    color: #1e3a8a;
+}
+
+.document-form-card label {
+    display: block;
+    margin-top: 12px;
+    font-weight: 700;
+}
+
+.document-form-card input,
+.document-form-card textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    margin-bottom: 10px;
+}
+
+.document-form-card button {
+    width: 100%;
+    background: #2563eb;
+    color: white;
+    padding: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: .25s ease;
+}
+
+.document-form-card button:hover {
+    background: #1d4ed8;
+}
+
+#documentsContainer {
+    display: grid;
+    gap: 14px;
+}
+.document-item {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.document-item h4 {
+    margin: 0;
+    color: #1e3a8a;
+}
+
+.document-item p {
+    margin: 6px 0;
+    color: #475569;
+}
+
+.document-item button {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    transition: .25s ease;
+}
+
+.document-item button.edit {
+    background: #16a34a;
+    color: white;
+}
+
+.document-item button.edit:hover {
+    background: #15803d;
+}
+
+.document-item button.delete {
+    background: #dc2626;
+    color: white;
+}
+
+.document-item button.delete:hover {
+    background: #b91c1c;
+}
+/* =======================
+   Admin Panel Common Styles
+========================== */
+
+/* Panel layout */
+.public-panel {
+    background: white;
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+}
+
+.section-title h2 {
+    font-size: 26px;
+    color: #1e3a8a;
+    margin-bottom: 8px;
+}
+
+.section-title p {
+    color: #334155;
+    font-size: 15px;
+}
+
+/* Card grid */
+.documents-grid,
+.users-grid,
+.feedback-grid,
+.audit-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+/* Individual card */
+.document-card,
+.user-card,
+.feedback-card,
+.audit-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.document-card h3,
+.user-card h3,
+.feedback-card h3,
+.audit-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: #1e3a8a;
+}
+
+.document-card p,
+.user-card p,
+.feedback-card p,
+.audit-card p {
+    font-size: 14px;
+    color: #475569;
+    margin: 2px 0;
+}
+
+.document-card span,
+.user-card span,
+.feedback-card span,
+.audit-card span {
+    font-size: 12px;
+    color: #2563eb;
+    font-weight: 700;
+}
+
+/* Buttons */
+.admin-card-actions button {
+    padding: 8px 14px;
+    margin-top: 6px;
+    margin-right: 6px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.admin-card-actions button:hover {
+    transform: translateY(-2px);
+}
+
+.admin-card-actions .danger-btn {
+    background: #dc2626;
+    color: white;
+}
+
+.admin-card-actions button:not(.danger-btn) {
+    background: #2563eb;
+    color: white;
+}
+
+/* Feedback grid */
+.feedback-card .status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    display: inline-block;
+    margin-top: 6px;
+}
+
+.status-pending {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.status-resolved {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+/* Audit log cards */
+.audit-card p {
+    font-size: 13px;
+    color: #334155;
+}
+
+.audit-card b {
+    color: #1e3a8a;
+}
+
+/* Search inputs */
+.tools-row input,
+.tools-row select {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    font-size: 14px;
+    margin-bottom: 12px;
+}
+
+.tools-row select {
+    cursor: pointer;
+}
+
+/* Modal */
+.document-modal,
+.feedback-modal,
+.user-modal,
+.audit-modal {
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.document-modal-content,
+.feedback-modal-content,
+.user-modal-content,
+.audit-modal-content {
+    background: #fff;
+    margin: 80px auto;
+    padding: 24px;
+    border-radius: 18px;
+    max-width: 600px;
+    position: relative;
+}
+
+.document-modal-close,
+.feedback-modal-close,
+.user-modal-close,
+.audit-modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    font-size: 18px;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .documents-grid,
+    .users-grid,
+    .feedback-grid,
+    .audit-grid {
+        grid-template-columns: 1fr;
+    }
+}
+/* ADMIN PROJECT RECORDS FIX */
+
+#adminProjectList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 20px;
+    align-items: start;
+}
+
+.admin-project-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 22px;
+    border-radius: 18px;
+    background: #ffffff;
+    border: 1px solid #e5eaf2;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+}
+
+.admin-project-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.admin-project-info h3 {
+    margin: 0 0 8px;
+    font-size: 20px;
+    color: #0f172a;
+}
+
+.admin-project-preview {
+    background: #f8fafc;
+    border: 1px solid #e5eaf2;
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.admin-project-preview p {
+    margin: 6px 0;
+    color: #475569;
+    font-size: 14px;
+}
+
+.admin-project-progress .public-progress {
+    height: 10px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.admin-project-progress .public-progress div {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 999px;
+}
+
+.admin-project-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.admin-project-actions button {
+    flex: 1;
+    min-width: 100px;
+    border: none;
+    border-radius: 12px;
+    padding: 11px 14px;
+    background: #2563eb;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.admin-project-actions button:hover {
+    background: #1d4ed8;
+}
+
+.admin-project-actions .danger-btn {
+    background: #ef4444;
+}
+
+.admin-project-actions .danger-btn:hover {
+    background: #dc2626;
+}
+
+/* PROJECT DETAILS MODAL FIX */
+
+.project-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.project-modal.active {
+    display: flex;
+}
+
+.project-modal-content {
+    background: white;
+    width: 100%;
+    max-width: 760px;
+    border-radius: 22px;
+    padding: 30px;
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.project-modal-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.project-modal-content h2 {
+    margin: 16px 0 8px;
+    color: #0f172a;
+}
+
+.project-modal-category {
+    color: #64748b;
+    font-weight: 700;
+}
+
+.project-modal-section {
+    margin-top: 18px;
+    padding: 16px;
+    background: #f8fafc;
+    border: 1px solid #e5eaf2;
+    border-radius: 14px;
+}
+
+.project-modal-section h4 {
+    margin: 0 0 8px;
+    color: #0f172a;
+}
+
+.project-modal-section p {
+    margin: 0;
+    color: #475569;
+    line-height: 1.6;
+}
+
+.project-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.project-modal-item {
+    background: #f8fafc;
+    border: 1px solid #e5eaf2;
+    border-radius: 14px;
+    padding: 14px;
+}
+
+.project-modal-item b {
+    color: #0f172a;
+}
+
+.project-modal-item p {
+    margin: 6px 0 0;
+    color: #475569;
+}
+
+.project-modal-progress {
+    margin-top: 20px;
+}
+
+#adminProjectDetailsProgressBar {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 999px;
+}
+
+@media (max-width: 700px) {
+    .project-modal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-project-actions {
+        flex-direction: column;
+    }
+}
+/* SIMPLE ADMIN PROJECT RECORDS */
+
+#adminProjectList {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 18px;
+    align-items: start;
+}
+
+.admin-project-simple-card {
+    background: white;
+    border: 1px solid #e5eaf2;
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    transition: 0.25s ease;
+}
+
+.admin-project-simple-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 35px rgba(15, 23, 42, 0.12);
+}
+
+.admin-project-simple-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.admin-project-simple-card h3 {
+    margin: 0 0 8px;
+    color: #0f172a;
+    font-size: 20px;
+}
+
+.view-details-btn {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-weight: 900;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.view-details-btn:hover {
+    background: #1d4ed8;
+}
+
+/* PROJECT MODAL ACTION BUTTONS */
+
+.project-modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.project-modal-actions button {
+    flex: 1;
+    border: none;
+    padding: 13px 16px;
+    border-radius: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.project-modal-actions .danger-btn {
+    background: #ef4444;
+    color: white;
+}
+
+.project-modal-actions .danger-btn:hover {
+    background: #dc2626;
+}
+
+@media (max-width: 700px) {
+    .admin-project-simple-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .view-details-btn {
+        width: 100%;
+    }
+
+    .project-modal-actions {
+        flex-direction: column;
+    }
+}

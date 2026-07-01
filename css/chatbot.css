@@ -1,0 +1,223 @@
+/* CHATBOT PAGE */
+
+.chatbot-hero {
+    text-align: left;
+}
+
+.chatbot-grid {
+    display: grid;
+    grid-template-columns: 330px 1fr;
+    gap: 26px;
+    align-items: stretch;
+}
+
+/* LEFT SUGGESTIONS */
+.chatbot-suggestions {
+    background: white;
+    border: 1px solid #e5eaf2;
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 8px 24px rgba(15,23,42,.07);
+}
+
+.chatbot-suggestions h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 23px;
+}
+
+.chatbot-suggestions p {
+    color: #64748b;
+    margin: 8px 0 20px;
+}
+
+.chatbot-suggestions button {
+    width: 100%;
+    text-align: left;
+    border: 1px solid #e5eaf2;
+    background: #f8fafc;
+    color: #0f172a;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    border-radius: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: .25s ease;
+}
+
+.chatbot-suggestions button:hover {
+    background: #2563eb;
+    color: white;
+    transform: translateX(4px);
+}
+
+/* CHAT AREA */
+.chatbot-area {
+    background: white;
+    border: 1px solid #e5eaf2;
+    border-radius: 22px;
+    box-shadow: 0 8px 24px rgba(15,23,42,.07);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    min-height: 620px;
+}
+
+.chatbot-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #1e3a8a, #1e40af, #3b82f6);
+    color: white;
+    padding: 20px;
+    border-radius: 18px;
+    margin-bottom: 16px;
+}
+
+.chatbot-topbar h3 {
+    margin: 0;
+    font-size: 22px;
+}
+
+.chatbot-topbar p {
+    margin: 6px 0 0;
+    color: #dbeafe;
+}
+
+.bot-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.18);
+    display: grid;
+    place-items: center;
+    font-size: 32px;
+}
+
+/* LANGUAGE */
+.chat-language {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.chat-language span {
+    font-weight: 800;
+    color: #334155;
+}
+
+.lang-btn {
+    padding: 9px 15px;
+    border-radius: 999px;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.lang-btn.active,
+.lang-btn:hover {
+    background: #2563eb;
+    color: white;
+}
+
+/* MESSAGES */
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    background: #f8fafc;
+    border: 1px solid #e5eaf2;
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-message {
+    max-width: 78%;
+    margin-bottom: 13px;
+    padding: 13px 16px;
+    border-radius: 18px;
+    line-height: 1.6;
+    font-weight: 600;
+}
+
+.chat-message.user {
+    background: #dbeafe;
+    color: #1e40af;
+    align-self: flex-end;
+    border-bottom-right-radius: 6px;
+}
+
+.chat-message.bot {
+    background: white;
+    color: #334155;
+    align-self: flex-start;
+    border: 1px solid #e5eaf2;
+    border-bottom-left-radius: 6px;
+}
+
+/* INPUT */
+.chat-input-row {
+    display: flex;
+    gap: 12px;
+}
+
+.chat-input-row input {
+    flex: 1;
+    padding: 15px 16px;
+    border-radius: 14px;
+    border: 1px solid #cbd5e1;
+    font-size: 16px;
+    outline: none;
+}
+
+.chat-input-row input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+}
+
+.chat-input-row button {
+    padding: 15px 24px;
+    border-radius: 14px;
+    background: #2563eb;
+    color: white;
+    font-weight: 900;
+    border: none;
+    cursor: pointer;
+    transition: .25s ease;
+}
+
+.chat-input-row button:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .chatbot-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .chatbot-area {
+        min-height: 560px;
+    }
+}
+
+@media (max-width: 600px) {
+    .chat-message {
+        max-width: 95%;
+    }
+
+    .chat-input-row {
+        flex-direction: column;
+    }
+
+    .chat-input-row button {
+        width: 100%;
+    }
+}

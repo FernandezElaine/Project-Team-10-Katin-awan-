@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Users | Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+
+    <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-projects.html">Projects</a>
+        <a href="admin-budget.html">Budget</a>
+        <a href="admin-expenses.html">Expenses</a>
+        <a href="admin-documents.html">Documents/OCR</a>
+        <a href="admin-map.html">Map</a>
+        <a href="admin-feedback.html">Feedback</a>
+        <a class="active" href="admin-users.html">Users</a>
+        <a href="admin-audit.html">Audit Logs</a>
+        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Admin Module</span>
+        <h1>Manage Users</h1>
+        <p>View user accounts, manage roles, and update your admin display name for audit logs.</p>
+    </div>
+
+    <div class="hero-seal">👥</div>
+</section>
+
+<main class="public-container">
+
+    <section class="public-grid">
+        <div class="public-panel">
+            <h3>My Admin Profile</h3>
+
+            <label>Display Name</label>
+            <input
+                type="text"
+                id="adminDisplayName"
+                class="admin-input"
+                placeholder="Example: Eleyn Fern">
+
+            <div class="dashboard-actions">
+                <button onclick="saveAdminDisplayName()" class="public-blue-btn">
+                    Save Profile
+                </button>
+            </div>
+
+            <p class="muted-text">
+                This name will appear in Admin Audit Logs and Resident Transparency Logs.
+            </p>
+        </div>
+
+        <div class="public-panel">
+            <h3>User Summary</h3>
+            <div class="report-item"><b>Total Users</b><p id="totalUsers">0</p></div>
+            <div class="report-item"><b>Admins</b><p id="adminUsers">0</p></div>
+            <div class="report-item"><b>Residents</b><p id="residentUsers">0</p></div>
+            <div class="report-item"><b>Inactive</b><p id="inactiveUsers">0</p></div>
+        </div>
+    </section>
+
+    <section class="section-title">
+        <h2>User Records</h2>
+        <p>List of registered users in the Katin-awan portal.</p>
+    </section>
+
+    <section class="tools-card">
+        <div class="tools-row">
+            <input
+                type="text"
+                id="adminUserSearch"
+                placeholder="Search users by name, role, or status..."
+                onkeyup="searchAdminUsers()">
+
+            <select id="adminUserFilter" onchange="filterAdminUsers()">
+                <option value="All">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="resident">Resident</option>
+            </select>
+        </div>
+    </section>
+
+    <section id="usersContainer" class="users-grid"></section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/admin-auth.js"></script>
+<script src="../js/admin-users.js"></script>
+<script src="../js/admin-dashboard-map.js"></script>
+
+</body>
+</html>

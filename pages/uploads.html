@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Analysis - Katin-awan</title>
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/projects.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="../index.html" class="public-logo">🏛️ Katin-awan Portal</a>
+
+    <nav>
+        <a href="dashboard.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a href="expenses.html">Expenses</a>
+        <a href="documents.html">Documents</a>
+        <a href="map.html">Map</a>
+        <a class="active" href="uploads.html">OCR Analysis</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="feedback.html">Feedback</a>
+        <span id="authArea"></span>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <h1>Document OCR Analysis</h1>
+    <p>Upload receipts, invoices, PDFs, Word files, or image-based documents for review and validation.</p>
+</section>
+
+<main class="public-container">
+
+    <section class="ocr-layout">
+
+        <div class="ocr-upload-card">
+            <h3>Upload Document</h3>
+
+            <div class="ocr-dropbox">
+                <div class="ocr-icon">📄</div>
+                <p>Select PDF, Word, image receipt, invoice, or document file.</p>
+
+                <input
+                    type="file"
+                    id="ocrFile"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,image/*">
+            </div>
+
+            <button onclick="runOCR()">Upload / Run OCR Analysis</button>
+
+            <div id="ocrProgress"></div>
+
+            <small>
+                Image files are scanned using OCR. PDF and Word files are uploaded for admin review/download.
+            </small>
+        </div>
+
+        <div class="ocr-result-card">
+            <h3>OCR / Upload Result</h3>
+
+            <div id="ocrResult">
+                <p class="muted-text">No document uploaded yet.</p>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="section-title">
+        <h2>OCR Upload History</h2>
+        <p>Submitted documents and OCR results will appear here.</p>
+    </section>
+
+    <section class="documents-grid ocr-history"></section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="../js/main.js"></script>
+<script src="../js/uploads.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+</html>
