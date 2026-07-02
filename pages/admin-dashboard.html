@@ -125,13 +125,6 @@
         <div class="public-panel">
             <h3>Recent Admin Activity</h3>
 
-            <div class="public-panel">
-    <h3>Contractor Analytics</h3>
-
-   
-    <div id="adminContractorAnalytics"></div>
-</div>
-
             <div class="report-item">
                 <b>Project status updated</b>
                 <p>Health Center Renovation changed to 65% completion.</p>
@@ -147,6 +140,63 @@
                 <p>Road repair delay marked as Under Review.</p>
             </div>
         </div>
+
+        <div class="public-panel" style="grid-column: span 2;">
+            <h3>📊 Analytics Dashboard</h3>
+
+            <!-- KPI CARDS -->
+            <div class="analytics-cards">
+                <div class="card">
+                    <div class="card-icon">🏗️</div>
+                    <h4>Total Projects</h4>
+                    <h2 id="kpiTotal">0</h2>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">✅</div>
+                    <h4>Completed</h4>
+                    <h2 id="kpiCompleted">0</h2>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">🔄</div>
+                    <h4>Ongoing</h4>
+                    <h2 id="kpiOngoing">0</h2>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">📈</div>
+                    <h4>Completion Rate</h4>
+                    <h2 id="kpiRate">0%</h2>
+                </div>
+            </div>
+
+            <!-- TOP CONTRACTOR -->
+            <div class="top-contractor">
+                Top Contractor: <span id="topContractor">Loading...</span>
+            </div>
+
+            <!-- CONTRACTOR TABLE & CHARTS -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+                <div id="adminContractorAnalytics"></div>
+                <div class="analytics-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0;">
+                    <div class="analytics-card">
+                        <h3>Project Status</h3>
+                        <div style="height: 160px;"><canvas id="statusChart"></canvas></div>
+                    </div>
+                    <div class="analytics-card">
+                        <h3>Contractor Performance</h3>
+                        <div style="height: 160px;"><canvas id="contractorChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INSIGHT BOX -->
+            <div class="insight-box" id="insightBox">
+                <h4>💡 Insights</h4>
+                <p>Loading analytics insights...</p>
+            </div>
+        </div>
     </section>
 <section class="dashboard-map-wrapper">
     <div class="section-title">
@@ -156,7 +206,7 @@
 
     <div class="dashboard-map-layout">
         <div class="dashboard-map-card">
-            <div id="adminDashboardMap" style="height: 400px;"></div>
+            <div id="adminDashboardMap"></div>
         </div>
 
         <div class="dashboard-map-info">
@@ -187,8 +237,6 @@
             </div>
         </div>
     </div>
-
-    
 </section>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -199,5 +247,7 @@
 <script src="../js/admin-auth.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="../js/admin-dashboard-map.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../js/admin-dashboard.js"></script>
 </body>
 </html>

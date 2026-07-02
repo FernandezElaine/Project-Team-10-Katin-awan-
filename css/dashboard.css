@@ -60,17 +60,17 @@ body {
 /* HERO */
 .public-hero {
     width: 86%;
-    margin: 24px auto 42px;
-    min-height: 390px;
+    margin: 20px auto 28px;
+    min-height: 280px;
     background: linear-gradient(135deg, #1e3a8a, #1e40af, #3b82f6);
     color: white;
-    padding: 55px 50px;
-    border-radius: 22px;
+    padding: 36px 40px;
+    border-radius: 18px;
     display: grid;
     grid-template-columns: 1.2fr .8fr;
     align-items: center;
-    gap: 35px;
-    box-shadow: 0 15px 35px rgba(37,99,235,.25);
+    gap: 28px;
+    box-shadow: 0 12px 28px rgba(37,99,235,.22);
 }
 
 .module-badge {
@@ -86,16 +86,16 @@ body {
 }
 
 .public-hero h1 {
-    font-size: 46px;
+    font-size: 36px;
     line-height: 1.12;
-    margin: 0 0 18px;
+    margin: 0 0 12px;
     max-width: 720px;
     color: white;
 }
 
 .public-hero p {
-    font-size: 18px;
-    line-height: 1.7;
+    font-size: 15px;
+    line-height: 1.6;
     max-width: 680px;
     color: #eef6ff;
 }
@@ -129,14 +129,14 @@ body {
 }
 
 .hero-seal {
-    width: 230px;
-    height: 230px;
+    width: 160px;
+    height: 160px;
     border-radius: 50%;
     background: rgba(255,255,255,.14);
     border: 1px solid rgba(255,255,255,.25);
     display: grid;
     place-items: center;
-    font-size: 115px;
+    font-size: 80px;
     margin: auto;
 }
 
@@ -145,15 +145,15 @@ body {
     width: 86%;
     max-width: 1250px;
     margin: auto;
-    padding: 20px 0 60px;
+    padding: 16px 0 40px;
 }
 
 .section-title {
-    margin-bottom: 28px;
+    margin-bottom: 18px;
 }
 
 .section-title h2 {
-    font-size: 30px;
+    font-size: 24px;
     margin: 0;
     color: #0f172a;
 }
@@ -178,8 +178,8 @@ body {
 .public-stats {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 22px;
-    margin: 26px 0 30px;
+    gap: 16px;
+    margin: 20px 0 24px;
 }
 
 .public-stat-card,
@@ -202,10 +202,10 @@ body {
 }
 
 .public-stat-card {
-    padding: 24px;
+    padding: 18px;
     display: flex;
     justify-content: space-between;
-    gap: 14px;
+    gap: 12px;
 }
 
 .public-stat-card p {
@@ -217,8 +217,8 @@ body {
 }
 
 .public-stat-card h3 {
-    font-size: 28px;
-    margin: 9px 0;
+    font-size: 24px;
+    margin: 6px 0;
     color: #0f172a;
 }
 
@@ -231,12 +231,12 @@ body {
 }
 
 .stat-icon {
-    min-width: 58px;
-    height: 58px;
-    border-radius: 18px;
+    min-width: 48px;
+    height: 48px;
+    border-radius: 14px;
     display: grid;
     place-items: center;
-    font-size: 27px;
+    font-size: 22px;
 }
 
 .blue-bg { background: #dbeafe; }
@@ -247,9 +247,13 @@ body {
 /* BUDGET / REPORTS */
 .public-grid {
     display: grid;
-    grid-template-columns: 1.25fr 1fr;
-    gap: 26px;
-    margin: 28px 0 34px;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0 24px;
+}
+
+.public-grid .public-panel:only-child {
+    grid-column: span 2;
 }
 
 .public-panel {
@@ -257,8 +261,9 @@ body {
 }
 
 .public-panel h3 {
-    margin-top: 0;
+    margin: 0 0 14px;
     color: #0f172a;
+    font-size: 18px;
 }
 
 .budget-public-content {
@@ -332,9 +337,9 @@ body {
 .report-item {
     border: 1px solid #e5eaf2;
     background: #f8fafc;
-    border-radius: 14px;
-    padding: 16px;
-    margin-bottom: 12px;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 8px;
 }
 
 .report-item p {
@@ -345,16 +350,16 @@ body {
 /* DOCUMENTS + OCR BUTTONS */
 .dashboard-actions {
     display: flex;
-    gap: 12px;
-    margin-top: 18px;
+    gap: 10px;
+    margin-top: 12px;
 }
 
 .public-blue-btn,
 .public-green-btn {
     flex: 1;
     border: none;
-    padding: 14px;
-    border-radius: 12px;
+    padding: 12px;
+    border-radius: 10px;
     font-weight: 800;
     cursor: pointer;
     transition: .25s ease;
@@ -403,19 +408,26 @@ body {
 /* MAP */
 .dashboard-map-wrapper {
     width: 100%;
-    margin: 48px 0;
+    margin: 20px 0;
 }
 
 .dashboard-map-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.6fr) minmax(300px, .8fr);
-    gap: 24px;
+    grid-template-columns: 1.8fr 1fr;
+    gap: 14px;
 }
 
 .dashboard-map-card {
-    height: 440px;
-    padding: 16px;
+    height: 320px;
+    padding: 10px;
     overflow: hidden;
+    border-radius: 14px;
+}
+
+#adminDashboardMap {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
 }
 
 #dashboardMap {
@@ -427,17 +439,17 @@ body {
 }
 
 .dashboard-map-info {
-    padding: 24px;
+    padding: 16px;
 }
 
 .dashboard-map-info h3 {
-    margin-top: 0;
-    font-size: 23px;
+    margin: 0 0 12px;
+    font-size: 18px;
     color: #0f172a;
 }
 
 .map-info-row {
-    padding: 14px 0;
+    padding: 10px 0;
     border-bottom: 1px solid #e5e7eb;
 }
 
@@ -452,12 +464,13 @@ body {
 }
 
 .map-note {
-    margin-top: 18px;
-    padding: 15px;
+    margin-top: 12px;
+    padding: 10px;
     background: #dbeafe;
     color: #1e40af;
-    border-radius: 14px;
+    border-radius: 10px;
     font-weight: 700;
+    font-size: 13px;
 }
 
 .leaflet-container {
@@ -465,15 +478,27 @@ body {
 }
 
 .map-popup-card {
-    width: 230px;
+    width: 200px;
+}
+
+.map-popup-card h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: #0f172a;
+}
+
+.map-popup-card p {
+    margin: 4px 0;
+    font-size: 12px;
+    color: #475569;
 }
 
 .map-popup-card img {
     width: 100%;
-    height: 125px;
+    height: 100px;
     object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 8px;
+    border-radius: 8px;
+    margin-bottom: 6px;
 }
 
 /* PROJECTS */
@@ -625,7 +650,7 @@ body {
 
 /* GLOBAL SEARCH */
 .search-bar-section {
-    margin-bottom: 28px;
+    margin-bottom: 18px;
     position: relative;
     display: flex;
     gap: 10px;
@@ -810,6 +835,14 @@ body {
         grid-template-columns: 1fr;
     }
 
+    .public-grid .public-panel[style*="grid-column"] {
+        grid-column: span 1;
+    }
+
+    .public-grid > div:nth-child(3) {
+        grid-column: span 1;
+    }
+
     .public-nav {
         flex-direction: column;
         height: auto;
@@ -848,7 +881,7 @@ body {
 
     .public-hero p {
         font-size: 16px;
-    } 
+    }
 
     .hero-actions,
     .budget-public-content,
@@ -862,7 +895,7 @@ body {
     }
 
     .dashboard-map-card {
-        height: 390px;
+        height: 300px;
     }
 
     .document-card {
@@ -872,6 +905,15 @@ body {
 
     .doc-icon {
         margin: auto;
+    }
+
+    .analytics-grid,
+    [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    [style*="display: grid"] [style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
     }
 }
 .chart-container {
@@ -883,6 +925,7 @@ body {
 .chart-container.small {
     height: 250px;
 }
+
 .chart-container {
     position: relative;
     width: 100%;

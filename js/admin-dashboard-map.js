@@ -421,9 +421,9 @@ async function loadAdminSearchData() {
 
     // Load users
     const { data: users } = await supabaseClient
-        .from("users")
+        .from("profiles")
         .select("*")
-        .order("id", { ascending: false });
+        .order("id", { ascending: false })
     adminSearchData.users = users || [];
 }
 

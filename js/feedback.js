@@ -110,5 +110,27 @@ async function submitFeedback() {
         }, 3000);
     }
 }
+async function submitFeedback() {
+    const subject = document.getElementById("subject").value;
+    const description = document.getElementById("description").value;
+    const category = document.getElementById("category").value;
 
+    const { data: { user } } = await supabaseClient.auth.getUser();
+
+    const { error } = await supabaseClient
+        .from("feedback")
+        .insert([{
+            user_id: user?.id || null,
+            subject: subject,
+            description: description,
+            category: category,
+            status: "Pending"
+        }]);
+
+    if (error) {
+        console.log("Feedback error:", error.message);
+    } else {
+        alert("Feedback submitted successfully!");
+    }
+}
 loadFeedback();

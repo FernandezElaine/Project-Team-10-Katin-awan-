@@ -152,9 +152,10 @@
     background: #2563eb;
     color: white;
     border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-weight: 800;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 12px;
     cursor: pointer;
 }
 
@@ -166,9 +167,10 @@
     background: #ef4444;
     color: white;
     border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-weight: 800;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 12px;
     cursor: pointer;
 }
 
@@ -538,9 +540,14 @@
 .public-panel {
     background: white;
     border-radius: 18px;
-    padding: 24px;
-    margin-bottom: 24px;
+    padding: 20px;
+    margin-bottom: 20px;
     box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+}
+
+/* Analytics panel - tighter spacing */
+.public-panel:has(.analytics-cards) {
+    padding: 16px;
 }
 
 .section-title h2 {
@@ -1020,5 +1027,259 @@
 
     .project-modal-actions {
         flex-direction: column;
+    }
+}
+/* ===== ENHANCED ANALYTICS DASHBOARD (COMPACT) ===== */
+.analytics-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.analytics-cards .card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    padding: 12px 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+    text-align: center;
+    border: 1px solid #e5eaf2;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.analytics-cards .card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 10px 10px 0 0;
+}
+
+.analytics-cards .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.1);
+}
+
+.analytics-cards .card:nth-child(1)::before { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+.analytics-cards .card:nth-child(2)::before { background: linear-gradient(90deg, #22c55e, #16a34a); }
+.analytics-cards .card:nth-child(3)::before { background: linear-gradient(90deg, #f59e0b, #d97706); }
+.analytics-cards .card:nth-child(4)::before { background: linear-gradient(90deg, #8b5cf6, #7c3aed); }
+
+.analytics-cards .card h4 {
+    margin: 0 0 4px;
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.analytics-cards .card h2 {
+    margin: 0;
+    font-size: 24px;
+    color: #0f172a;
+    font-weight: 900;
+}
+
+.analytics-cards .card .card-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    margin: 0 auto 6px;
+}
+
+.analytics-cards .card:nth-child(1) .card-icon { background: #dbeafe; }
+.analytics-cards .card:nth-child(2) .card-icon { background: #dcfce7; }
+.analytics-cards .card:nth-child(3) .card-icon { background: #fef3c7; }
+.analytics-cards .card:nth-child(4) .card-icon { background: #ede9fe; }
+
+.top-contractor {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid #a7f3d0;
+    border-left: 4px solid #22c55e;
+    padding: 10px 14px;
+    margin: 8px 0;
+    border-radius: 8px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.top-contractor span {
+    color: #047857;
+    font-size: 15px;
+}
+
+.analytics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.analytics-card {
+    background: white;
+    padding: 12px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    border: 1px solid #e5eaf2;
+}
+
+.analytics-card h3 {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: #1e3a8a;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.analytics-card h3::before {
+    content: "";
+    width: 3px;
+    height: 16px;
+    background: #2563eb;
+    border-radius: 2px;
+}
+
+.analytics-card canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 160px;
+}
+
+.analytics-card > div {
+    height: 160px;
+}
+
+.analytics-card > div canvas {
+    max-height: 160px;
+}
+
+.insight-box {
+    margin-top: 10px;
+    padding: 12px;
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid #2563eb;
+    border-radius: 8px;
+}
+
+.insight-box h4 {
+    margin: 0 0 6px;
+    color: #1e40af;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.insight-box p {
+    margin: 0;
+    color: #334155;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Contractor Table Styling */
+#adminContractorAnalytics {
+    margin-top: 10px;
+}
+
+.contractor-table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #e5eaf2;
+}
+
+.contractor-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.contractor-table th {
+    background: linear-gradient(135deg, #1e3a8a, #1e40af);
+    color: white;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.contractor-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e5eaf2;
+    color: #334155;
+}
+
+.contractor-table tr:last-child td {
+    border-bottom: none;
+}
+
+.contractor-table tr:hover td {
+    background: #f8fafc;
+}
+
+.contractor-table .perf-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.perf-badge.excellent {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.perf-badge.good {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.perf-badge.average {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.perf-badge.poor {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Responsive Analytics */
+@media (max-width: 900px) {
+    .analytics-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .analytics-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .analytics-cards .card h2 {
+        font-size: 22px;
+    }
+
+    .analytics-card canvas {
+        height: 160px !important;
     }
 }
