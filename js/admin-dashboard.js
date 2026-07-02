@@ -5,6 +5,9 @@ async function loadAdminDashboardStats() {
     await loadTotalProjects();
     await loadPendingFeedback();
     await loadOcrReviews();
+
+    // 🔥 ADD THIS LINE
+    await loadContractorAnalytics();
 }
 
 async function loadTotalUsers() {
@@ -50,4 +53,61 @@ function loadOcrReviews() {
     el.textContent = "2"; // Placeholder
 }
 
+async function loadContractorAnalytics() {
+    const el = document.getElementById("adminContractorAnalytics");
+    if (!el) return;
+
+    const { data: projects, error } = await supabaseClient
+        .from("projects")
+        .select("contractor, status");
+
+    if (error || !projects) {
+        el.innerHTML = "No data";
+        return;
+    }
+
+    const map = {};
+
+    projects.forEach(p => {
+        const contractor = p.contractor || "Unassigned";
+
+        if (!map[contractor]) {
+            map[contractor] = {
+                name: contractor,
+                total: 0,
+                completed: 0
+            };
+        }
+
+        map[contractor].total++;
+
+        if (p.status === "Completed") {
+            map[contractor].completed++;
+        }
+    });
+
+    const result = Object.values(map);
+
+    el.innerHTML = `
+        <table border="1" width="100%">
+            <tr>
+                <th>Contractor</th>
+                <th>Total Projects</th>
+                <th>Completed</th>
+                <th>Completion Rate</th>
+            </tr>
+
+            ${result.map(c => `
+                <tr>
+                    <td>${c.name}</td>
+                    <td>${c.total}</td>
+                    <td>${c.completed}</td>
+                    <td>${((c.completed / c.total) * 100).toFixed(1)}%</td>
+                </tr>
+            `).join("")}
+        </table>
+    `;
+}
+
 loadAdminDashboardStats();
+
