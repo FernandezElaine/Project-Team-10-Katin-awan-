@@ -942,3 +942,126 @@ body {
     width: 100% !important;
     height: 100% !important;
 }
+
+/* ==========================
+   RESIDENT ANALYTICS DASHBOARD
+========================== */
+
+.resident-analytics {
+    width: 100%;
+}
+
+.resident-analytics .analytics-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-top: 15px;
+}
+
+
+.resident-analytics .card {
+    background: white;
+    padding: 18px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    transition: 0.3s ease;
+}
+
+
+.resident-analytics .card:hover {
+    transform: translateY(-3px);
+}
+
+
+.resident-analytics .card-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+
+.resident-analytics .card h4 {
+    margin: 8px 0;
+    color: #555;
+}
+
+
+.resident-analytics .card h2 {
+    font-size: 32px;
+    margin: 0;
+}
+
+
+.resident-analytics .analytics-layout {
+
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+    margin-top:20px;
+
+}
+
+
+.resident-analytics .analytics-card {
+
+    background:white;
+    padding:18px;
+    border-radius:14px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.06);
+
+}
+
+
+.resident-analytics canvas {
+
+    width:100% !important;
+    height:230px !important;
+
+}
+
+
+.resident-analytics .top-contractor {
+
+    margin-top:18px;
+    background:#eff6ff;
+    border-left:5px solid #2563eb;
+    padding:15px;
+    border-radius:10px;
+    font-weight:600;
+
+}
+
+
+.resident-analytics .insight-box {
+
+    margin-top:18px;
+    background:#f8fafc;
+    border-radius:12px;
+    padding:18px;
+    border-left:5px solid #22c55e;
+
+}
+
+
+@media(max-width:900px){
+
+    .resident-analytics .analytics-cards{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+
+    .resident-analytics .analytics-layout{
+        grid-template-columns:1fr;
+    }
+
+}
+
+
+@media(max-width:500px){
+
+    .resident-analytics .analytics-cards{
+        grid-template-columns:1fr;
+    }
+
+}
+

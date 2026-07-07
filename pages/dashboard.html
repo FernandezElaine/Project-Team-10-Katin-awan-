@@ -116,13 +116,116 @@
             </div>
         </div>
 
-        <div class="public-panel">
-            <h3>Project Status Overview</h3>
-            <div class="chart-container small">
-                <canvas id="projectStatusChart"></canvas>
-            </div>
-        </div>
+        
     </section>
+
+<section class="public-panel resident-analytics" style="grid-column: span 2;">
+
+    <h3>📊 Transparency Analytics Dashboard</h3>
+
+    <!-- KPI CARDS -->
+    <div class="analytics-cards">
+
+        <div class="card">
+            <div class="card-icon">🏗️</div>
+            <h4>Total Projects</h4>
+            <h2 id="residentTotalProjects">0</h2>
+        </div>
+
+
+        <div class="card">
+            <div class="card-icon">✅</div>
+            <h4>Completed Projects</h4>
+            <h2 id="residentCompletedProjects">0</h2>
+        </div>
+
+
+        <div class="card">
+            <div class="card-icon">🔄</div>
+            <h4>Ongoing Projects</h4>
+            <h2 id="residentOngoingProjects">0</h2>
+        </div>
+
+
+        <div class="card">
+            <div class="card-icon">📈</div>
+            <h4>Completion Rate</h4>
+            <h2 id="residentCompletionRate">0%</h2>
+        </div>
+
+    </div>
+
+
+    <!-- IMPLEMENTERS -->
+    <div class="top-contractor">
+
+        🏗️ Project Implementers
+
+        <span id="residentContractors">
+            Loading...
+        </span>
+
+    </div>
+
+
+    <!-- CHARTS -->
+
+    <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:14px;
+        margin-top:15px;
+    ">
+
+
+        <div class="analytics-card">
+
+            <h3>
+                Project Status
+            </h3>
+
+            <div style="height:220px;">
+                <canvas id="residentStatusChart"></canvas>
+            </div>
+
+        </div>
+
+
+
+        <div class="analytics-card">
+
+            <h3>
+                Projects by Category
+            </h3>
+
+            <div style="height:220px;">
+                <canvas id="residentCategoryChart"></canvas>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+
+    <div class="insight-box">
+
+        <h4>
+            💡 Transparency Insights
+        </h4>
+
+        <p id="residentInsight">
+            Loading analytics insights...
+        </p>
+
+    </div>
+
+
+</section>
+
+
 
     <section class="public-grid dashboard-extra">
         <div class="public-panel alert-panel">

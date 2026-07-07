@@ -22,11 +22,14 @@ async function loadDashboardData() {
     renderDashboardProjectOverview(dashboardProjects);
     renderDashboardBudgetCategories();
     renderDashboardRecentActivity();
-    renderBudgetChart();
-renderProjectStatusChart();
-renderBudgetAlert();
-}
+ renderBudgetChart();
 
+renderBudgetAlert();
+
+renderResidentAnalytics();
+loadResidentContractors();
+renderResidentCharts();
+}
 /* =========================
    LOAD DATA FROM SUPABASE
 ========================= */
@@ -537,4 +540,315 @@ function renderBudgetAlert() {
         <h2>${value}</h2>
         <small>Based on total expenses vs project budget</small>
     `;
+}
+
+/* =========================
+   RESIDENT ANALYTICS V2
+========================= */
+
+
+function renderResidentAnalytics(){
+
+    const total = dashboardProjects.length;
+
+
+    const completed = dashboardProjects.filter(
+        p => (p.status || "").toLowerCase() === "completed"
+    ).length;
+
+
+    const ongoing = dashboardProjects.filter(
+        p => (p.status || "").toLowerCase() === "ongoing"
+    ).length;
+
+
+    const rate = total > 0
+        ? ((completed / total) * 100).toFixed(1)
+        : 0;
+
+
+
+    const totalEl = document.getElementById("residentTotalProjects");
+    const completedEl = document.getElementById("residentCompletedProjects");
+    const ongoingEl = document.getElementById("residentOngoingProjects");
+    const rateEl = document.getElementById("residentCompletionRate");
+
+
+    if(totalEl)
+        totalEl.textContent = total;
+
+
+    if(completedEl)
+        completedEl.textContent = completed;
+
+
+    if(ongoingEl)
+        ongoingEl.textContent = ongoing;
+
+
+    if(rateEl)
+        rateEl.textContent = rate + "%";
+
+
+
+    const insight = document.getElementById("residentInsight");
+
+
+    if(insight){
+
+        insight.textContent =
+        `Barangay currently has ${total} projects.
+        ${ongoing} projects are ongoing and 
+        ${completed} projects are completed.
+        Overall completion rate is ${rate}%.`;
+
+    }
+
+}
+
+
+
+
+
+function loadResidentContractors(){
+
+    const box =
+    document.getElementById("residentContractors");
+
+
+    if(!box) return;
+
+
+
+    const contractors = [
+        ...new Set(
+            dashboardProjects
+            .map(project => project.contractor)
+            .filter(contractor =>
+                contractor &&
+                contractor.trim() !== "" &&
+                contractor !== "Not specified"
+            )
+        )
+    ];
+
+
+
+    if(contractors.length === 0){
+
+        box.textContent =
+        "No implementer records available";
+
+        return;
+
+    }
+
+
+
+    box.textContent =
+    contractors.join(", ");
+
+}
+
+
+
+
+
+
+
+function renderResidentCharts(){
+
+
+    // ======================
+    // PROJECT STATUS CHART
+    // ======================
+
+
+    const statusCanvas =
+    document.getElementById("residentStatusChart");
+
+
+
+    if(statusCanvas){
+
+
+        if(window.residentStatusChartInstance){
+
+            window.residentStatusChartInstance.destroy();
+
+        }
+
+
+
+        window.residentStatusChartInstance =
+        new Chart(statusCanvas,{
+
+
+            type:"doughnut",
+
+
+            data:{
+
+
+                labels:[
+                    "Planned",
+                    "Ongoing",
+                    "Completed"
+                ],
+
+
+                datasets:[{
+
+                    data:[
+
+
+                        dashboardProjects.filter(
+                            p =>
+                            (p.status || "").toLowerCase()
+                            === "planned"
+                        ).length,
+
+
+
+                        dashboardProjects.filter(
+                            p =>
+                            (p.status || "").toLowerCase()
+                            === "ongoing"
+                        ).length,
+
+
+
+                        dashboardProjects.filter(
+                            p =>
+                            (p.status || "").toLowerCase()
+                            === "completed"
+                        ).length
+
+
+                    ]
+
+                }]
+
+            },
+
+
+
+            options:{
+
+
+                responsive:true,
+
+                maintainAspectRatio:false
+
+
+            }
+
+
+        });
+
+
+    }
+
+
+
+
+
+
+
+    // ======================
+    // PROJECT CATEGORY CHART
+    // ======================
+
+
+
+    const categoryCanvas =
+    document.getElementById("residentCategoryChart");
+
+
+
+    if(categoryCanvas){
+
+
+
+        const categories = {};
+
+
+
+        dashboardProjects.forEach(project=>{
+
+
+            const category =
+            project.category || "General";
+
+
+
+            categories[category] =
+            (categories[category] || 0) + 1;
+
+
+        });
+
+
+
+
+        if(window.residentCategoryChartInstance){
+
+            window.residentCategoryChartInstance.destroy();
+
+        }
+
+
+
+
+
+        window.residentCategoryChartInstance =
+        new Chart(categoryCanvas,{
+
+
+            type:"bar",
+
+
+
+            data:{
+
+
+                labels:Object.keys(categories),
+
+
+
+                datasets:[{
+
+                    label:"Projects",
+
+                    data:Object.values(categories)
+
+
+                }]
+
+
+            },
+
+
+
+            options:{
+
+
+                responsive:true,
+
+                maintainAspectRatio:false
+
+
+
+            }
+
+
+
+        });
+
+
+
+    }
+
+
+
 }
