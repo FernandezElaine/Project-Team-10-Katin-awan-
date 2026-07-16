@@ -1298,139 +1298,8 @@ grid-template-columns:1fr;
     }
 
 }
-/* DASHBOARD MOBILE */
 
-@media(max-width:768px){
 
-
-    /* STAT CARDS */
-
-    .public-stats{
-
-        grid-template-columns:1fr !important;
-
-        gap:15px;
-
-    }
-
-
-
-    /* GENERAL GRID */
-
-    .public-grid{
-
-        grid-template-columns:1fr !important;
-
-    }
-
-
-
-    /* ANALYTICS */
-
-    .analytics-cards{
-
-        grid-template-columns:1fr !important;
-
-    }
-
-
-    .analytics-grid{
-
-        grid-template-columns:1fr !important;
-
-    }
-
-
-
-    .resident-analytics{
-
-        grid-column:auto !important;
-
-    }
-
-
-
-    /* CHARTS */
-
-    .analytics-card canvas{
-
-        max-height:250px;
-
-    }
-
-
-
-    /* MAP */
-
-    .dashboard-map-layout{
-
-        grid-template-columns:1fr !important;
-
-    }
-
-
-    #dashboardMap{
-
-        height:300px;
-
-    }
-
-
-
-    /* PROJECT CARDS */
-
-    .public-projects{
-
-        grid-template-columns:1fr !important;
-
-    }
-
-
-
-    /* BUTTONS */
-
-    .hero-actions{
-
-        flex-direction:column;
-
-    }
-
-
-    .hero-btn{
-
-        width:100%;
-
-        text-align:center;
-
-    }
-
-
-
-}
-@media(min-width:769px) and (max-width:1100px){
-
-
-.public-stats{
-
-    grid-template-columns:repeat(2,1fr);
-
-}
-
-
-.public-grid{
-
-    grid-template-columns:1fr;
-
-}
-
-
-.analytics-cards{
-
-    grid-template-columns:repeat(2,1fr);
-
-}
-
-}
 .analytics-chart-grid{
 
     display:grid;
@@ -1451,5 +1320,85 @@ grid-template-columns:1fr;
         grid-template-columns:1fr;
 
     }
+
+}
+/* =====================================
+ DASHBOARD RESPONSIVE
+===================================== */
+
+
+@media(max-width:768px){
+
+
+/* STAT CARDS */
+
+.public-stats{
+
+    grid-template-columns:1fr !important;
+
+}
+
+
+
+/* MAIN GRID */
+
+.public-grid{
+
+    grid-template-columns:1fr !important;
+
+}
+
+
+
+/* ANALYTICS */
+
+.analytics-cards{
+
+    grid-template-columns:1fr !important;
+
+}
+
+
+.analytics-chart-grid{
+
+    grid-template-columns:1fr !important;
+
+}
+
+
+/* PANELS */
+
+.public-panel{
+
+    width:100%;
+
+}
+
+
+/* MAP */
+
+.dashboard-map-layout{
+
+    grid-template-columns:1fr !important;
+
+}
+
+
+#dashboardMap,
+#adminDashboardMap{
+
+    height:300px;
+
+}
+
+
+/* PROJECTS */
+
+.public-projects{
+
+    grid-template-columns:1fr !important;
+
+}
+
 
 }

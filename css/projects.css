@@ -952,3 +952,21 @@
         grid-template-columns: 1fr;
     }
 }
+@media(max-width:768px){
+
+
+.projects-grid{
+
+    grid-template-columns:1fr !important;
+
+}
+
+
+.project-card{
+
+    width:100%;
+
+}
+
+
+}

@@ -266,3 +266,21 @@
         align-items: flex-start;
     }
 }
+@media(max-width:768px){
+
+
+.feedback-container{
+
+    width:100%;
+
+}
+
+
+.feedback-form{
+
+    grid-template-columns:1fr !important;
+
+}
+
+
+}

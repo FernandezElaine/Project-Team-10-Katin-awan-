@@ -1283,3 +1283,28 @@
         height: 160px !important;
     }
 }
+@media(max-width:768px){
+
+
+.dashboard-actions{
+
+    flex-direction:column;
+
+}
+
+
+.dashboard-actions button{
+
+    width:100%;
+
+}
+
+
+.admin-table-container{
+
+    overflow-x:auto;
+
+}
+
+
+}

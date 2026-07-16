@@ -221,3 +221,36 @@
         width: 100%;
     }
 }
+@media(max-width:768px){
+
+
+.chatbot-grid{
+
+    grid-template-columns:1fr !important;
+
+}
+
+
+.chatbot-suggestions{
+
+    order:2;
+
+}
+
+
+.chatbot-area{
+
+    width:100%;
+
+}
+
+
+
+.chat-message{
+
+    max-width:90%;
+
+}
+
+
+}
