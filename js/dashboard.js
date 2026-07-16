@@ -209,7 +209,9 @@ function renderDashboardProjectOverview(projects) {
 
                 <div class="project-footer">
                     <span>${project.category || "General"}</span>
-                    <button onclick="window.location.href='projects.html'">View Details</button>
+                <button onclick='openProjectModal(${JSON.stringify(project)})'>
+View Details
+</button>
                 </div>
             </div>
         `;
@@ -850,5 +852,74 @@ function renderResidentCharts(){
     }
 
 
+
+}
+function openProjectModal(project){
+
+    document.getElementById("projectModal")
+    .style.display="flex";
+
+
+    document.getElementById("modalStatus")
+    .textContent = project.status || "Planned";
+
+
+    document.getElementById("modalTitle")
+    .textContent = project.title || "Untitled Project";
+
+
+    document.getElementById("modalCategory")
+    .textContent = project.category || "General";
+
+
+    document.getElementById("modalDescription")
+    .textContent =
+    project.description || "No description available";
+
+
+    document.getElementById("modalBudget")
+    .textContent =
+    formatPeso(project.budget);
+
+
+
+    document.getElementById("modalLocation")
+    .textContent =
+    project.location || "Not specified";
+
+
+    document.getElementById("modalContractor")
+    .textContent =
+    project.contractor || "Not specified";
+
+
+    document.getElementById("modalBidder")
+    .textContent =
+    project.bidder || "Not specified";
+
+
+    document.getElementById("modalTimeline")
+    .textContent =
+    project.timeline || "Not specified";
+
+
+    document.getElementById("modalProgress")
+    .textContent =
+    (project.progress || 0)+"%";
+
+
+
+    document.getElementById("modalProgressBar")
+    .style.width =
+    (project.progress || 0)+"%";
+
+}
+
+
+
+function closeProjectModal(){
+
+    document.getElementById("projectModal")
+    .style.display="none";
 
 }

@@ -1065,3 +1065,160 @@ body {
 
 }
 
+.see-more-container{
+    text-align:center;
+    margin-top:25px;
+}
+
+
+.see-more-project-btn{
+
+    display:inline-block;
+
+    background:#2563eb;
+    color:white;
+
+    padding:12px 30px;
+
+    border-radius:10px;
+
+    text-decoration:none;
+
+    font-weight:600;
+
+}
+
+
+
+.project-modal{
+
+display:none;
+
+position:fixed;
+
+inset:0;
+
+background:rgba(15,23,42,.65);
+
+justify-content:center;
+
+align-items:center;
+
+z-index:9999;
+
+}
+
+
+
+.project-modal-box{
+
+background:white;
+
+width:550px;
+
+max-width:90%;
+
+border-radius:18px;
+
+padding:28px;
+
+position:relative;
+
+}
+
+
+
+.modal-close{
+
+position:absolute;
+
+right:20px;
+
+top:20px;
+
+background:#ef4444;
+
+color:white;
+
+border:none;
+
+border-radius:8px;
+
+padding:8px 12px;
+
+cursor:pointer;
+
+}
+
+
+
+.modal-grid{
+
+display:grid;
+
+grid-template-columns:1fr 1fr;
+
+gap:15px;
+
+margin-top:20px;
+
+}
+
+
+
+.modal-grid div{
+
+background:#f8fafc;
+
+padding:15px;
+
+border-radius:10px;
+
+}
+
+
+
+.modal-grid small{
+
+color:#64748b;
+
+font-size:12px;
+
+}
+
+
+
+.modal-progress{
+
+height:8px;
+
+background:#e5e7eb;
+
+border-radius:10px;
+
+margin-top:20px;
+
+overflow:hidden;
+
+}
+
+
+.modal-progress div{
+
+height:100%;
+
+background:#2563eb;
+
+}
+
+
+
+@media(max-width:600px){
+
+.modal-grid{
+
+grid-template-columns:1fr;
+
+}
+
+}

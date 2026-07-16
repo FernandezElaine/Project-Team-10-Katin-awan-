@@ -290,8 +290,16 @@
         <p>Track the latest barangay development projects.</p>
     </section>
 
-    <section class="public-projects" id="dashboardProjectOverview"></section>
+  <section class="public-projects" id="dashboardProjectOverview"></section>
 
+
+<div class="see-more-container">
+
+<a href="projects.html" class="see-more-project-btn">
+    See More Projects →
+</a>
+
+</div>
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -317,5 +325,97 @@ async function goToProtectedPage(page) {
 <script src="../js/dashboard-map.js"></script>
 <script src="../js/dashboard.js"></script>
 
+<div id="projectModal" class="project-modal">
+
+    <div class="project-modal-box">
+
+        <button class="modal-close" onclick="closeProjectModal()">
+            X
+        </button>
+
+
+        <span id="modalStatus" class="status ongoing">
+            Ongoing
+        </span>
+
+
+        <h2 id="modalTitle">
+            Project Title
+        </h2>
+
+
+        <p id="modalCategory">
+            Category
+        </p>
+
+
+        <div class="modal-description">
+
+            <h4>Description</h4>
+
+            <p id="modalDescription">
+            </p>
+
+        </div>
+
+
+
+        <div class="modal-grid">
+
+
+            <div>
+                <small>Budget</small>
+                <p id="modalBudget"></p>
+            </div>
+
+
+            <div>
+                <small>Location</small>
+                <p id="modalLocation"></p>
+            </div>
+
+
+
+            <div>
+                <small>Contractor</small>
+                <p id="modalContractor"></p>
+            </div>
+
+
+
+            <div>
+                <small>Bidder</small>
+                <p id="modalBidder"></p>
+            </div>
+
+
+
+            <div>
+                <small>Timeline</small>
+                <p id="modalTimeline"></p>
+            </div>
+
+
+
+            <div>
+                <small>Progress</small>
+                <p id="modalProgress"></p>
+            </div>
+
+
+        </div>
+
+
+
+        <div class="modal-progress">
+
+            <div id="modalProgressBar"></div>
+
+        </div>
+
+
+    </div>
+
+</div>
 </body>
 </html>
