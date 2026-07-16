@@ -483,3 +483,71 @@ img {
     background: #dcfce7;
     color: #15803d;
 }
+/* ============================= */
+/* MOBILE RESPONSIVE */
+/* ============================= */
+
+@media (max-width: 768px){
+
+    body{
+        overflow-x:hidden;
+    }
+
+
+    .public-container{
+        width:100%;
+        padding:20px 15px;
+    }
+
+
+    /* NAVBAR */
+
+    .public-nav{
+        flex-direction:column;
+        padding:15px;
+    }
+
+
+    .public-nav nav{
+        width:100%;
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:center;
+        gap:10px;
+    }
+
+
+    .public-nav nav a{
+        font-size:13px;
+    }
+
+
+
+    /* HERO */
+
+    .public-hero{
+
+        flex-direction:column;
+
+        text-align:center;
+
+        padding:40px 20px;
+
+    }
+
+
+    .hero-seal{
+        margin-top:20px;
+    }
+
+
+
+    /* SEARCH */
+
+    .search-bar-section input{
+
+        width:100%;
+
+    }
+
+}
