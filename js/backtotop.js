@@ -1,29 +1,35 @@
-console.log("Back to top loaded");
-
-
 const backToTop = document.createElement("button");
-backToTop.innerHTML = "⬆";
+
+backToTop.innerHTML = "↑";
+
 backToTop.className = "back-to-top";
 
 document.body.appendChild(backToTop);
 
 
-window.addEventListener("scroll", () => {
+window.addEventListener("scroll", function(){
 
-    if(window.scrollY > 300){
-        backToTop.classList.add("show");
-    } else {
-        backToTop.classList.remove("show");
+    if(window.scrollY > 400){
+
+        backToTop.style.display="flex";
+
+    }else{
+
+        backToTop.style.display="none";
+
     }
 
 });
 
 
-backToTop.addEventListener("click",()=>{
+backToTop.onclick=function(){
 
     window.scrollTo({
+
         top:0,
+
         behavior:"smooth"
+
     });
 
-});
+};
