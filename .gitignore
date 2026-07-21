@@ -20,3 +20,6 @@ build/
 
 
 .cache/
+
+.env
+node_modules
