@@ -1045,3 +1045,67 @@
         min-height: 48px;
     }
 }
+
+/* Login-required notice */
+
+.feedback-login-error {
+    margin-bottom: 18px;
+    padding: 15px 16px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    background: #fff7ed;
+    border: 1px solid #fdba74;
+    border-left: 5px solid #ea580c;
+    border-radius: 10px;
+}
+
+.feedback-login-error[hidden] {
+    display: none;
+}
+
+.feedback-login-error strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #9a3412;
+}
+
+.feedback-login-error p {
+    margin: 0;
+    color: #7c2d12;
+    line-height: 1.5;
+}
+
+.feedback-login-error button {
+    flex-shrink: 0;
+    min-height: 42px;
+    padding: 9px 17px;
+
+    border: none;
+    border-radius: 9px;
+
+    background: #0b3d91;
+    color: white;
+
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.feedback-login-error button:hover {
+    background: #082f6d;
+}
+
+@media (max-width: 700px) {
+    .feedback-login-error {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .feedback-login-error button {
+        width: 100%;
+    }
+}

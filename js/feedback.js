@@ -4,7 +4,8 @@
 |--------------------------------------------------------------------------
 | RESIDENT FEEDBACK
 |--------------------------------------------------------------------------
-| Uses the global supabaseClient created in ../js/supabase.js
+| A resident must be logged in before submitting.
+| The login warning only appears after pressing Submit Feedback.
 */
 
 let publicFeedbackRecords = [];
@@ -14,6 +15,7 @@ document.addEventListener("DOMContentLoaded", () => {
     hideFeedbackSuccess();
     loadPublicFeedback();
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -49,10 +51,67 @@ async function submitFeedback() {
         return;
     }
 
-    const subject = subjectInput.value.trim();
-    const category = categoryInput.value.trim();
-    const description = messageInput.value.trim();
-    const isAnonymous = anonymousInput.checked;
+    /*
+     * Check login only after the resident presses Submit Feedback.
+     */
+    let user = null;
+
+    try {
+        const {
+            data: sessionData,
+            error: sessionError
+        } = await supabaseClient.auth.getSession();
+
+        if (sessionError) {
+            throw sessionError;
+        }
+
+        user = sessionData?.session?.user || null;
+
+        if (!user) {
+            alert(
+                "Please log in first before submitting feedback."
+            );
+
+            window.location.href =
+                "login.html?redirect=feedback.html";
+
+            return;
+        }
+
+    } catch (error) {
+        console.error(
+            "Unable to verify feedback login:",
+            error
+        );
+
+        alert(
+            "We could not verify your login. " +
+            "Please log in again before submitting feedback."
+        );
+
+        window.location.href =
+            "login.html?redirect=feedback.html";
+
+        return;
+    }
+
+
+    /*
+     * Read and validate the form after login is confirmed.
+     */
+
+    const subject =
+        subjectInput.value.trim();
+
+    const category =
+        categoryInput.value.trim();
+
+    const description =
+        messageInput.value.trim();
+
+    const isAnonymous =
+        anonymousInput.checked;
 
     if (!subject || !category || !description) {
         alert("Please complete all required fields.");
@@ -66,50 +125,39 @@ async function submitFeedback() {
     }
 
     if (description.length < 10) {
-        alert("Please provide a more detailed feedback message.");
+        alert(
+            "Please provide a more detailed feedback message."
+        );
+
         messageInput.focus();
         return;
     }
+
+
+    /*
+     * Prevent duplicate submissions.
+     */
 
     feedbackSubmitting = true;
 
     if (submitButton) {
         submitButton.disabled = true;
-        submitButton.textContent = "Submitting...";
+        submitButton.innerHTML =
+            "<span>⏳</span> Submitting...";
     }
 
+
     try {
-        const {
-            data: sessionData,
-            error: sessionError
-        } = await supabaseClient.auth.getSession();
-
-        if (sessionError) {
-            throw sessionError;
-        }
-
-        const session = sessionData?.session || null;
-
-        /*
-         * A resident may submit anonymously without logging in.
-         * A non-anonymous submission requires a logged-in account.
-         */
-        if (!isAnonymous && !session?.user) {
-            alert(
-                "Please log in before submitting non-anonymous feedback, " +
-                "or select “Submit anonymously.”"
-            );
-
-            window.location.href =
-                "login.html?redirect=feedback.html";
-
-            return;
-        }
-
         const feedbackRecord = {
+            /*
+             * Login is required for every submission.
+             *
+             * When anonymous is checked, the account ID is not
+             * stored in the feedback record.
+             */
             user_id: isAnonymous
                 ? null
-                : session.user.id,
+                : user.id,
 
             subject: subject,
             description: description,
@@ -131,44 +179,51 @@ async function submitFeedback() {
         clearFeedbackForm();
         showFeedbackSuccess();
 
-        /*
-         * It will not appear publicly yet because is_public is false.
-         * An administrator must approve it first.
-         */
         await loadPublicFeedback();
 
     } catch (error) {
-        console.error("Feedback submission failed:", error);
+        console.error(
+            "Feedback submission failed:",
+            error
+        );
 
-        const message =
-            String(error?.message || "").toLowerCase();
+        const errorMessage =
+            String(error?.message || "")
+                .toLowerCase();
 
-        if (message.includes("row-level security")) {
+        if (
+            errorMessage.includes("row-level security") ||
+            errorMessage.includes("permission")
+        ) {
             alert(
-                "Submission was blocked by the feedback table's " +
-                "Row Level Security policy."
+                "Your feedback was blocked by the database " +
+                "security policy. Please make sure you are logged in."
             );
-        } else if (message.includes("column")) {
+
+        } else if (errorMessage.includes("column")) {
             alert(
-                "The feedback database columns do not match the code. " +
-                "Check that description, is_anonymous, is_public, " +
-                "and admin_response exist."
+                "The feedback database columns do not match " +
+                "the feedback form."
             );
+
         } else {
             alert(
                 "Feedback submission failed: " +
                 (error?.message || "Unknown error.")
             );
         }
+
     } finally {
         feedbackSubmitting = false;
 
         if (submitButton) {
             submitButton.disabled = false;
-            submitButton.textContent = "Submit Feedback";
+            submitButton.innerHTML =
+                "<span>📨</span> Submit Feedback";
         }
     }
 }
+
 
 /*
 |--------------------------------------------------------------------------
@@ -235,6 +290,7 @@ async function loadPublicFeedback() {
     }
 }
 
+
 /*
 |--------------------------------------------------------------------------
 | PUBLIC FEEDBACK STATISTICS
@@ -280,6 +336,7 @@ function updatePublicFeedbackStats(records) {
     );
 }
 
+
 /*
 |--------------------------------------------------------------------------
 | RENDER PUBLIC FEEDBACK
@@ -310,6 +367,7 @@ function renderPublicFeedback(records) {
         container.appendChild(item);
     });
 }
+
 
 function createPublicFeedbackCard(record) {
     const item =
@@ -397,6 +455,7 @@ function createPublicFeedbackCard(record) {
     return item;
 }
 
+
 /*
 |--------------------------------------------------------------------------
 | HELPERS
@@ -425,6 +484,7 @@ function showPublicFeedbackMessage(message) {
     container.appendChild(item);
 }
 
+
 function clearFeedbackForm() {
     const subject =
         document.getElementById("feedbackSubject");
@@ -438,11 +498,23 @@ function clearFeedbackForm() {
     const anonymous =
         document.getElementById("feedbackAnonymous");
 
-    if (subject) subject.value = "";
-    if (category) category.value = "";
-    if (message) message.value = "";
-    if (anonymous) anonymous.checked = true;
+    if (subject) {
+        subject.value = "";
+    }
+
+    if (category) {
+        category.value = "";
+    }
+
+    if (message) {
+        message.value = "";
+    }
+
+    if (anonymous) {
+        anonymous.checked = true;
+    }
 }
+
 
 function getFeedbackStatusClass(status) {
     const normalized =
@@ -459,18 +531,21 @@ function getFeedbackStatusClass(status) {
     return "status-pending";
 }
 
+
 function normalizeFeedbackStatus(status) {
     return String(status || "")
         .trim()
         .toLowerCase();
 }
 
+
 function formatFeedbackDate(value) {
     if (!value) {
         return "Date unavailable";
     }
 
-    const date = new Date(value);
+    const date =
+        new Date(value);
 
     if (Number.isNaN(date.getTime())) {
         return "Date unavailable";
@@ -483,6 +558,7 @@ function formatFeedbackDate(value) {
     }).format(date);
 }
 
+
 function setFeedbackText(id, value) {
     const element =
         document.getElementById(id);
@@ -492,6 +568,7 @@ function setFeedbackText(id, value) {
             String(value);
     }
 }
+
 
 function showFeedbackSuccess() {
     const success =
@@ -506,6 +583,7 @@ function showFeedbackSuccess() {
     }, 5000);
 }
 
+
 function hideFeedbackSuccess() {
     const success =
         document.getElementById("feedbackSuccess");
@@ -515,7 +593,5 @@ function hideFeedbackSuccess() {
     }
 }
 
-/*
- * Make the function available to the HTML onclick attribute.
- */
+
 window.submitFeedback = submitFeedback;
