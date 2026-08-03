@@ -118,3 +118,33 @@
 .login-options a:hover {
     text-decoration: underline;
 }
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin: 12px 0 18px;
+    font-size: 14px;
+}
+
+.remember-option {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+}
+
+.remember-option input {
+    width: auto;
+    margin: 0;
+}
+
+.login-options a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-options a:hover {
+    text-decoration: underline;
+}

@@ -308,9 +308,8 @@ document.addEventListener("DOMContentLoaded", function () {
                  * The recovery email will redirect the user to:
                  * pages/reset-password.html
                  */
-               const resetPageUrl =
-    window.location.origin +
-    "/pages/reset-password.html";
+             const resetPageUrl =
+    "https://katin-awan.netlify.app/pages/reset-password.html";
 
 console.log("Password reset redirect URL:", resetPageUrl);
 
