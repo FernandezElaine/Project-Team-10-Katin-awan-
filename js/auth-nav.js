@@ -4,6 +4,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     const authArea =
         document.getElementById("authArea");
 
+    const accountAction =
+        document.getElementById("accountAction");
+
     const heroPortalAction =
         document.getElementById("heroPortalAction");
 
@@ -41,27 +44,67 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     function createLogoutButton() {
-        const logoutButton =
-            document.createElement("button");
+        const button = document.createElement("button");
 
-        logoutButton.type = "button";
-        logoutButton.className = "logout-btn";
-        logoutButton.textContent = "Logout";
+        button.type = "button";
+        button.className = "logout-btn";
+        button.textContent = "Logout";
 
-        logoutButton.addEventListener(
-            "click",
-            logoutUser
-        );
+        button.addEventListener("click", logoutUser);
 
-        return logoutButton;
+        return button;
     }
 
-    /*
-     * Guest users:
-     * No Login or Create Account links in the header.
-     * Those buttons remain in the hero section.
+    /**
+     * Configure the permanent account button used
+     * inside dashboard, projects, expenses, and other pages.
+     */
+    function configureInternalAccountButton(isLoggedIn) {
+        if (!accountAction) {
+            return;
+        }
+
+        /*
+         * Remove old click behavior by cloning the button.
+         */
+        const replacement =
+            accountAction.cloneNode(true);
+
+        accountAction.replaceWith(replacement);
+
+        replacement.disabled = false;
+
+        if (isLoggedIn) {
+            replacement.textContent = "Logout";
+            replacement.className = "logout-btn";
+
+            replacement.addEventListener(
+                "click",
+                logoutUser
+            );
+        } else {
+            replacement.textContent = "Login";
+            replacement.className = "login-link";
+
+            replacement.addEventListener(
+                "click",
+                function () {
+                    window.location.href =
+                        getPagePath("login.html");
+                }
+            );
+        }
+    }
+
+    /**
+     * Landing-page navigation for visitors.
      */
     function showGuestNavigation() {
+        if (isInsidePagesFolder) {
+            configureInternalAccountButton(false);
+            return;
+        }
+
         authArea.innerHTML = "";
 
         if (heroPortalAction) {
@@ -81,10 +124,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    /*
-     * Resident navigation.
+    /**
+     * Landing-page navigation for residents.
      */
     function showResidentNavigation() {
+        if (isInsidePagesFolder) {
+            configureInternalAccountButton(true);
+            return;
+        }
+
         authArea.innerHTML = "";
 
         authArea.appendChild(
@@ -116,10 +164,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    /*
-     * Administrator navigation.
+    /**
+     * Landing-page navigation for administrators.
      */
     function showAdminNavigation() {
+        if (isInsidePagesFolder) {
+            configureInternalAccountButton(true);
+            return;
+        }
+
         authArea.innerHTML = "";
 
         authArea.appendChild(
@@ -160,7 +213,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             if (sessionError) {
                 console.error(
-                    "Session error:",
+                    "Session retrieval error:",
                     sessionError
                 );
 
@@ -173,6 +226,19 @@ document.addEventListener("DOMContentLoaded", async function () {
                 return;
             }
 
+            /*
+             * Internal public pages only need to activate
+             * the permanent Logout button.
+             */
+            if (isInsidePagesFolder) {
+                configureInternalAccountButton(true);
+                return;
+            }
+
+            /*
+             * The landing page also checks the role so it
+             * can display the correct dashboard link.
+             */
             const {
                 data: profile,
                 error: profileError
@@ -182,20 +248,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 .eq("id", session.user.id)
                 .maybeSingle();
 
-            if (profileError) {
+            if (profileError || !profile) {
                 console.error(
                     "Profile retrieval error:",
                     profileError
-                );
-
-                await supabaseClient.auth.signOut();
-                showGuestNavigation();
-                return;
-            }
-
-            if (!profile) {
-                console.error(
-                    "Authenticated user has no profile record."
                 );
 
                 await supabaseClient.auth.signOut();

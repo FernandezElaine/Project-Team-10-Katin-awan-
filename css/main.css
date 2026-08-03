@@ -735,3 +735,80 @@ background:#2563eb;
 color:white;
 
 }
+
+/* Permanent account-control space */
+.public-nav .auth-area,
+.public-nav #authArea {
+    width: 82px;
+    min-width: 82px;
+    height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 82px;
+}
+
+/* Permanent Logout button */
+.public-nav #authArea .logout-btn {
+    width: 82px;
+    min-width: 82px;
+    height: 42px;
+    margin: 0;
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #ff4757;
+    color: #ffffff;
+
+    font: inherit;
+    font-weight: 700;
+
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/*
+ * While Supabase verifies the session, the button
+ * remains fully visible but cannot be clicked yet.
+ */
+.public-nav #authArea .logout-btn:disabled {
+    opacity: 1;
+    cursor: default;
+}
+
+.public-nav #authArea .logout-btn:hover:not(:disabled) {
+    background: #e83d4c;
+}
+
+/* Login replacement for logged-out visitors */
+.public-nav #authArea .login-link {
+    width: 82px;
+    min-width: 82px;
+    height: 42px;
+    margin: 0;
+    padding: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 12px;
+
+    background: transparent;
+    color: #ffffff;
+
+    font: inherit;
+    font-weight: 600;
+
+    cursor: pointer;
+    text-decoration: none;
+}

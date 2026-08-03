@@ -10,11 +10,8 @@ document.addEventListener("DOMContentLoaded", function () {
 const togglePasswordButton =
     document.getElementById("togglePassword");
 
-const showPasswordIcon =
-    document.getElementById("showPasswordIcon");
-
-const hidePasswordIcon =
-    document.getElementById("hidePasswordIcon");
+const eyeSlash =
+    document.getElementById("eyeSlash");
     /*
      * Stop the script when the login form is not present.
      * This prevents errors when login.js is accidentally loaded
@@ -122,8 +119,7 @@ const hidePasswordIcon =
 if (
     togglePasswordButton &&
     passwordInput &&
-    showPasswordIcon &&
-    hidePasswordIcon
+    eyeSlash
 ) {
     togglePasswordButton.addEventListener(
         "click",
@@ -136,11 +132,13 @@ if (
                     ? "text"
                     : "password";
 
-            showPasswordIcon.hidden =
-                willShowPassword;
-
-            hidePasswordIcon.hidden =
-                !willShowPassword;
+            /*
+             * Show the slash when the password is visible.
+             */
+            eyeSlash.classList.toggle(
+                "is-hidden",
+                !willShowPassword
+            );
 
             togglePasswordButton.setAttribute(
                 "aria-label",

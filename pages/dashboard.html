@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Katin-awan Dashboard</title>
-
+<link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
+>
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -315,12 +318,18 @@ async function goToProtectedPage(page) {
 
     if (!data.session) {
         alert("Please log in first before using this feature.");
-        window.location.href = "login.html?redirect=" + page;
+
+        window.location.href =
+            "login.html?redirect=" +
+            encodeURIComponent(page);
+
         return;
     }
 
     window.location.href = page;
 }
+</script>
+
 <div id="projectModal" class="project-modal">
 
     <div class="project-modal-box">
@@ -413,7 +422,7 @@ async function goToProtectedPage(page) {
     </div>
 
 </div>
-</script>
+
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
