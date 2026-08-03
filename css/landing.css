@@ -519,3 +519,119 @@ body {
 #adminLoginButton {
     display: none; /* hidden by default */
 }
+.auth-area {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.auth-area a,
+.auth-area button {
+    font: inherit;
+}
+
+.auth-area .login-link,
+.auth-area .register-link,
+.auth-area .admin-login-link,
+.auth-area .dashboard-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 14px;
+    border-radius: 10px;
+    text-decoration: none;
+}
+
+.auth-area .login-link,
+.auth-area .dashboard-link {
+    border: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+.auth-area .register-link {
+    background: white;
+    color: #1d4ed8;
+}
+
+.auth-area .admin-login-link {
+    color: white;
+    opacity: 0.9;
+}
+
+.auth-area .logout-btn {
+    padding: 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 10px;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+}
+
+.auth-area .logout-btn:hover,
+.auth-area a:hover {
+    opacity: 0.85;
+}
+.auth-area {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.auth-area a,
+.auth-area button {
+    font: inherit;
+}
+
+.auth-area .login-link,
+.auth-area .register-link,
+.auth-area .admin-login-link,
+.auth-area .dashboard-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 9px 14px;
+    border-radius: 9px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.auth-area .login-link,
+.auth-area .dashboard-link {
+    border: 1px solid rgba(255, 255, 255, 0.75);
+}
+
+.auth-area .register-link {
+    background: white;
+    color: #1d4ed8;
+}
+
+.auth-area .admin-login-link {
+    color: white;
+    opacity: 0.9;
+}
+
+.auth-area .logout-btn {
+    min-height: 40px;
+    padding: 9px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    border-radius: 9px;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+}
+
+.auth-area a:hover,
+.auth-area .logout-btn:hover {
+    opacity: 0.82;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 900px) {
+    .auth-area {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}

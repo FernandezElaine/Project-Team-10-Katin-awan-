@@ -1,31 +1,25 @@
 // js/auth-nav.js
 
 document.addEventListener("DOMContentLoaded", async function () {
-    const authArea = document.getElementById("authArea");
+    const authArea =
+        document.getElementById("authArea");
+
     const heroPortalAction =
         document.getElementById("heroPortalAction");
 
-    // Some pages do not contain authArea.
+    const heroLoginAction =
+        document.getElementById("heroLoginAction");
+
+    const heroRegisterAction =
+        document.getElementById("heroRegisterAction");
+
     if (!authArea) {
         return;
     }
 
-    /*
-     * Determine whether the current HTML page is inside
-     * the /pages/ folder.
-     */
     const isInsidePagesFolder =
         window.location.pathname.includes("/pages/");
 
-    /*
-     * Generate the correct path depending on the current page.
-     *
-     * From index.html:
-     * pages/login.html
-     *
-     * From pages/dashboard.html:
-     * login.html
-     */
     function getPagePath(fileName) {
         return isInsidePagesFolder
             ? fileName
@@ -36,9 +30,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         ? "../index.html"
         : "index.html";
 
-    /*
-     * Create a normal navigation link.
-     */
     function createLink(text, href, className) {
         const link = document.createElement("a");
 
@@ -49,9 +40,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         return link;
     }
 
-    /*
-     * Add the Logout button.
-     */
     function createLogoutButton() {
         const logoutButton =
             document.createElement("button");
@@ -69,26 +57,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     /*
-     * Navigation shown when no user is logged in.
+     * Guest users:
+     * No Login or Create Account links in the header.
+     * Those buttons remain in the hero section.
      */
     function showGuestNavigation() {
         authArea.innerHTML = "";
-
-        authArea.appendChild(
-            createLink(
-                "Login",
-                getPagePath("login.html"),
-                "login-link"
-            )
-        );
-
-        authArea.appendChild(
-            createLink(
-                "Create Account",
-                getPagePath("register.html"),
-                "register-link"
-            )
-        );
 
         if (heroPortalAction) {
             heroPortalAction.href =
@@ -97,10 +71,18 @@ document.addEventListener("DOMContentLoaded", async function () {
             heroPortalAction.textContent =
                 "View Portal";
         }
+
+        if (heroLoginAction) {
+            heroLoginAction.hidden = false;
+        }
+
+        if (heroRegisterAction) {
+            heroRegisterAction.hidden = false;
+        }
     }
 
     /*
-     * Navigation shown to resident users.
+     * Resident navigation.
      */
     function showResidentNavigation() {
         authArea.innerHTML = "";
@@ -124,10 +106,18 @@ document.addEventListener("DOMContentLoaded", async function () {
             heroPortalAction.textContent =
                 "Open My Portal";
         }
+
+        if (heroLoginAction) {
+            heroLoginAction.hidden = true;
+        }
+
+        if (heroRegisterAction) {
+            heroRegisterAction.hidden = true;
+        }
     }
 
     /*
-     * Navigation shown to administrators.
+     * Administrator navigation.
      */
     function showAdminNavigation() {
         authArea.innerHTML = "";
@@ -151,11 +141,16 @@ document.addEventListener("DOMContentLoaded", async function () {
             heroPortalAction.textContent =
                 "Open Admin Dashboard";
         }
+
+        if (heroLoginAction) {
+            heroLoginAction.hidden = true;
+        }
+
+        if (heroRegisterAction) {
+            heroRegisterAction.hidden = true;
+        }
     }
 
-    /*
-     * Retrieve the authenticated user's session and role.
-     */
     async function renderAuthNavigation() {
         try {
             const {
@@ -239,9 +234,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    /*
-     * Log the current user out.
-     */
     async function logoutUser() {
         const confirmed = window.confirm(
             "Are you sure you want to log out?"
@@ -282,13 +274,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    // Display the correct navigation when the page loads.
     await renderAuthNavigation();
 
-    /*
-     * Refresh the navigation when the authentication
-     * state changes.
-     */
     const {
         data: authListener
     } = supabaseClient.auth.onAuthStateChange(
@@ -307,9 +294,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     );
 
-    /*
-     * Remove the Supabase listener when leaving the page.
-     */
     window.addEventListener(
         "pagehide",
         function () {
