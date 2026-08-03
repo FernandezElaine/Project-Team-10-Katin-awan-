@@ -42,7 +42,12 @@ window.addEventListener("load", async function () {
     projects.forEach(project => {
         const lat = Number(project.latitude);
         const lng = Number(project.longitude);
-        if (!lat || !lng) return;
+        if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng)
+) {
+    return;
+}
 
         // Use first photo or placeholder if available
         const photo = Array.isArray(project.photos) && project.photos.length > 0

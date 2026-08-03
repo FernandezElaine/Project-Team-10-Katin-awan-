@@ -89,10 +89,12 @@ function addAdminMarker(project) {
                 <button onclick="editMapProject(${project.id})" class="map-edit-btn">
                     Edit
                 </button>
-
-                <button onclick="deleteMapProject(${project.id})" class="map-delete-btn">
-                    Delete
-                </button>
+<button
+    onclick="deleteMapProject(${project.id})"
+    class="map-delete-btn"
+>
+    Remove Marker
+</button>
             </div>
         </div>
     `);
@@ -157,7 +159,12 @@ function openProjectMapModal(project = {}) {
 
                 <label>Contractor</label>
                 <input type="text" id="mapProjectContractor" placeholder="Contractor name">
-
+<label>Winning Bidder / Supplier</label>
+<input
+    type="text"
+    id="mapProjectBidder"
+    placeholder="Winning bidder or supplier"
+>
                 <label>Timeline</label>
                 <input type="text" id="mapProjectTimeline" placeholder="July 2025 - Dec 2025">
 
@@ -193,6 +200,8 @@ function openProjectMapModal(project = {}) {
     document.getElementById("mapProjectBudget").value = project.budget || 0;
     document.getElementById("mapProjectLocation").value = project.location || "";
     document.getElementById("mapProjectContractor").value = project.contractor || "";
+    document.getElementById("mapProjectBidder").value =
+    project.bidder || "";
     document.getElementById("mapProjectTimeline").value = project.timeline || "";
     document.getElementById("mapProjectLatitude").value = project.latitude || "";
     document.getElementById("mapProjectLongitude").value = project.longitude || "";
@@ -240,6 +249,9 @@ async function saveMapProject() {
     const budget = Number(document.getElementById("mapProjectBudget").value);
     const location = document.getElementById("mapProjectLocation").value.trim();
     const contractor = document.getElementById("mapProjectContractor").value.trim();
+    const bidder =
+    document.getElementById("mapProjectBidder")
+        .value.trim();
     const timeline = document.getElementById("mapProjectTimeline").value.trim();
     const latitude = Number(document.getElementById("mapProjectLatitude").value);
     const longitude = Number(document.getElementById("mapProjectLongitude").value);
@@ -267,8 +279,8 @@ async function saveMapProject() {
         progress,
         budget,
         location,
-        contractor,
-        bidder: contractor,
+      contractor,
+bidder,
         timeline,
         latitude,
         longitude,
@@ -339,21 +351,37 @@ async function uploadProjectPhotos(files) {
 }
 
 async function deleteMapProject(projectId) {
-    const confirmDelete = confirm("Are you sure you want to delete this project marker?");
+    const confirmRemove = confirm(
+        "Remove this project marker from the map? " +
+        "The project record and its photos will remain."
+    );
 
-    if (!confirmDelete) return;
-
-    const { error } = await supabaseClient
-        .from("projects")
-        .delete()
-        .eq("id", projectId);
-
-    if (error) {
-        alert("Delete failed: " + error.message);
+    if (!confirmRemove) {
         return;
     }
 
-    alert("Project marker deleted successfully.");
+    const { error } = await supabaseClient
+        .from("projects")
+        .update({
+            latitude: null,
+            longitude: null
+        })
+        .eq("id", projectId);
+
+    if (error) {
+        alert(
+            "Removing the marker failed: " +
+            error.message
+        );
+
+        return;
+    }
+
+    alert(
+        "Project marker removed successfully. " +
+        "The project record was not deleted."
+    );
+
     loadAdminMap();
 }
 

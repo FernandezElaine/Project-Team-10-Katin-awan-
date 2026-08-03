@@ -42,7 +42,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         const lat = Number(project.latitude);
         const lng = Number(project.longitude);
 
-        if (!lat || !lng) return;
+      if (
+    !Number.isFinite(lat) ||
+    !Number.isFinite(lng)
+) {
+    return;
+}
 
         L.marker([lat, lng])
             .addTo(mapInstance)
