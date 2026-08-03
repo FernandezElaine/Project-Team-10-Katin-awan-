@@ -21,5 +21,6 @@ build/
 
 .cache/
 
+node_modules/
 .env
-node_modules
+backend/.env
