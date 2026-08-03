@@ -7,7 +7,14 @@ document.addEventListener("DOMContentLoaded", function () {
         "forgotPasswordLink"
     );
     const loginButton = document.getElementById("loginButton");
+const togglePasswordButton =
+    document.getElementById("togglePassword");
 
+const showPasswordIcon =
+    document.getElementById("showPasswordIcon");
+
+const hidePasswordIcon =
+    document.getElementById("hidePasswordIcon");
     /*
      * Stop the script when the login form is not present.
      * This prevents errors when login.js is accidentally loaded
@@ -112,7 +119,52 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return defaultPages[role];
     }
+if (
+    togglePasswordButton &&
+    passwordInput &&
+    showPasswordIcon &&
+    hidePasswordIcon
+) {
+    togglePasswordButton.addEventListener(
+        "click",
+        function () {
+            const willShowPassword =
+                passwordInput.type === "password";
 
+            passwordInput.type =
+                willShowPassword
+                    ? "text"
+                    : "password";
+
+            showPasswordIcon.hidden =
+                willShowPassword;
+
+            hidePasswordIcon.hidden =
+                !willShowPassword;
+
+            togglePasswordButton.setAttribute(
+                "aria-label",
+                willShowPassword
+                    ? "Hide password"
+                    : "Show password"
+            );
+
+            togglePasswordButton.setAttribute(
+                "aria-pressed",
+                String(willShowPassword)
+            );
+
+            togglePasswordButton.title =
+                willShowPassword
+                    ? "Hide password"
+                    : "Show password";
+
+            passwordInput.focus({
+                preventScroll: true
+            });
+        }
+    );
+}
     /*
      * Main login process.
      */
