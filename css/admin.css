@@ -1309,3 +1309,14 @@
 
 }
 
+/*
+ * Prevent administrator content from flashing before
+ * authentication and role verification finish.
+ */
+html.admin-auth-pending body {
+    visibility: hidden;
+}
+
+html.admin-auth-verified body {
+    visibility: visible;
+}
