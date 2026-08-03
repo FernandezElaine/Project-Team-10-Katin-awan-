@@ -302,116 +302,97 @@
 
 <script>
 async function goToProtectedPage(page) {
-    const { data } = await supabaseClient.auth.getSession();
+    const { data, error } = await supabaseClient.auth.getSession();
+
+    if (error) {
+        console.error("Session check error:", error);
+        alert("Unable to verify your account session.");
+        return;
+    }
 
     if (!data.session) {
         alert("Please log in first before using this feature.");
-        window.location.href = "login.html?redirect=" + page;
+        window.location.href =
+            "login.html?redirect=" + encodeURIComponent(page);
         return;
     }
 
     window.location.href = page;
 }
-<div id="projectModal" class="project-modal">
+</script>
 
+<div id="projectModal" class="project-modal">
     <div class="project-modal-box">
 
-        <button class="modal-close" onclick="closeProjectModal()">
-            X
+        <button
+            type="button"
+            class="modal-close"
+            onclick="closeProjectModal()"
+            aria-label="Close project details"
+        >
+            ×
         </button>
-
 
         <span id="modalStatus" class="status ongoing">
             Ongoing
         </span>
 
-
         <h2 id="modalTitle">
             Project Title
         </h2>
-
 
         <p id="modalCategory">
             Category
         </p>
 
-
         <div class="modal-description">
-
             <h4>Description</h4>
-
-            <p id="modalDescription">
-            </p>
-
+            <p id="modalDescription"></p>
         </div>
 
-
-
         <div class="modal-grid">
-
-
             <div>
                 <small>Budget</small>
                 <p id="modalBudget"></p>
             </div>
-
 
             <div>
                 <small>Location</small>
                 <p id="modalLocation"></p>
             </div>
 
-
-
             <div>
                 <small>Contractor</small>
                 <p id="modalContractor"></p>
             </div>
-
-
 
             <div>
                 <small>Bidder</small>
                 <p id="modalBidder"></p>
             </div>
 
-
-
             <div>
                 <small>Timeline</small>
                 <p id="modalTimeline"></p>
             </div>
 
-
-
             <div>
                 <small>Progress</small>
                 <p id="modalProgress"></p>
             </div>
-
-
         </div>
-
-
 
         <div class="modal-progress">
-
             <div id="modalProgressBar"></div>
-
         </div>
-
-
     </div>
-
 </div>
-</script>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="../js/dashboard-map.js"></script>
 <script src="../js/dashboard.js"></script>
 <script src="../js/backtotop.js"></script>
-
 
 </body>
 </html>
