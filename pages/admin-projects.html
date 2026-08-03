@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Projects | Katin-awan Admin</title>
-
+<link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
+>
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/feedback.css">
@@ -90,24 +93,87 @@
                 <option value="Completed">Completed</option>
                 <option value="Pending">Pending</option>
             </select>
+            <label for="projectProgress">
+    Completion Percentage
+</label>
 
-            <label>Completion Percentage</label>
-            <input type="number" id="projectProgress" class="admin-input" placeholder="Example: 65" min="0" max="100">
+<input
+    type="number"
+    id="projectProgress"
+    class="admin-input"
+    placeholder="Enter progress from 0 to 100"
+    min="0"
+    max="100"
+    step="1"
+    value="0"
+>
 
-            <label>Contractor / Bidder</label>
-            <input type="text" id="projectContractor" class="admin-input" placeholder="Example: ABC Construction">
+<label for="projectContractor">
+    Contractor / Project Implementer
+</label>
+<input
+    type="text"
+    id="projectContractor"
+    class="admin-input"
+    placeholder="Example: ABC Construction"
+>
 
+<label for="projectBidder">
+    Winning Bidder / Supplier
+</label>
+<input
+    type="text"
+    id="projectBidder"
+    class="admin-input"
+    placeholder="Example: XYZ Builders"
+>
+           
             <label>Location</label>
             <input type="text" id="projectLocation" class="admin-input" placeholder="Example: Sitio Proper, Barangay Katin-awan">
 
-            <label>Latitude</label>
-            <input type="number" step="any" id="projectLatitude" class="admin-input" placeholder="Example: 11.0517">
+         <input type="hidden" id="projectLatitude">
+<input type="hidden" id="projectLongitude">
 
-            <label>Longitude</label>
-            <input type="number" step="any" id="projectLongitude" class="admin-input" placeholder="Example: 124.0055">
+           <label for="projectPhoto">
+    Project Photo
+</label>
 
-            <label>Project Photo URL</label>
-            <input type="text" id="projectPhotoUrl" class="admin-input" placeholder="Paste image URL">
+<input
+    type="file"
+    id="projectPhoto"
+    class="admin-input"
+    accept="image/jpeg,image/png,image/webp"
+>
+
+<small class="photo-help-text">
+    Accepted files: JPG, PNG, or WebP. Maximum size: 5 MB.
+</small>
+
+<input
+    type="hidden"
+    id="projectExistingPhotoUrl"
+>
+
+<div
+    id="projectPhotoPreviewContainer"
+    class="project-photo-preview"
+    hidden
+>
+    <img
+        id="projectPhotoPreview"
+        src=""
+        alt="Selected project preview"
+    >
+
+    <button
+        type="button"
+        id="removeProjectPhotoBtn"
+        class="danger-btn"
+        onclick="removeSelectedProjectPhoto()"
+    >
+        Remove Photo
+    </button>
+</div>
 
             <div class="dashboard-actions">
                 <button onclick="saveProject()" class="public-blue-btn">Save Project</button>
@@ -188,7 +254,7 @@
 <script src="../js/supabase.js"></script>
 <script src="../js/admin-auth.js"></script>
 <script src="../js/admin-projects.js"></script>
-<script src="../js/admin-dashboard-map.js"></script>
+
 <script src="../js/backtotop.js"></script>
 
 </body>

@@ -1320,3 +1320,31 @@ html.admin-auth-pending body {
 html.admin-auth-verified body {
     visibility: visible;
 }
+.photo-help-text {
+    display: block;
+    margin-top: -8px;
+    margin-bottom: 14px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.project-photo-preview {
+    margin-top: 12px;
+    padding: 14px;
+
+    border: 1px solid #dbe4f0;
+    border-radius: 12px;
+
+    background: #f8fafc;
+}
+
+.project-photo-preview img {
+    display: block;
+    width: 100%;
+    max-width: 420px;
+    max-height: 260px;
+    margin-bottom: 12px;
+
+    border-radius: 10px;
+    object-fit: cover;
+}

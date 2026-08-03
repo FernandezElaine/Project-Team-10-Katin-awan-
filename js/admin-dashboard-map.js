@@ -1,374 +1,635 @@
 // js/admin-dashboard-map.js
 
-let adminMap;
-let currentEditProject = null;
+let adminMap = null;
+let adminMapProjects = [];
 let activeMapElementId = null;
 let addMarkerMode = false;
+const DEFAULT_MAP_CENTER = [
+    11.0517,
+    124.0055
+];
 
-document.addEventListener("DOMContentLoaded", function () {
-    loadAdminMap();
-});
+const DEFAULT_MAP_ZOOM = 13;
+
+const PHILIPPINES_BOUNDS = [
+    [4.5, 116],
+    [21.5, 127]
+];
+let adminSearchData = {
+    projects: [],
+    expenses: [],
+    users: []
+};
+
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
+        try {
+            await loadAdminMap();
+            await loadAdminSearchData();
+
+            const projectSelector =
+                document.getElementById(
+                    "mapProjectSelector"
+                );
+
+            if (projectSelector) {
+                projectSelector.addEventListener(
+                    "change",
+                    focusSelectedProject
+                );
+            }
+        } catch (error) {
+            console.error(
+                "Admin map initialization failed:",
+                error
+            );
+        }
+    }
+);
 
 async function loadAdminMap() {
-    const dashboardMap = document.getElementById("adminDashboardMap");
-    const fullAdminMap = document.getElementById("adminMap");
+    const dashboardMap =
+        document.getElementById(
+            "adminDashboardMap"
+        );
+
+    const fullAdminMap =
+        document.getElementById("adminMap");
 
     if (fullAdminMap) {
         activeMapElementId = "adminMap";
     } else if (dashboardMap) {
-        activeMapElementId = "adminDashboardMap";
+        activeMapElementId =
+            "adminDashboardMap";
     } else {
+        return;
+    }
+
+    if (typeof L === "undefined") {
+        console.error(
+            "Leaflet did not load."
+        );
+
+        alert(
+            "The map library could not be loaded."
+        );
+
         return;
     }
 
     if (adminMap) {
         adminMap.remove();
+        adminMap = null;
     }
 
-    adminMap = L.map(activeMapElementId).setView([11.0517, 124.0055], 13);
+   adminMap = L.map(
+    activeMapElementId,
+    {
+        center: DEFAULT_MAP_CENTER,
+        zoom: DEFAULT_MAP_ZOOM,
+        minZoom: 6,
+        maxBounds: PHILIPPINES_BOUNDS,
+        maxBoundsViscosity: 1
+    }
+);
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "© OpenStreetMap contributors"
-    }).addTo(adminMap);
+    L.tileLayer(
+        "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        {
+            maxZoom: 19,
+            attribution:
+                "© OpenStreetMap contributors"
+        }
+    ).addTo(adminMap);
 
-    const { data: projects, error } = await supabaseClient
+    const {
+        data: projects,
+        error
+    } = await supabaseClient
         .from("projects")
         .select("*")
-        .not("latitude", "is", null)
-        .not("longitude", "is", null)
-        .order("id", { ascending: false });
+        .order("id", {
+            ascending: false
+        });
 
     if (error) {
-        console.error("Error loading project markers:", error);
-        alert("Unable to load project markers.");
+        console.error(
+            "Error loading project markers:",
+            error
+        );
+
+        alert(
+            "Unable to load project map records: " +
+            error.message
+        );
+
         return;
     }
 
-    if (!projects || projects.length === 0) {
-        L.marker([11.0517, 124.0055])
-            .addTo(adminMap)
-            .bindPopup("No project markers yet. Click the map to add one.");
-    } else {
-        projects.forEach(project => {
-            addAdminMarker(project);
-        });
+    /*
+     * Store every project, including projects that do
+     * not have map coordinates yet.
+     */
+    adminMapProjects = projects || [];
+
+    adminSearchData.projects = [
+        ...adminMapProjects
+    ];
+
+    populateMapProjectSelector();
+
+    const mappedProjects =
+        adminMapProjects.filter(
+            hasValidProjectCoordinates
+        );
+
+   mappedProjects.forEach(
+    function (project) {
+        addAdminMarker(project);
+    }
+);
+
+/*
+ * Always open directly around Bogo City.
+ */
+adminMap.setView(
+    DEFAULT_MAP_CENTER,
+    DEFAULT_MAP_ZOOM
+);
+
+    /*
+     * Clicking the map assigns a location only when
+     * Assign Location Mode is enabled.
+     */
+    adminMap.on(
+        "click",
+        async function (event) {
+            if (!addMarkerMode) {
+                return;
+            }
+
+            await assignSelectedProjectLocation(
+                event.latlng.lat,
+                event.latlng.lng
+            );
+        }
+    );
+
+    setTimeout(
+        function () {
+            adminMap.invalidateSize(true);
+        },
+        250
+    );
+
+    setTimeout(
+        function () {
+            adminMap.invalidateSize(true);
+        },
+        1000
+    );
+}
+
+function populateMapProjectSelector() {
+    const selector =
+        document.getElementById(
+            "mapProjectSelector"
+        );
+
+    if (!selector) {
+        return;
     }
 
-  adminMap.on("click", function (event) {
-    if (!addMarkerMode) return;
+    const previousValue =
+        selector.value;
 
-    openProjectMapModal({
-        latitude: event.latlng.lat,
-        longitude: event.latlng.lng
-    });
-});
+    selector.innerHTML = `
+        <option value="">
+            Select a project...
+        </option>
+    `;
 
-    setTimeout(() => {
-        adminMap.invalidateSize();
-    }, 500);
+    if (adminMapProjects.length === 0) {
+        const emptyOption =
+            document.createElement("option");
+
+        emptyOption.textContent =
+            "No projects available";
+
+        emptyOption.disabled = true;
+
+        selector.appendChild(
+            emptyOption
+        );
+
+        return;
+    }
+
+    adminMapProjects.forEach(
+        function (project) {
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+            option.value =
+                String(project.id);
+
+            const locationLabel =
+                hasValidProjectCoordinates(
+                    project
+                )
+                    ? "Location assigned"
+                    : "No location";
+
+            option.textContent =
+                (project.title ||
+                    "Untitled Project") +
+                " • " +
+                locationLabel;
+
+            selector.appendChild(option);
+        }
+    );
+
+    const previousProjectStillExists =
+        adminMapProjects.some(
+            function (project) {
+                return (
+                    String(project.id) ===
+                    String(previousValue)
+                );
+            }
+        );
+
+    if (previousProjectStillExists) {
+        selector.value =
+            previousValue;
+    }
+}
+
+function focusSelectedProject() {
+    const selector =
+        document.getElementById(
+            "mapProjectSelector"
+        );
+
+    const projectId =
+        Number(selector?.value);
+
+    if (!projectId || !adminMap) {
+        return;
+    }
+
+    const project =
+        adminMapProjects.find(
+            function (item) {
+                return (
+                    Number(item.id) ===
+                    projectId
+                );
+            }
+        );
+
+    if (
+        !project ||
+        !hasValidProjectCoordinates(
+            project
+        )
+    ) {
+        return;
+    }
+
+    const latitude =
+        Number(project.latitude);
+
+    const longitude =
+        Number(project.longitude);
+
+    adminMap.setView(
+        [latitude, longitude],
+        16
+    );
+
+    openProjectMarkerPopup(
+        latitude,
+        longitude
+    );
 }
 
 function addAdminMarker(project) {
-    const lat = Number(project.latitude);
-    const lng = Number(project.longitude);
+    if (!hasValidProjectCoordinates(project)) {
+        return;
+    }
 
-    if (!lat || !lng) return;
+    const latitude = Number(project.latitude);
+    const longitude = Number(project.longitude);
 
-    const marker = L.marker([lat, lng]).addTo(adminMap);
+    const progress =
+        normalizeProgress(project.progress);
+
+    const photoUrl =
+        getPrimaryProjectPhoto(project);
+
+    const photoMarkup = photoUrl
+        ? `
+            <img
+                class="admin-map-project-photo"
+                src="${escapeHTML(photoUrl)}"
+                alt="${escapeHTML(
+                    project.title || "Project photo"
+                )}"
+            >
+        `
+        : `
+            <div class="admin-map-photo-placeholder">
+                <span>🏗️</span>
+                <p>No project photo uploaded</p>
+            </div>
+        `;
+
+    const controls =
+        activeMapElementId === "adminMap"
+            ? `
+                <div class="admin-map-popup-actions">
+                    <button
+                        type="button"
+                        onclick="editMapProject(${Number(project.id)})"
+                        class="map-edit-btn"
+                    >
+                        Move Marker
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="deleteMapProject(${Number(project.id)})"
+                        class="map-delete-btn"
+                    >
+                        Remove Marker
+                    </button>
+                </div>
+            `
+            : "";
+
+    const marker =
+        L.marker([
+            latitude,
+            longitude
+        ]).addTo(adminMap);
 
     marker.bindPopup(`
-        <div class="map-popup-card">
-            <h3>${project.title || "Untitled Project"}</h3>
-            <p>${project.description || "No description provided."}</p>
-            <p><b>Status:</b> ${project.status || "Not specified"}</p>
-            <p><b>Progress:</b> ${project.progress || 0}%</p>
-            <p><b>Budget:</b> ${formatPeso(project.budget)}</p>
-            <p><b>Location:</b> ${project.location || "Not specified"}</p>
+        <div class="map-popup-card admin-map-popup-card">
+            ${photoMarkup}
 
-            <div style="display:flex; gap:8px; margin-top:12px;">
-                <button onclick="editMapProject(${project.id})" class="map-edit-btn">
-                    Edit
-                </button>
-<button
-    onclick="deleteMapProject(${project.id})"
-    class="map-delete-btn"
->
-    Remove Marker
-</button>
-            </div>
+            <h3>
+                ${escapeHTML(
+                    project.title ||
+                    "Untitled Project"
+                )}
+            </h3>
+
+            <p>
+                ${escapeHTML(
+                    project.description ||
+                    "No description provided."
+                )}
+            </p>
+
+            <p>
+                <b>Status:</b>
+                ${escapeHTML(
+                    project.status ||
+                    "Not specified"
+                )}
+            </p>
+
+            <p>
+                <b>Progress:</b>
+                ${progress}%
+            </p>
+
+            <p>
+                <b>Budget:</b>
+                ${formatPeso(project.budget)}
+            </p>
+
+            <p>
+                <b>Location:</b>
+                ${escapeHTML(
+                    project.location ||
+                    "Not specified"
+                )}
+            </p>
+
+            <p>
+                <b>Contractor:</b>
+                ${escapeHTML(
+                    project.contractor ||
+                    "Not specified"
+                )}
+            </p>
+
+            <p>
+                <b>Winning Bidder:</b>
+                ${escapeHTML(
+                    project.bidder ||
+                    "Not specified"
+                )}
+            </p>
+
+            ${controls}
         </div>
     `);
 }
 
-async function editMapProject(projectId) {
-    const { data: project, error } = await supabaseClient
-        .from("projects")
-        .select("*")
-        .eq("id", projectId)
-        .single();
-
-    if (error) {
-        alert("Failed to load project: " + error.message);
-        return;
-    }
-
-    openProjectMapModal(project);
-}
-
-function openProjectMapModal(project = {}) {
-    currentEditProject = project;
-
-    let modal = document.getElementById("projectMapModal");
-
-    if (!modal) {
-        modal = document.createElement("div");
-        modal.id = "projectMapModal";
-        modal.className = "map-admin-modal";
-
-        modal.innerHTML = `
-            <div class="map-admin-content">
-                <button class="map-admin-close" onclick="closeProjectMapModal()">X</button>
-
-                <h2 id="mapModalTitle">Project Marker</h2>
-
-                <label>Project Title</label>
-                <input type="text" id="mapProjectTitle" placeholder="Project title">
-
-                <label>Description</label>
-                <textarea id="mapProjectDescription" rows="4" placeholder="Project description"></textarea>
-
-                <label>Category</label>
-                <input type="text" id="mapProjectCategory" placeholder="Infrastructure, Health, Education">
-
-                <label>Status</label>
-                <select id="mapProjectStatus">
-                    <option value="Planned">Planned</option>
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Pending">Pending</option>
-                </select>
-
-                <label>Progress (%)</label>
-                <input type="number" id="mapProjectProgress" min="0" max="100" placeholder="0-100">
-
-                <label>Budget</label>
-                <input type="number" id="mapProjectBudget" placeholder="Example: 850000">
-
-                <label>Location</label>
-                <input type="text" id="mapProjectLocation" placeholder="Barangay Proper">
-
-                <label>Contractor</label>
-                <input type="text" id="mapProjectContractor" placeholder="Contractor name">
-<label>Winning Bidder / Supplier</label>
-<input
-    type="text"
-    id="mapProjectBidder"
-    placeholder="Winning bidder or supplier"
->
-                <label>Timeline</label>
-                <input type="text" id="mapProjectTimeline" placeholder="July 2025 - Dec 2025">
-
-                <label>Latitude</label>
-                <input type="number" id="mapProjectLatitude" step="0.000001">
-
-                <label>Longitude</label>
-                <input type="number" id="mapProjectLongitude" step="0.000001">
-
-                <label>Upload Photos</label>
-                <input type="file" id="mapProjectPhotos" accept="image/*" multiple>
-
-                <div id="existingPhotoList" class="existing-photo-list"></div>
-
-                <button onclick="saveMapProject()" class="public-blue-btn">
-                    Save Project Marker
-                </button>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-    }
-
-    document.getElementById("mapModalTitle").textContent = project.id
-        ? "Edit Project Marker"
-        : "Add Project Marker";
-
-    document.getElementById("mapProjectTitle").value = project.title || "";
-    document.getElementById("mapProjectDescription").value = project.description || "";
-    document.getElementById("mapProjectCategory").value = project.category || "General";
-    document.getElementById("mapProjectStatus").value = project.status || "Planned";
-    document.getElementById("mapProjectProgress").value = project.progress || 0;
-    document.getElementById("mapProjectBudget").value = project.budget || 0;
-    document.getElementById("mapProjectLocation").value = project.location || "";
-    document.getElementById("mapProjectContractor").value = project.contractor || "";
-    document.getElementById("mapProjectBidder").value =
-    project.bidder || "";
-    document.getElementById("mapProjectTimeline").value = project.timeline || "";
-    document.getElementById("mapProjectLatitude").value = project.latitude || "";
-    document.getElementById("mapProjectLongitude").value = project.longitude || "";
-    document.getElementById("mapProjectPhotos").value = "";
-
-    displayExistingPhotos(project.photos);
-
-    modal.style.display = "flex";
-}
-
-function closeProjectMapModal() {
-    const modal = document.getElementById("projectMapModal");
-
-    if (modal) {
-        modal.style.display = "none";
-    }
-}
-
-function displayExistingPhotos(photos) {
-    const container = document.getElementById("existingPhotoList");
-    if (!container) return;
-
-    const photoList = normalizePhotos(photos);
-
-    if (photoList.length === 0) {
-        container.innerHTML = `<p class="muted-text">No photos uploaded yet.</p>`;
-        return;
-    }
-
-    container.innerHTML = `<p><b>Existing Photos:</b></p>`;
-
-    photoList.forEach(photo => {
-        container.innerHTML += `
-            <img src="${photo}" alt="Project photo">
-        `;
-    });
-}
-
-async function saveMapProject() {
-    const title = document.getElementById("mapProjectTitle").value.trim();
-    const description = document.getElementById("mapProjectDescription").value.trim();
-    const category = document.getElementById("mapProjectCategory").value.trim();
-    const status = document.getElementById("mapProjectStatus").value;
-    const progress = Number(document.getElementById("mapProjectProgress").value);
-    const budget = Number(document.getElementById("mapProjectBudget").value);
-    const location = document.getElementById("mapProjectLocation").value.trim();
-    const contractor = document.getElementById("mapProjectContractor").value.trim();
-    const bidder =
-    document.getElementById("mapProjectBidder")
-        .value.trim();
-    const timeline = document.getElementById("mapProjectTimeline").value.trim();
-    const latitude = Number(document.getElementById("mapProjectLatitude").value);
-    const longitude = Number(document.getElementById("mapProjectLongitude").value);
-    const fileInput = document.getElementById("mapProjectPhotos");
-
-    if (!title || !description || !latitude || !longitude) {
-        alert("Please enter title, description, latitude, and longitude.");
-        return;
-    }
-
-    if (progress < 0 || progress > 100) {
-        alert("Progress must be from 0 to 100.");
-        return;
-    }
-
-    const existingPhotos = normalizePhotos(currentEditProject.photos);
-    const uploadedPhotos = await uploadProjectPhotos(fileInput.files);
-    const allPhotos = [...existingPhotos, ...uploadedPhotos];
-
-    const projectData = {
-        title,
-        description,
-        category: category || "General",
-        status,
-        progress,
-        budget,
-        location,
-      contractor,
-bidder,
-        timeline,
+async function assignSelectedProjectLocation(
+    latitude,
+    longitude
+) {
+    if (
+    !hasValidProjectCoordinates({
         latitude,
-        longitude,
-        photos: allPhotos
-    };
-
-    if (currentEditProject.id) {
-        const { error } = await supabaseClient
-            .from("projects")
-            .update(projectData)
-            .eq("id", currentEditProject.id);
-
-        if (error) {
-            alert("Update failed: " + error.message);
-            return;
-        }
-
-        alert("Project marker updated successfully.");
-    } else {
-        const { error } = await supabaseClient
-            .from("projects")
-            .insert([projectData]);
-
-        if (error) {
-            alert("Insert failed: " + error.message);
-            return;
-        }
-
-        alert("Project marker added successfully.");
-    }
-
-    closeProjectMapModal();
-    loadAdminMap();
-}
-
-async function uploadProjectPhotos(files) {
-    const urls = [];
-
-    if (!files || files.length === 0) {
-        return urls;
-    }
-
-    for (const file of files) {
-        const fileExt = file.name.split(".").pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-        const filePath = `projects/${fileName}`;
-
-        const { error: uploadError } = await supabaseClient.storage
-            .from("project-photos")
-            .upload(filePath, file);
-
-        if (uploadError) {
-            console.error("Photo upload failed:", uploadError);
-            alert("Photo upload failed: " + uploadError.message);
-            continue;
-        }
-
-        const { data } = supabaseClient.storage
-            .from("project-photos")
-            .getPublicUrl(filePath);
-
-        if (data && data.publicUrl) {
-            urls.push(data.publicUrl);
-        }
-    }
-
-    return urls;
-}
-
-async function deleteMapProject(projectId) {
-    const confirmRemove = confirm(
-        "Remove this project marker from the map? " +
-        "The project record and its photos will remain."
+        longitude
+    })
+) {
+    alert(
+        "Please select a location within the Philippines."
     );
 
-    if (!confirmRemove) {
+    adminMap.setView(
+        DEFAULT_MAP_CENTER,
+        DEFAULT_MAP_ZOOM
+    );
+
+    return;
+}
+
+    const selector =
+        document.getElementById(
+            "mapProjectSelector"
+        );
+
+    const selectedProjectId =
+        Number(selector?.value);
+
+    if (!selectedProjectId) {
+        alert(
+            "Please select an existing project first."
+        );
+
         return;
     }
 
-    const { error } = await supabaseClient
-        .from("projects")
-        .update({
-            latitude: null,
-            longitude: null
-        })
-        .eq("id", projectId);
+    const project =
+        adminMapProjects.find(
+            function (item) {
+                return (
+                    Number(item.id) ===
+                    selectedProjectId
+                );
+            }
+        );
+
+    if (!project) {
+        alert(
+            "The selected project could not be found."
+        );
+
+        return;
+    }
+
+    const alreadyHasLocation =
+        hasValidProjectCoordinates(
+            project
+        );
+
+    const message =
+        alreadyHasLocation
+            ? `Move the marker for "${project.title}" to this location?`
+            : `Assign this location to "${project.title}"?`;
+
+    if (!confirm(message)) {
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("projects")
+            .update({
+                latitude,
+                longitude
+            })
+            .eq(
+                "id",
+                selectedProjectId
+            );
 
     if (error) {
+        console.error(
+            "Location update error:",
+            error
+        );
+
+        alert(
+            "Location could not be saved: " +
+            error.message
+        );
+
+        return;
+    }
+
+    alert(
+        alreadyHasLocation
+            ? "Project marker moved successfully."
+            : "Project location assigned successfully."
+    );
+
+    addMarkerMode = false;
+
+    updateAddMarkerModeDisplay();
+
+    await loadAdminMap();
+}
+
+function editMapProject(projectId) {
+    const selector =
+        document.getElementById(
+            "mapProjectSelector"
+        );
+
+    if (!selector) {
+        return;
+    }
+
+    selector.value =
+        String(projectId);
+
+    addMarkerMode = true;
+
+    updateAddMarkerModeDisplay();
+
+    const project =
+        adminMapProjects.find(
+            function (item) {
+                return (
+                    Number(item.id) ===
+                    Number(projectId)
+                );
+            }
+        );
+
+    alert(
+        `Click the new map location for "${
+            project?.title ||
+            "this project"
+        }".`
+    );
+}
+
+async function deleteMapProject(
+    projectId
+) {
+    const project =
+        adminMapProjects.find(
+            function (item) {
+                return (
+                    Number(item.id) ===
+                    Number(projectId)
+                );
+            }
+        );
+
+    const confirmed =
+        confirm(
+            `Remove the map marker for "${
+                project?.title ||
+                "this project"
+            }"? The project record will remain.`
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    const { error } =
+        await supabaseClient
+            .from("projects")
+            .update({
+                latitude: null,
+                longitude: null
+            })
+            .eq(
+                "id",
+                projectId
+            );
+
+    if (error) {
+        console.error(
+            "Marker removal error:",
+            error
+        );
+
         alert(
             "Removing the marker failed: " +
             error.message
@@ -378,15 +639,419 @@ async function deleteMapProject(projectId) {
     }
 
     alert(
-        "Project marker removed successfully. " +
-        "The project record was not deleted."
+        "Project marker removed. The project record was not deleted."
     );
 
-    loadAdminMap();
+    addMarkerMode = false;
+
+    updateAddMarkerModeDisplay();
+
+    await loadAdminMap();
 }
 
-function normalizePhotos(photos) {
-    if (!photos) return [];
+function toggleAddMarkerMode() {
+    const selector =
+        document.getElementById(
+            "mapProjectSelector"
+        );
+
+    if (
+        !addMarkerMode &&
+        !selector?.value
+    ) {
+        alert(
+            "Please select an existing project first."
+        );
+
+        return;
+    }
+
+    addMarkerMode =
+        !addMarkerMode;
+
+    updateAddMarkerModeDisplay();
+}
+
+function updateAddMarkerModeDisplay() {
+    const button =
+        document.getElementById(
+            "toggleAddMarkerBtn"
+        );
+
+    const status =
+        document.getElementById(
+            "addMarkerStatus"
+        );
+
+    if (button) {
+        button.textContent =
+            addMarkerMode
+                ? "Cancel Assign Location Mode"
+                : "Enable Assign Location Mode";
+    }
+
+    if (status) {
+        status.textContent =
+            addMarkerMode
+                ? "Location mode is ON. Click the project location on the map."
+                : "Select a project, enable location mode, then click its location on the map.";
+    }
+
+    if (adminMap) {
+        adminMap
+            .getContainer()
+            .style.cursor =
+                addMarkerMode
+                    ? "crosshair"
+                    : "";
+    }
+}
+
+function hasValidProjectCoordinates(
+    project
+) {
+    if (
+        !project ||
+        project.latitude === null ||
+        project.latitude === "" ||
+        project.longitude === null ||
+        project.longitude === ""
+    ) {
+        return false;
+    }
+
+    const latitude =
+        Number(project.latitude);
+
+    const longitude =
+        Number(project.longitude);
+
+    if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+    ) {
+        return false;
+    }
+
+    /*
+     * Only accept coordinates inside the Philippines.
+     */
+    return (
+        latitude >= 4.5 &&
+        latitude <= 21.5 &&
+        longitude >= 116 &&
+        longitude <= 127
+    );
+}
+function openProjectMarkerPopup(
+    latitude,
+    longitude
+) {
+    if (!adminMap) {
+        return;
+    }
+
+    adminMap.eachLayer(
+        function (layer) {
+            if (
+                !(layer instanceof L.Marker) ||
+                !layer.getLatLng
+            ) {
+                return;
+            }
+
+            const markerCoordinates =
+                layer.getLatLng();
+
+            const sameLatitude =
+                Math.abs(
+                    markerCoordinates.lat -
+                    latitude
+                ) < 0.000001;
+
+            const sameLongitude =
+                Math.abs(
+                    markerCoordinates.lng -
+                    longitude
+                ) < 0.000001;
+
+            if (
+                sameLatitude &&
+                sameLongitude
+            ) {
+                layer.openPopup();
+            }
+        }
+    );
+}
+
+async function loadAdminSearchData() {
+    const searchInput =
+        document.getElementById(
+            "adminGlobalSearch"
+        );
+
+    /*
+     * Do not make extra queries when the current page
+     * has no global-search box.
+     */
+    if (!searchInput) {
+        return;
+    }
+
+    const [
+        expensesResult,
+        usersResult
+    ] = await Promise.all([
+        supabaseClient
+            .from("expenses")
+            .select("*")
+            .order("id", {
+                ascending: false
+            }),
+
+        supabaseClient
+            .from("profiles")
+            .select(
+                "id, full_name, role"
+            )
+            .order("created_at", {
+                ascending: false
+            })
+    ]);
+
+    if (expensesResult.error) {
+        console.warn(
+            "Expenses search data error:",
+            expensesResult.error
+        );
+    }
+
+    if (usersResult.error) {
+        console.warn(
+            "User search data error:",
+            usersResult.error
+        );
+    }
+
+    adminSearchData.expenses =
+        expensesResult.data || [];
+
+    adminSearchData.users =
+        usersResult.data || [];
+}
+
+function handleAdminGlobalSearch() {
+    const input =
+        document.getElementById(
+            "adminGlobalSearch"
+        );
+
+    const results =
+        document.getElementById(
+            "adminGlobalSearchResults"
+        );
+
+    if (!input || !results) {
+        return;
+    }
+
+    const keyword =
+        input.value
+            .trim()
+            .toLowerCase();
+
+    if (keyword.length < 2) {
+        results.classList.remove(
+            "active"
+        );
+
+        results.innerHTML = "";
+
+        return;
+    }
+
+    const matches = [];
+
+    adminSearchData.projects
+        .filter(
+            function (project) {
+                return [
+                    project.title,
+                    project.description,
+                    project.category,
+                    project.location,
+                    project.status
+                ]
+                    .join(" ")
+                    .toLowerCase()
+                    .includes(keyword);
+            }
+        )
+        .slice(0, 5)
+        .forEach(
+            function (project) {
+                matches.push({
+                    type: "Project",
+                    title:
+                        project.title ||
+                        "Untitled Project",
+                    description:
+                        (project.status ||
+                            "No status") +
+                        " • " +
+                        formatPeso(
+                            project.budget
+                        ),
+                    link:
+                        "admin-projects.html"
+                });
+            }
+        );
+
+    adminSearchData.expenses
+        .filter(
+            function (expense) {
+                return [
+                    expense.description,
+                    expense.vendor,
+                    expense.category
+                ]
+                    .join(" ")
+                    .toLowerCase()
+                    .includes(keyword);
+            }
+        )
+        .slice(0, 5)
+        .forEach(
+            function (expense) {
+                matches.push({
+                    type: "Expense",
+                    title:
+                        expense.description ||
+                        "Expense",
+                    description:
+                        (expense.vendor ||
+                            "Unknown vendor") +
+                        " • " +
+                        formatPeso(
+                            expense.amount
+                        ),
+                    link:
+                        "admin-expenses.html"
+                });
+            }
+        );
+
+    adminSearchData.users
+        .filter(
+            function (user) {
+                return [
+                    user.full_name,
+                    user.role
+                ]
+                    .join(" ")
+                    .toLowerCase()
+                    .includes(keyword);
+            }
+        )
+        .slice(0, 5)
+        .forEach(
+            function (user) {
+                matches.push({
+                    type: "User",
+                    title:
+                        user.full_name ||
+                        "Unknown user",
+                    description:
+                        user.role ||
+                        "resident",
+                    link:
+                        "admin-users.html"
+                });
+            }
+        );
+
+    if (matches.length === 0) {
+        results.innerHTML = `
+            <div class="search-no-results">
+                No results found
+            </div>
+        `;
+    } else {
+        results.innerHTML =
+            matches
+                .map(
+                    function (result) {
+                        return `
+                            <div
+                                class="search-result-item"
+                                onclick="window.location.href='${result.link}'"
+                            >
+                                <span class="result-type">
+                                    ${escapeHTML(result.type)}
+                                </span>
+
+                                <h4>
+                                    ${escapeHTML(result.title)}
+                                </h4>
+
+                                <p>
+                                    ${escapeHTML(result.description)}
+                                </p>
+                            </div>
+                        `;
+                    }
+                )
+                .join("");
+    }
+
+    results.classList.add("active");
+}
+
+document.addEventListener(
+    "click",
+    function (event) {
+        const searchSection =
+            document.querySelector(
+                ".search-bar-section"
+            );
+
+        const results =
+            document.getElementById(
+                "adminGlobalSearchResults"
+            );
+
+        if (
+            searchSection &&
+            results &&
+            !searchSection.contains(
+                event.target
+            )
+        ) {
+            results.classList.remove(
+                "active"
+            );
+        }
+    }
+);
+
+function getPrimaryProjectPhoto(project) {
+    const photos =
+        normalizeProjectPhotos(project?.photos);
+
+    const validPhoto =
+        photos.find(function (photo) {
+            return isSafeProjectPhotoUrl(photo);
+        });
+
+    return validPhoto || "";
+}
+
+function normalizeProjectPhotos(photos) {
+    if (!photos) {
+        return [];
+    }
 
     if (Array.isArray(photos)) {
         return photos;
@@ -394,244 +1059,85 @@ function normalizePhotos(photos) {
 
     if (typeof photos === "string") {
         try {
-            return JSON.parse(photos);
+            const parsed =
+                JSON.parse(photos);
+
+            return Array.isArray(parsed)
+                ? parsed
+                : [];
         } catch {
-            return [];
+            return photos.trim()
+                ? [photos.trim()]
+                : [];
         }
     }
 
     return [];
 }
 
-function formatPeso(amount) {
-    return "₱" + Number(amount || 0).toLocaleString("en-PH");
-}
-function toggleAddMarkerMode() {
-    addMarkerMode = !addMarkerMode;
-
-    const button = document.getElementById("toggleAddMarkerBtn");
-    const status = document.getElementById("addMarkerStatus");
-
-    if (button) {
-        button.textContent = addMarkerMode
-            ? "Disable Add Marker Mode"
-            : "Enable Add Marker Mode";
+function isSafeProjectPhotoUrl(value) {
+    if (
+        !value ||
+        typeof value !== "string"
+    ) {
+        return false;
     }
 
-    if (status) {
-        status.textContent = addMarkerMode
-            ? "Add marker mode is ON. Click the map to add a new project marker."
-            : "Add marker mode is OFF. You can safely click markers to edit/delete.";
+    try {
+        const url =
+            new URL(
+                value,
+                window.location.origin
+            );
+
+        return (
+            url.protocol === "https:" ||
+            url.protocol === "http:"
+        );
+    } catch {
+        return false;
     }
-}
-
-// Admin Global Search
-let adminSearchData = {
-    projects: [],
-    expenses: [],
-    users: []
-};
-
-async function loadAdminSearchData() {
-    // Load projects
-    const { data: projects } = await supabaseClient
-        .from("projects")
-        .select("*")
-        .order("id", { ascending: false });
-    adminSearchData.projects = projects || [];
-
-    // Load expenses
-    const { data: expenses } = await supabaseClient
-        .from("expenses")
-        .select("*")
-        .order("id", { ascending: false });
-    adminSearchData.expenses = expenses || [];
-
-    // Load users
-    const { data: users } = await supabaseClient
-        .from("profiles")
-        .select("*")
-        .order("id", { ascending: false })
-    adminSearchData.users = users || [];
 }
 
-function handleAdminGlobalSearch() {
-    const input = document.getElementById("adminGlobalSearch");
-    const results = document.getElementById("adminGlobalSearchResults");
+function normalizeProgress(value) {
+    const progress =
+        Number(value);
 
-    if (!input || !results) return;
-
-    const keyword = input.value.toLowerCase().trim();
-
-    if (keyword.length < 2) {
-        results.classList.remove("active");
-        results.innerHTML = "";
-        return;
+    if (!Number.isFinite(progress)) {
+        return 0;
     }
 
-    let searchResults = [];
-
-    // Search projects
-    const matchingProjects = adminSearchData.projects.filter(p =>
-        String(p.title || "").toLowerCase().includes(keyword) ||
-        String(p.description || "").toLowerCase().includes(keyword) ||
-        String(p.category || "").toLowerCase().includes(keyword) ||
-        String(p.location || "").toLowerCase().includes(keyword) ||
-        String(p.status || "").toLowerCase().includes(keyword)
-    ).slice(0, 5);
-
-    matchingProjects.forEach(p => {
-        searchResults.push({
-            type: "Project",
-            title: p.title,
-            desc: `${p.status} • ${formatPeso(p.budget)}`,
-            link: "admin-projects.html"
-        });
-    });
-
-    // Search expenses
-    const matchingExpenses = adminSearchData.expenses.filter(e =>
-        String(e.description || "").toLowerCase().includes(keyword) ||
-        String(e.vendor || "").toLowerCase().includes(keyword) ||
-        String(e.category || "").toLowerCase().includes(keyword)
-    ).slice(0, 5);
-
-    matchingExpenses.forEach(e => {
-        searchResults.push({
-            type: "Expense",
-            title: e.description,
-            desc: `${e.vendor || "Unknown"} • ${formatPeso(e.amount)}`,
-            link: "admin-expenses.html"
-        });
-    });
-
-    // Search users
-    const matchingUsers = adminSearchData.users.filter(u =>
-        String(u.full_name || "").toLowerCase().includes(keyword) ||
-        String(u.email || "").toLowerCase().includes(keyword) ||
-        String(u.role || "").toLowerCase().includes(keyword)
-    ).slice(0, 5);
-
-    matchingUsers.forEach(u => {
-        searchResults.push({
-            type: "User",
-            title: u.full_name || "Unknown",
-            desc: `${u.email || "No email"} • ${u.role || "Resident"}`,
-            link: "admin-users.html"
-        });
-    });
-
-    // Display results
-    if (searchResults.length === 0) {
-        results.innerHTML = '<div class="search-no-results">No results found</div>';
-    } else {
-        results.innerHTML = searchResults.map(r => `
-            <div class="search-result-item" onclick="window.location.href='${r.link}'">
-                <span class="result-type">${r.type}</span>
-                <h4>${r.title}</h4>
-                <p>${r.desc}</p>
-            </div>
-        `).join("");
-    }
-
-    results.classList.add("active");
-}
-
-// Close search results when clicking outside
-document.addEventListener("click", function(e) {
-    const searchSection = document.querySelector(".search-bar-section");
-    const results = document.getElementById("adminGlobalSearchResults");
-    if (searchSection && !searchSection.contains(e.target) && results) {
-        results.classList.remove("active");
-    }
-});
-
-// Map Search Functionality
-let mapSearchMarkers = [];
-
-function searchMapProjects() {
-    const searchInput = document.getElementById("mapProjectSearch");
-    if (!searchInput) return;
-
-    const keyword = searchInput.value.toLowerCase().trim();
-    const searchResults = document.getElementById("mapSearchResults");
-
-    if (!searchResults) return;
-
-    // Clear previous search markers
-    mapSearchMarkers.forEach(m => adminMap.removeLayer(m));
-    mapSearchMarkers = [];
-
-    if (keyword.length < 2) {
-        searchResults.innerHTML = "";
-        searchResults.classList.remove("active");
-        return;
-    }
-
-    // Get all project markers from the map
-    const allMarkers = [];
-    adminMap.eachLayer(function(layer) {
-        if (layer instanceof L.Marker && layer._latlng) {
-            allMarkers.push(layer);
-        }
-    });
-
-    // Filter matching projects
-    const matchingProjects = adminSearchData.projects.filter(p =>
-        String(p.title || "").toLowerCase().includes(keyword) ||
-        String(p.description || "").toLowerCase().includes(keyword) ||
-        String(p.category || "").toLowerCase().includes(keyword) ||
-        String(p.location || "").toLowerCase().includes(keyword) ||
-        String(p.status || "").toLowerCase().includes(keyword)
+    return Math.min(
+        100,
+        Math.max(
+            0,
+            Math.round(progress)
+        )
     );
-
-    if (matchingProjects.length === 0) {
-        searchResults.innerHTML = '<div class="map-search-no-result">No projects found</div>';
-        searchResults.classList.add("active");
-        return;
-    }
-
-    // Display results
-    searchResults.innerHTML = matchingProjects.slice(0, 8).map(p => `
-        <div class="map-search-result-item" onclick="focusMapProject(${p.id}, ${p.latitude}, ${p.longitude})">
-            <strong>${p.title}</strong>
-            <span>${p.status} • ${p.location || "No location"}</span>
-        </div>
-    `).join("");
-
-    searchResults.classList.add("active");
 }
 
-function focusMapProject(projectId, lat, lng) {
-    // Clear search results
-    const searchResults = document.getElementById("mapSearchResults");
-    if (searchResults) {
-        searchResults.innerHTML = "";
-        searchResults.classList.remove("active");
-    }
-
-    // Clear search input
-    const searchInput = document.getElementById("mapProjectSearch");
-    if (searchInput) {
-        searchInput.value = "";
-    }
-
-    // Zoom to the marker
-    adminMap.setView([lat, lng], 16);
-
-    // Find and open the marker's popup
-    adminMap.eachLayer(function(layer) {
-        if (layer instanceof L.Marker && layer._latlng) {
-            const markerLat = layer._latlng.lat;
-            const markerLng = layer._latlng.lng;
-
-            // Check if this is the marker we're looking for (with small tolerance)
-            if (Math.abs(markerLat - lat) < 0.0001 && Math.abs(markerLng - lng) < 0.0001) {
-                layer.openPopup();
-            }
+function formatPeso(amount) {
+    return new Intl.NumberFormat(
+        "en-PH",
+        {
+            style: "currency",
+            currency: "PHP",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
         }
-    });
+    ).format(
+        Number(amount || 0)
+    );
 }
 
-// Initialize admin search data
-loadAdminSearchData();
+function escapeHTML(value) {
+    return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+}

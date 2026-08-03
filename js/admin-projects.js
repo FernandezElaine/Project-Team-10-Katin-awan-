@@ -28,12 +28,23 @@ async function saveProject() {
     const status = document.getElementById("projectStatus").value;
     const progress = Number(document.getElementById("projectProgress").value);
     const contractor = document.getElementById("projectContractor").value.trim();
-
+const bidder =
+    document.getElementById("projectBidder")
+        .value.trim();
     const category = document.getElementById("projectCategory")?.value || "General";
     const location = document.getElementById("projectLocation")?.value.trim() || "Not specified";
     const latitudeValue = document.getElementById("projectLatitude")?.value;
     const longitudeValue = document.getElementById("projectLongitude")?.value;
-    const photoUrl = document.getElementById("projectPhotoUrl")?.value.trim();
+const photoInput =
+    document.getElementById("projectPhoto");
+
+const selectedPhoto =
+    photoInput?.files?.[0] || null;
+
+let photoUrl =
+    document.getElementById(
+        "projectExistingPhotoUrl"
+    )?.value || "";
 
     const latitude = latitudeValue ? Number(latitudeValue) : null;
     const longitude = longitudeValue ? Number(longitudeValue) : null;
@@ -42,7 +53,32 @@ async function saveProject() {
         alert("Please complete all required fields correctly. Progress must be 0 to 100.");
         return;
     }
+if (selectedPhoto) {
+    const validationError =
+        validateProjectPhoto(selectedPhoto);
 
+    if (validationError) {
+        alert(validationError);
+        return;
+    }
+
+    try {
+        photoUrl =
+            await uploadProjectPhoto(selectedPhoto);
+    } catch (uploadError) {
+        console.error(
+            "Project photo upload error:",
+            uploadError
+        );
+
+        alert(
+            "Project photo upload failed: " +
+            uploadError.message
+        );
+
+        return;
+    }
+}
     const photos = photoUrl ? [photoUrl] : [];
 
     const projectData = {
@@ -52,8 +88,8 @@ async function saveProject() {
         timeline,
         status,
         progress,
-        contractor,
-        bidder: contractor,
+       contractor,
+bidder,
         category,
         location,
         latitude,
@@ -150,8 +186,10 @@ function viewAdminProjectDetails(projectId) {
     document.getElementById("adminProjectDetailsCategory").textContent = project.category || "General";
     document.getElementById("adminProjectDetailsDescription").textContent = project.description || "No description provided.";
     document.getElementById("adminProjectDetailsBudget").textContent = formatPeso(project.budget);
-    document.getElementById("adminProjectDetailsLocation").textContent =
-        `${project.location || "Not specified"}${project.latitude && project.longitude ? ` (${project.latitude}, ${project.longitude})` : ""}`;
+   document.getElementById(
+    "adminProjectDetailsLocation"
+).textContent =
+    project.location || "Not specified";
     document.getElementById("adminProjectDetailsContractor").textContent = project.contractor || "Not specified";
     document.getElementById("adminProjectDetailsBidder").textContent = project.bidder || "Not specified";
     document.getElementById("adminProjectDetailsTimeline").textContent = project.timeline || "Not specified";
@@ -205,6 +243,9 @@ function editProject(id) {
     document.getElementById("projectStatus").value = project.status || "Planned";
     document.getElementById("projectProgress").value = project.progress || 0;
     document.getElementById("projectContractor").value = project.contractor || "";
+    document.getElementById(
+    "projectBidder"
+).value = project.bidder || "";
 
     if (document.getElementById("projectCategory")) {
         document.getElementById("projectCategory").value = project.category || "General";
@@ -222,10 +263,17 @@ function editProject(id) {
         document.getElementById("projectLongitude").value = project.longitude || "";
     }
 
-    if (document.getElementById("projectPhotoUrl")) {
-        const photos = getProjectPhotos(project);
-        document.getElementById("projectPhotoUrl").value = photos[0] || "";
-    }
+   const projectPhotos =
+    getProjectPhotos(project);
+
+const existingPhotoUrl =
+    projectPhotos[0] || "";
+
+document.getElementById(
+    "projectExistingPhotoUrl"
+).value = existingPhotoUrl;
+
+showProjectPhotoPreview(existingPhotoUrl);
 
     window.scrollTo({ top: 0, behavior: "smooth" });
 }
@@ -266,12 +314,26 @@ function clearProjectForm() {
     document.getElementById("projectStatus").value = "Planned";
     document.getElementById("projectProgress").value = "";
     document.getElementById("projectContractor").value = "";
+    document.getElementById(
+    "projectBidder"
+).value = "";
 
     if (document.getElementById("projectCategory")) document.getElementById("projectCategory").value = "Infrastructure";
     if (document.getElementById("projectLocation")) document.getElementById("projectLocation").value = "";
     if (document.getElementById("projectLatitude")) document.getElementById("projectLatitude").value = "";
     if (document.getElementById("projectLongitude")) document.getElementById("projectLongitude").value = "";
-    if (document.getElementById("projectPhotoUrl")) document.getElementById("projectPhotoUrl").value = "";
+const photoInput =
+    document.getElementById("projectPhoto");
+
+if (photoInput) {
+    photoInput.value = "";
+}
+
+document.getElementById(
+    "projectExistingPhotoUrl"
+).value = "";
+
+showProjectPhotoPreview("");
 }
 
 function updateProjectSummary() {
@@ -326,6 +388,132 @@ function searchAdminProjects() {
 
 function filterAdminProjects() {
     searchAdminProjects();
+}
+
+function validateProjectPhoto(file) {
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+    const maximumSize =
+        5 * 1024 * 1024;
+
+    if (!allowedTypes.includes(file.type)) {
+        return (
+            "Invalid file type. Please choose a JPG, PNG, " +
+            "or WebP image."
+        );
+    }
+
+    if (file.size > maximumSize) {
+        return (
+            "The selected image is larger than 5 MB."
+        );
+    }
+
+    return "";
+}
+
+async function uploadProjectPhoto(file) {
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+        throw new Error(
+            "You must be logged in as an administrator."
+        );
+    }
+
+    const extension =
+        file.name
+            .split(".")
+            .pop()
+            .toLowerCase();
+
+    const uniqueName =
+        crypto.randomUUID() +
+        "." +
+        extension;
+
+    const filePath =
+        user.id +
+        "/" +
+        uniqueName;
+
+    const {
+        error: uploadError
+    } = await supabaseClient.storage
+        .from("project-photos")
+        .upload(
+            filePath,
+            file,
+            {
+                cacheControl: "3600",
+                upsert: false
+            }
+        );
+
+    if (uploadError) {
+        throw uploadError;
+    }
+
+    const {
+        data: publicUrlData
+    } = supabaseClient.storage
+        .from("project-photos")
+        .getPublicUrl(filePath);
+
+    if (!publicUrlData?.publicUrl) {
+        throw new Error(
+            "The uploaded photo URL could not be generated."
+        );
+    }
+
+    return publicUrlData.publicUrl;
+}
+
+function showProjectPhotoPreview(photoUrl) {
+    const container =
+        document.getElementById(
+            "projectPhotoPreviewContainer"
+        );
+
+    const preview =
+        document.getElementById(
+            "projectPhotoPreview"
+        );
+
+    if (!container || !preview) {
+        return;
+    }
+
+    if (!photoUrl) {
+        container.hidden = true;
+        preview.removeAttribute("src");
+        return;
+    }
+
+    preview.src = photoUrl;
+    container.hidden = false;
+}
+
+function removeSelectedProjectPhoto() {
+    const photoInput =
+        document.getElementById("projectPhoto");
+
+    if (photoInput) {
+        photoInput.value = "";
+    }
+
+    document.getElementById(
+        "projectExistingPhotoUrl"
+    ).value = "";
+
+    showProjectPhotoPreview("");
 }
 
 function getProjectPhotos(project) {
@@ -399,6 +587,41 @@ async function logAudit(action, module, details, publicVisible = true) {
     if (error) {
         console.warn("Audit log failed:", error.message);
     }
+}
+
+const projectPhotoInput =
+    document.getElementById("projectPhoto");
+
+if (projectPhotoInput) {
+    projectPhotoInput.addEventListener(
+        "change",
+        function () {
+            const selectedFile =
+                projectPhotoInput.files?.[0];
+
+            if (!selectedFile) {
+                showProjectPhotoPreview("");
+                return;
+            }
+
+            const validationError =
+                validateProjectPhoto(selectedFile);
+
+            if (validationError) {
+                alert(validationError);
+                projectPhotoInput.value = "";
+                showProjectPhotoPreview("");
+                return;
+            }
+
+            const temporaryPreviewUrl =
+                URL.createObjectURL(selectedFile);
+
+            showProjectPhotoPreview(
+                temporaryPreviewUrl
+            );
+        }
+    );
 }
 
 loadAdminProjects();
