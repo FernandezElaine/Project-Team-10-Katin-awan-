@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Community Feedback | Katin-awan</title>
+<link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
+>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/feedback.css">
+</head>
+
+<body>
+
+<!-- =========================
+     NAVIGATION
+========================= -->
+<header class="public-nav">
+
+    <a href="../index.html" class="public-logo">
+        🏛️ Katin-awan Portal
+    </a>
+
+    <nav>
+        <a href="dashboard.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a href="expenses.html">Expenses</a>
+        <a href="documents.html">Documents</a>
+        <a href="map.html">Map</a>
+        <a href="uploads.html">OCR Analysis</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a class="active" href="feedback.html">Feedback</a>
+<span id="authArea" class="auth-area">
+    <button
+        type="button"
+        id="accountAction"
+        class="logout-btn"
+        disabled
+    >
+        Logout
+    </button>
+</span>
+    </nav>
+
+</header>
+
+
+<!-- =========================
+     HERO
+========================= -->
+<section class="page-hero feedback-hero">
+
+    <div class="feedback-hero-content">
+
+        <span class="module-badge">
+            Community Participation
+        </span>
+
+        <h1>Your Voice Matters</h1>
+
+        <p>
+            Share concerns, suggestions, complaints, praise, or reports
+            about barangay projects and public services.
+        </p>
+
+    </div>
+
+</section>
+
+
+<main class="public-container">
+
+    <!-- =========================
+         PAGE INTRODUCTION
+    ========================= -->
+    <section class="section-title feedback-section-title">
+
+        <div>
+            <span class="section-eyebrow">
+                Citizen Engagement
+            </span>
+
+            <h2>Community Feedback Center</h2>
+
+            <p>
+                Submit feedback securely and follow publicly approved
+                community concerns and barangay responses.
+            </p>
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         FEEDBACK STATISTICS
+    ========================= -->
+    <section
+        class="feedback-summary"
+        aria-label="Community feedback summary"
+    >
+
+        <article class="feedback-stat">
+
+            <div class="feedback-stat-icon">
+                📢
+            </div>
+
+            <div>
+                <h3 id="residentTotalFeedback">0</h3>
+                <p>Published Feedback</p>
+                <small>Approved public submissions</small>
+            </div>
+
+        </article>
+
+
+        <article class="feedback-stat">
+
+            <div class="feedback-stat-icon">
+                ✅
+            </div>
+
+            <div>
+                <h3 id="residentResolvedFeedback">0</h3>
+                <p>Resolved</p>
+                <small>Concerns already addressed</small>
+            </div>
+
+        </article>
+
+
+        <article class="feedback-stat">
+
+            <div class="feedback-stat-icon">
+                🔍
+            </div>
+
+            <div>
+                <h3 id="residentReviewFeedback">0</h3>
+                <p>Under Review</p>
+                <small>Currently being evaluated</small>
+            </div>
+
+        </article>
+
+
+        <article class="feedback-stat">
+
+            <div class="feedback-stat-icon">
+                ⏳
+            </div>
+
+            <div>
+                <h3 id="residentPendingFeedback">0</h3>
+                <p>Pending</p>
+                <small>Waiting for initial review</small>
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- =========================
+         MAIN FEEDBACK WORKSPACE
+    ========================= -->
+    <section class="feedback-page-grid">
+
+        <!-- =========================
+             SUBMISSION FORM
+        ========================= -->
+        <article class="feedback-form-card">
+
+            <div class="feedback-card-header">
+
+                <div class="feedback-card-icon">
+                    ✍️
+                </div>
+
+                <div>
+                    <h3>Submit Community Feedback</h3>
+
+                    <p>
+                        Provide complete and respectful information so the
+                        barangay can properly review your concern.
+                    </p>
+                </div>
+
+            </div>
+
+
+<form
+    id="feedbackForm"
+    novalidate
+    onsubmit="event.preventDefault(); submitFeedback();"
+>
+
+                <div class="feedback-field">
+
+                    <label for="feedbackSubject">
+                        Subject
+                        <span aria-hidden="true">*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="feedbackSubject"
+                        name="subject"
+                        maxlength="200"
+                        autocomplete="off"
+                        placeholder="Example: Concern about road repair delay"
+                        required
+                    >
+
+                    <small>
+                        Write a short and clear title for your concern.
+                    </small>
+
+                </div>
+
+
+                <div class="feedback-field">
+
+                    <label for="feedbackCategory">
+                        Category
+                        <span aria-hidden="true">*</span>
+                    </label>
+
+                    <select
+                        id="feedbackCategory"
+                        name="category"
+                        required
+                    >
+                        <option value="">
+                            Select a feedback category
+                        </option>
+
+                        <option value="Suggestion">
+                            Suggestion
+                        </option>
+
+                        <option value="Complaint">
+                            Complaint
+                        </option>
+
+                        <option value="Praise">
+                            Praise
+                        </option>
+
+                        <option value="Project Issue">
+                            Project Issue
+                        </option>
+
+                        <option value="Expense Concern">
+                            Expense Concern
+                        </option>
+
+                        <option value="Document Concern">
+                            Document Concern
+                        </option>
+                    </select>
+
+                </div>
+
+
+                <div class="feedback-field">
+
+                    <label for="feedbackMessage">
+                        Detailed Message
+                        <span aria-hidden="true">*</span>
+                    </label>
+
+                    <textarea
+                        id="feedbackMessage"
+                        name="description"
+                        rows="7"
+                        maxlength="3000"
+                        placeholder="Describe what happened, where it happened, and any important details..."
+                        required
+                    ></textarea>
+
+                    <small>
+                        Do not include passwords, banking details, or other
+                        sensitive personal information.
+                    </small>
+
+                </div>
+
+
+                <div class="anonymous-box">
+
+                    <label for="feedbackAnonymous">
+
+                        <input
+                            type="checkbox"
+                            id="feedbackAnonymous"
+                            name="anonymous"
+                            checked
+                        >
+
+                        <span>
+                            <strong>Submit anonymously</strong>
+
+                            <small>
+                                Your account will not be connected to this
+                                submission.
+                            </small>
+                        </span>
+
+                    </label>
+
+                </div>
+
+
+                <div class="feedback-review-note">
+
+                    <span>ℹ️</span>
+
+                    <p>
+                        New submissions are marked as
+                        <strong>Pending</strong>. An administrator may later
+                        update the status or approve the feedback for public
+                        display.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    id="feedbackSubmitButton"
+                    class="feedback-submit-btn"
+                >
+                    <span>📨</span>
+                    Submit Feedback
+                </button>
+
+
+                <div
+                    id="feedbackSuccess"
+                    class="feedback-success"
+                    role="status"
+                    aria-live="polite"
+                    hidden
+                >
+                    <strong>Feedback submitted successfully.</strong>
+
+                    <p>
+                        Your submission is now waiting for administrator
+                        review.
+                    </p>
+                </div>
+
+            </form>
+
+        </article>
+
+
+        <!-- =========================
+             PUBLIC FEEDBACK LIST
+        ========================= -->
+        <article class="feedback-list-card">
+
+            <div class="feedback-list-header">
+
+                <div>
+
+                    <span class="section-eyebrow">
+                        Public Records
+                    </span>
+
+                    <h3>Recent Community Feedback</h3>
+
+                    <p>
+                        View submissions approved by the barangay for
+                        public transparency.
+                    </p>
+
+                </div>
+
+                <span class="public-feedback-badge">
+                    Public only
+                </span>
+
+            </div>
+
+
+            <div
+                id="feedbackList"
+                class="feedback-list"
+                aria-live="polite"
+            >
+
+                <div class="feedback-item feedback-loading-item">
+
+                    <div class="feedback-loading-icon">
+                        ⏳
+                    </div>
+
+                    <div>
+                        <strong>Loading community feedback</strong>
+
+                        <p>
+                            Please wait while approved records are retrieved.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- =========================
+         PROCESS EXPLANATION
+    ========================= -->
+    <section class="feedback-process-section">
+
+        <div class="section-title">
+
+            <span class="section-eyebrow">
+                Feedback Process
+            </span>
+
+            <h2>What Happens After Submission?</h2>
+
+            <p>
+                Every feedback record follows a simple review process.
+            </p>
+
+        </div>
+
+
+        <div class="feedback-process-grid">
+
+            <article class="feedback-process-step">
+
+                <span class="feedback-step-number">
+                    1
+                </span>
+
+                <div>
+                    <h3>Submission</h3>
+
+                    <p>
+                        Your feedback is securely saved and marked as
+                        Pending.
+                    </p>
+                </div>
+
+            </article>
+
+
+            <article class="feedback-process-step">
+
+                <span class="feedback-step-number">
+                    2
+                </span>
+
+                <div>
+                    <h3>Administrator Review</h3>
+
+                    <p>
+                        The barangay reviews the concern and may mark it as
+                        Under Review.
+                    </p>
+                </div>
+
+            </article>
+
+
+            <article class="feedback-process-step">
+
+                <span class="feedback-step-number">
+                    3
+                </span>
+
+                <div>
+                    <h3>Resolution</h3>
+
+                    <p>
+                        The administrator may provide a response and mark
+                        the concern as Resolved.
+                    </p>
+                </div>
+
+            </article>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =========================
+     SCRIPTS
+========================= -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+<script src="../js/main.js"></script>
+<script src="../js/feedback.js"></script>
+
+</body>
+</html>

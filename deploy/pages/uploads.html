@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Analysis - Katin-awan</title>
+<link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
+>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/projects.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="../index.html" class="public-logo">🏛️ Katin-awan Portal</a>
+
+    <nav>
+        <a href="dashboard.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a href="expenses.html">Expenses</a>
+        <a href="documents.html">Documents</a>
+        <a href="map.html">Map</a>
+        <a class="active" href="uploads.html">OCR Analysis</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="feedback.html">Feedback</a>
+   <span id="authArea" class="auth-area">
+    <button
+        type="button"
+        id="accountAction"
+        class="logout-btn"
+        disabled
+    >
+        Logout
+    </button>
+</span>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <h1>Document OCR Analysis</h1>
+    <p>Upload receipts, invoices, PDFs, Word files, or image-based documents for review and validation.</p>
+</section>
+
+<main class="public-container">
+
+    <section class="ocr-layout">
+
+        <div class="ocr-upload-card">
+            <h3>Upload Document</h3>
+
+            <div class="ocr-dropbox">
+                <div class="ocr-icon">📄</div>
+                <p>Select PDF, Word, image receipt, invoice, or document file.</p>
+<input
+    type="file"
+    id="ocrFile"
+    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+>
+            </div>
+
+            <button onclick="runOCR()">Upload / Run OCR Analysis</button>
+
+            <div id="ocrProgress"></div>
+
+          <small>
+    Image files are scanned using OCR. PDF and Word files are securely uploaded
+    for administrator review. Files remain private unless an administrator
+    intentionally publishes them as public documents. Maximum size: 5 MB.
+</small>
+        </div>
+
+        <div class="ocr-result-card">
+            <h3>OCR / Upload Result</h3>
+
+            <div id="ocrResult">
+                <p class="muted-text">No document uploaded yet.</p>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="section-title">
+        <h2>OCR Upload History</h2>
+        <p>Submitted documents and OCR results will appear here.</p>
+    </section>
+
+    <section class="documents-grid ocr-history"></section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="../js/uploads.js"></script>
+<script src="../js/backtotop.js"></script>
+</body>
+</html>

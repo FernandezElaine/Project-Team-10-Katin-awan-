@@ -1,0 +1,26 @@
+[
+  {
+    "subject": "Road project progress is slow",
+    "category": "Project Issue",
+    "message": "The road concreting in Sitio Lawis seems delayed. Can we get an update?",
+    "author": "Anonymous",
+    "date": "May 30, 2026",
+    "status": "Reviewed"
+  },
+  {
+    "subject": "Thank you for the health center",
+    "category": "Praise",
+    "message": "The renovated health center is much better now. Great job!",
+    "author": "Anonymous",
+    "date": "May 30, 2026",
+    "status": "Reviewed"
+  },
+  {
+    "subject": "Request for street lights",
+    "category": "Suggestion",
+    "message": "Purok 5 area is very dark at night. Can we add street lights there?",
+    "author": "Anonymous",
+    "date": "May 30, 2026",
+    "status": "New"
+  }
+]

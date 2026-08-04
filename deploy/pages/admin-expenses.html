@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" class="admin-auth-pending">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Expenses | Katin-awan Admin</title>
+<link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
+>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/admin.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+
+    <nav>
+        <a href="admin-dashboard.html">Dashboard</a>
+        <a href="admin-projects.html">Projects</a>
+        <a href="admin-budget.html">Budget</a>
+        <a class="active" href="admin-expenses.html">Expenses</a>
+        <a href="admin-documents.html">Documents/OCR</a>
+        <a href="admin-map.html">Map</a>
+        <a href="admin-feedback.html">Feedback</a>
+        <a href="admin-users.html">Users</a>
+        <a href="admin-audit.html">Audit Logs</a>
+        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Admin Module</span>
+        <h1>Manage Expenses</h1>
+        <p>
+            Add, update, validate, and delete barangay expense records including
+            receipts, amounts, categories, and review status.
+        </p>
+    </div>
+
+    <div class="hero-seal">💰</div>
+</section>
+
+<main class="public-container">
+
+    <section class="search-bar-section">
+        <input type="text" id="adminGlobalSearch" placeholder="🔍 Search projects, expenses, users..." onkeyup="handleAdminGlobalSearch()">
+        <button class="search-btn" onclick="handleAdminGlobalSearch()">Search</button>
+        <div id="adminGlobalSearchResults" class="search-results"></div>
+    </section>
+
+    <section class="public-grid">
+
+        <div class="public-panel">
+            <h3>Add / Update Expense</h3>
+
+            <form id="expenseForm">
+                <input type="hidden" id="expenseId">
+<label for="expenseProject">
+    Related Project
+</label>
+
+<select
+    id="expenseProject"
+    class="admin-input"
+>
+    <option value="">
+        Unassigned / General Expense
+    </option>
+</select>
+
+<small class="form-help-text">
+    Select the project whose budget will be charged for this expense.
+</small>
+                <label>Expense Title</label>
+                <input type="text" id="expenseTitle" class="admin-input" placeholder="Example: Road Repair Materials">
+
+                <label>Category</label>
+                <select id="expenseCategory" class="admin-input">
+                    <option value="Infrastructure">Infrastructure</option>
+                    <option value="Supplies">Supplies</option>
+                    <option value="Health">Health</option>
+                    <option value="Education">Education</option>
+                    <option value="Maintenance">Maintenance</option>
+                    <option value="Other">Other</option>
+                </select>
+
+                <label>Amount</label>
+                <input type="number" id="expenseAmount" class="admin-input" placeholder="Example: 7500">
+
+               <label for="expenseStatus">
+    Review Status
+</label>
+
+<select
+    id="expenseStatus"
+    class="admin-input"
+>
+    <option value="Pending">Pending</option>
+    <option value="Approved">Approved</option>
+    <option value="Flagged">Flagged</option>
+</select>
+
+                <label>Description</label>
+                <textarea id="expenseDescription" class="admin-input" rows="4" placeholder="Enter expense description"></textarea>
+
+               <label for="expenseReceipt">
+    Receipt / Supporting Document
+</label>
+
+<input
+    type="file"
+    id="expenseReceipt"
+    class="admin-input"
+    accept=".pdf,image/jpeg,image/png,image/webp"
+>
+
+<small class="form-help-text">
+    Upload PDF, JPG, PNG, or WebP. Maximum size: 5 MB.
+</small>
+
+<p
+    id="expenseSelectedFileInfo"
+    class="receipt-file-info"
+    hidden
+></p>
+
+<div
+    id="expenseExistingFileBox"
+    class="receipt-existing-box"
+    hidden
+>
+    <p>
+        <b>Current receipt:</b>
+        <span id="expenseExistingFileName"></span>
+    </p>
+
+    <div class="receipt-existing-actions">
+        <button
+            type="button"
+            class="public-blue-btn"
+            onclick="viewCurrentExpenseReceipt()"
+        >
+            View Current Receipt
+        </button>
+
+        <button
+            type="button"
+            class="danger-btn"
+            onclick="removeCurrentExpenseReceipt()"
+        >
+            Remove Current Receipt
+        </button>
+    </div>
+</div>
+
+                <div class="dashboard-actions">
+                    <button type="submit" class="public-blue-btn">Save Expense</button>
+                    <button type="button" onclick="clearExpenseForm()" class="public-green-btn">Clear</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="public-panel">
+            <h3>Expense Summary</h3>
+
+            <div class="report-item">
+                <b>Total Expenses</b>
+                <p id="totalExpenseAmount">₱0</p>
+            </div>
+
+            <div class="report-item">
+             <b>Approved Records</b>
+<p id="approvedExpenses">0</p>
+            </div>
+
+            <div class="report-item">
+                <b>Pending Reviews</b>
+                <p id="pendingExpenses">0</p>
+            </div>
+
+            <div class="report-item">
+                <b>Flagged Records</b>
+                <p id="flaggedExpenses">0</p>
+            </div>
+        </div>
+
+    </section>
+
+    <section class="section-title">
+        <h2>Expense Records</h2>
+        <p>List of barangay expenses managed by the administrator.</p>
+    </section>
+
+    <section class="tools-card">
+        <div class="tools-row">
+            <input
+                type="text"
+                id="adminExpenseSearch"
+                placeholder="Search expenses by title, category, description, or status..."
+                onkeyup="searchAdminExpenses()">
+
+            <select id="adminExpenseFilter" onchange="filterAdminExpenses()">
+                <option value="All">All Status</option>
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Flagged">Flagged</option>
+            </select>
+        </div>
+    </section>
+
+    <section id="expensesContainer" class="documents-grid">
+        <!-- Expenses will appear here -->
+    </section>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/admin-auth.js"></script>
+<script src="../js/admin-expenses.js"></script>
+<script src="../js/backtotop.js"></script>
+</body>
+</html>

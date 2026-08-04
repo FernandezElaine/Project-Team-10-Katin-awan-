@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Barangay Clearance Form",
+    "category": "Forms",
+    "file": "barangay-clearance.pdf",
+    "downloads": 45,
+    "date": "Oct 15, 2025"
+  },
+  {
+    "title": "Business Permit Form",
+    "category": "Forms",
+    "file": "business-permit.pdf",
+    "downloads": 32,
+    "date": "Oct 10, 2025"
+  },
+  {
+    "title": "FY 2025 Budget Report",
+    "category": "Financial",
+    "file": "budget-report-2025.pdf",
+    "downloads": 78,
+    "date": "Jan 15, 2025"
+  },
+  {
+    "title": "Road Concreting Progress Report",
+    "category": "Projects",
+    "file": "road-project-report.pdf",
+    "downloads": 21,
+    "date": "Mar 20, 2025"
+  }
+]

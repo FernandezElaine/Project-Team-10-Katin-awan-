@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Projects | Katin-awan</title>
+
+    <link
+        rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
+    >
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/projects.css">
+</head>
+
+<body>
+
+<header class="public-nav">
+    <a
+        href="dashboard.html"
+        class="public-logo"
+    >
+        🏛️ Katin-awan Portal
+    </a>
+
+    <nav>
+        <a href="dashboard.html">Home</a>
+
+        <a
+            class="active"
+            href="projects.html"
+        >
+            Projects
+        </a>
+
+        <a href="expenses.html">Expenses</a>
+        <a href="documents.html">Documents</a>
+        <a href="map.html">Map</a>
+        <a href="uploads.html">OCR Analysis</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="feedback.html">Feedback</a>
+
+        <span
+            id="authArea"
+            class="auth-area"
+        >
+            <button
+                type="button"
+                id="accountAction"
+                class="logout-btn"
+                disabled
+            >
+                Logout
+            </button>
+        </span>
+    </nav>
+</header>
+
+<section class="page-hero">
+    <span class="module-badge">
+        Project Listing and Status Updates
+    </span>
+
+    <h1>Barangay Projects</h1>
+
+    <p>
+        Track project progress, contractors, budgets,
+        timelines, bidders, photos, and implementation status.
+    </p>
+</section>
+
+<main class="public-container">
+
+    <section class="public-stats">
+
+        <div class="public-stat-card">
+            <div>
+                <p>Total Projects</p>
+                <h3 id="totalProjectsCount">0</h3>
+                <span class="blue-text">
+                    All recorded projects
+                </span>
+            </div>
+
+            <div class="stat-icon blue-bg">
+                🏗️
+            </div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Ongoing</p>
+                <h3 id="ongoingProjectsCount">0</h3>
+                <span class="green-text">
+                    Currently monitored
+                </span>
+            </div>
+
+            <div class="stat-icon green-bg">
+                🔄
+            </div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Completed</p>
+                <h3 id="completedProjectsCount">0</h3>
+                <span class="green-text">
+                    Finished projects
+                </span>
+            </div>
+
+            <div class="stat-icon cyan-bg">
+                ✅
+            </div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Planned</p>
+                <h3 id="plannedProjectsCount">0</h3>
+                <span class="blue-text">
+                    For implementation
+                </span>
+            </div>
+
+            <div class="stat-icon yellow-bg">
+                📌
+            </div>
+        </div>
+
+    </section>
+
+    <section class="tools-card">
+        <div>
+            <h3>Project Records</h3>
+
+            <p>
+                Search or filter barangay projects by
+                implementation status.
+            </p>
+        </div>
+
+        <div class="tools-row">
+            <input
+                type="search"
+                id="projectSearch"
+                placeholder="Search title, contractor, bidder, location, or category..."
+                autocomplete="off"
+            >
+
+            <select id="projectFilter">
+                <option value="All">All Status</option>
+                <option value="Planned">Planned</option>
+                <option value="Pending">Pending</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Completed">Completed</option>
+            </select>
+        </div>
+    </section>
+
+    <section
+        class="project-page-grid"
+        id="projectList"
+        aria-live="polite"
+    >
+        <div class="project-full-card">
+            <h3>Loading projects...</h3>
+            <p>Please wait while project records are loaded.</p>
+        </div>
+    </section>
+
+    <!-- Project Details Modal -->
+    <div
+        id="projectDetailsModal"
+        class="project-modal"
+        aria-hidden="true"
+    >
+        <div
+            class="project-modal-content"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="projectDetailsTitle"
+        >
+            <button
+                type="button"
+                id="closeProjectDetailsModal"
+                class="project-modal-close"
+                aria-label="Close project details"
+            >
+                X
+            </button>
+
+            <div
+                id="projectDetailsPhotoContainer"
+                class="project-details-photo"
+                hidden
+            >
+                <img
+                    id="projectDetailsPhoto"
+                    src=""
+                    alt=""
+                >
+            </div>
+
+            <span
+                id="projectDetailsStatus"
+                class="status-badge"
+            ></span>
+
+            <h2 id="projectDetailsTitle"></h2>
+
+            <p
+                id="projectDetailsCategory"
+                class="project-modal-category"
+            ></p>
+
+            <div class="project-modal-section">
+                <h4>Description</h4>
+                <p id="projectDetailsDescription"></p>
+            </div>
+
+            <div class="project-modal-grid">
+
+                <div class="project-modal-item">
+                    <b>Budget</b>
+                    <p id="projectDetailsBudget"></p>
+                </div>
+
+                <div class="project-modal-item">
+                    <b>Location</b>
+                    <p id="projectDetailsLocation"></p>
+                </div>
+
+                <div class="project-modal-item">
+                    <b>Contractor</b>
+                    <p id="projectDetailsContractor"></p>
+                </div>
+
+                <div class="project-modal-item">
+                    <b>Winning Bidder</b>
+                    <p id="projectDetailsBidder"></p>
+                </div>
+
+                <div class="project-modal-item">
+                    <b>Target Completion</b>
+                    <p id="projectDetailsTimeline"></p>
+                </div>
+
+                <div class="project-modal-item">
+                    <b>Completion Percentage</b>
+                    <p id="projectDetailsProgress"></p>
+                </div>
+
+            </div>
+
+            <div class="project-modal-progress">
+                <div class="project-progress-heading">
+                    <span>Implementation Progress</span>
+                    <strong id="projectDetailsProgressLabel">
+                        0%
+                    </strong>
+                </div>
+
+                <div class="public-progress">
+                    <div id="projectDetailsProgressBar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+<script src="../js/main.js"></script>
+<script src="../js/projects.js"></script>
+<script src="../js/backtotop.js"></script>
+
+</body>
+</html>

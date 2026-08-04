@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Katin-awan Dashboard</title>
+<link
+    rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
+>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+
+<header class="public-nav">
+    <a href="../index.html" class="public-logo">🏛️ Katin-awan Portal</a>
+
+    <nav>
+        <a class="active" href="dashboard.html">Home</a>
+        <a href="projects.html">Projects</a>
+        <a href="expenses.html">Expenses</a>
+        <a href="documents.html">Documents</a>
+        <a href="map.html">Map</a>
+        <a href="uploads.html">OCR Analysis</a>
+        <a href="chatbot.html">Chatbot</a>
+        <a href="feedback.html">Feedback</a>
+      <span id="authArea" class="auth-area">
+    <button
+        type="button"
+        id="accountAction"
+        class="logout-btn"
+        disabled
+    >
+        Logout
+    </button>
+</span>
+    </nav>
+</header>
+
+<section class="public-hero">
+    <div>
+        <span class="module-badge">Budget Tracking Dashboard</span>
+
+        <h1>Katin-awan Transparency Portal</h1>
+
+        <p>
+            Track barangay budgets, projects, documents, expenses, and public reports
+            through one centralized transparency platform.
+        </p>
+
+        <div class="hero-actions">
+            <a href="#budget" class="hero-btn light">View Budget</a>
+            <a href="projects.html" class="hero-btn outline">Explore Projects</a>
+        </div>
+    </div>
+
+    <div class="hero-seal">🛡️</div>
+</section>
+
+<main class="public-container">
+
+    <section id="budget" class="section-title">
+        <h2>Budget Tracking Dashboard</h2>
+        <p>Transparent view of barangay financial allocations and expenditures.</p>
+    </section>
+
+    <section class="search-bar-section">
+        <input
+            type="text"
+            id="globalSearch"
+            placeholder="🔍 Search projects, expenses, documents..."
+            onkeyup="handleGlobalSearch()">
+        <div id="globalSearchResults" class="search-results"></div>
+    </section>
+
+    <section class="public-stats">
+        <div class="public-stat-card">
+            <div>
+                <p>Total Budget</p>
+                <h3 id="dashboardTotalBudget">₱0</h3>
+                <span class="green-text" id="dashboardBudgetSummary">Loading budget...</span>
+            </div>
+            <div class="stat-icon blue-bg">💳</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Funds Utilized</p>
+                <h3 id="dashboardFundsUsed">₱0</h3>
+                <span class="blue-text" id="dashboardFundsUsedSummary">Loading expenses...</span>
+            </div>
+            <div class="stat-icon yellow-bg">💵</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Remaining Funds</p>
+                <h3 id="dashboardRemainingFunds">₱0</h3>
+                <span class="blue-text" id="dashboardRemainingSummary">Loading remaining funds...</span>
+            </div>
+            <div class="stat-icon green-bg">🐖</div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Active Projects</p>
+                <h3 id="dashboardActiveProjects">0</h3>
+                <span class="green-text" id="dashboardProjectSummary">Loading projects...</span>
+            </div>
+            <div class="stat-icon cyan-bg">🏗️</div>
+        </div>
+    </section>
+
+    <section class="public-grid">
+        <div class="public-panel large-panel">
+            <h3>Budget Allocation by Category</h3>
+
+            <div class="budget-public-content">
+                <div class="chart-container">
+                    <canvas id="budgetCategoryChart"></canvas>
+                </div>
+
+                <div class="public-budget-list">
+                    <div><span class="c-gray"></span> Loading budget categories <b>₱0</b></div>
+                </div>
+            </div>
+        </div>
+
+        
+    </section>
+
+<section class="public-panel resident-analytics" style="grid-column: span 2;">
+
+    <h3>📊 Transparency Analytics Dashboard</h3>
+
+    <!-- KPI CARDS -->
+    <div class="analytics-cards">
+
+        <div class="card">
+            <div class="card-icon">🏗️</div>
+            <h4>Total Projects</h4>
+            <h2 id="residentTotalProjects">0</h2>
+        </div>
+
+
+        <div class="card">
+            <div class="card-icon">✅</div>
+            <h4>Completed Projects</h4>
+            <h2 id="residentCompletedProjects">0</h2>
+        </div>
+
+
+        <div class="card">
+            <div class="card-icon">🔄</div>
+            <h4>Ongoing Projects</h4>
+            <h2 id="residentOngoingProjects">0</h2>
+        </div>
+
+
+        <div class="card">
+            <div class="card-icon">📈</div>
+            <h4>Completion Rate</h4>
+            <h2 id="residentCompletionRate">0%</h2>
+        </div>
+
+    </div>
+
+
+    <!-- IMPLEMENTERS -->
+    <div class="top-contractor">
+
+        🏗️ Project Implementers
+
+        <span id="residentContractors">
+            Loading...
+        </span>
+
+    </div>
+
+
+    <!-- CHARTS -->
+
+<div class="analytics-chart-grid">
+
+        <div class="analytics-card">
+
+            <h3>
+                Project Status
+            </h3>
+
+            <div style="height:220px;">
+                <canvas id="residentStatusChart"></canvas>
+            </div>
+
+        </div>
+
+
+
+        <div class="analytics-card">
+
+            <h3>
+                Projects by Category
+            </h3>
+
+            <div style="height:220px;">
+                <canvas id="residentCategoryChart"></canvas>
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+
+
+    <div class="insight-box">
+
+        <h4>
+            💡 Transparency Insights
+        </h4>
+
+        <p id="residentInsight">
+            Loading analytics insights...
+        </p>
+
+    </div>
+
+
+</section>
+
+
+
+    <section class="public-grid dashboard-extra">
+        <div class="public-panel alert-panel">
+            <h3>⚠️ Budget Alert</h3>
+            <p>Loading budget alert...</p>
+            <h2>0%</h2>
+            <small>Based on total expenses vs project budget</small>
+        </div>
+
+        <div class="public-panel">
+            <h3>Recent Activity</h3>
+            <div class="report-item">
+                <b>Loading activity</b>
+                <p>Please wait while recent public updates are loaded.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard-map-wrapper">
+        <div class="section-title">
+            <h2>Project Location Map</h2>
+            <p>View barangay project locations and community photos across Bogo City.</p>
+        </div>
+
+        <div class="dashboard-map-layout">
+            <div class="dashboard-map-card">
+                <div id="dashboardMap"></div>
+            </div>
+
+            <div class="dashboard-map-info">
+                <h3>Barangay Information</h3>
+
+                <div class="map-info-row">
+                    <b>Address</b>
+                    <p>Barangay Hall, Bogo City, Cebu</p>
+                </div>
+
+                <div class="map-info-row">
+                    <b>Phone</b>
+                    <p>(032) 123-4567</p>
+                </div>
+
+                <div class="map-info-row">
+                    <b>Email</b>
+                    <p>info@katinawanportal.gov.ph</p>
+                </div>
+
+                <div class="map-info-row">
+                    <b>Office Hours</b>
+                    <p>Monday-Friday<br>8:00 AM - 5:00 PM</p>
+                </div>
+
+                <div class="map-note">
+                    Click any marker on the map to view project photo and details.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-title">
+        <h2>Project Progress Overview</h2>
+        <p>Track the latest barangay development projects.</p>
+    </section>
+
+  <section class="public-projects" id="dashboardProjectOverview"></section>
+
+
+<div class="see-more-container">
+
+<a href="projects.html" class="see-more-project-btn">
+    See More Projects →
+</a>
+
+</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/supabase.js"></script>
+<script src="../js/auth-nav.js"></script>
+
+<script>
+async function goToProtectedPage(page) {
+    const { data } = await supabaseClient.auth.getSession();
+
+    if (!data.session) {
+        alert("Please log in first before using this feature.");
+
+        window.location.href =
+            "login.html?redirect=" +
+            encodeURIComponent(page);
+
+        return;
+    }
+
+    window.location.href = page;
+}
+</script>
+
+<div id="projectModal" class="project-modal">
+
+    <div class="project-modal-box">
+
+        <button class="modal-close" onclick="closeProjectModal()">
+            X
+        </button>
+
+
+        <span id="modalStatus" class="status ongoing">
+            Ongoing
+        </span>
+
+
+        <h2 id="modalTitle">
+            Project Title
+        </h2>
+
+
+        <p id="modalCategory">
+            Category
+        </p>
+
+
+        <div class="modal-description">
+
+            <h4>Description</h4>
+
+            <p id="modalDescription">
+            </p>
+
+        </div>
+
+
+
+        <div class="modal-grid">
+
+
+            <div>
+                <small>Budget</small>
+                <p id="modalBudget"></p>
+            </div>
+
+
+            <div>
+                <small>Location</small>
+                <p id="modalLocation"></p>
+            </div>
+
+
+
+            <div>
+                <small>Contractor</small>
+                <p id="modalContractor"></p>
+            </div>
+
+
+
+            <div>
+                <small>Bidder</small>
+                <p id="modalBidder"></p>
+            </div>
+
+
+
+            <div>
+                <small>Timeline</small>
+                <p id="modalTimeline"></p>
+            </div>
+
+
+
+            <div>
+                <small>Progress</small>
+                <p id="modalProgress"></p>
+            </div>
+
+
+        </div>
+
+
+
+        <div class="modal-progress">
+
+            <div id="modalProgressBar"></div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../js/dashboard-map.js"></script>
+<script src="../js/dashboard.js"></script>
+<script src="../js/backtotop.js"></script>
+
+
+</body>
+</html>

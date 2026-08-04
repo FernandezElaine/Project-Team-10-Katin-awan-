@@ -1,0 +1,265 @@
+.auth-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1e3a8a, #1e40af, #3b82f6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 24px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 430px;
+    background: white;
+    border-radius: 22px;
+    padding: 36px;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.22);
+}
+
+.auth-logo {
+    display: inline-block;
+    color: #1e3a8a;
+    font-size: 22px;
+    font-weight: 900;
+    text-decoration: none;
+    margin-bottom: 22px;
+}
+
+.auth-card h1 {
+    margin: 0 0 10px;
+    color: #0f172a;
+    font-size: 32px;
+}
+
+.auth-card p {
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.auth-card form {
+    margin-top: 24px;
+}
+
+.auth-card label {
+    display: block;
+    margin-bottom: 8px;
+    color: #0f172a;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.auth-card input {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 18px;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    font-size: 15px;
+    outline: none;
+}
+
+.auth-card input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
+}
+
+.auth-card button {
+    width: 100%;
+    border: none;
+    background: #2563eb;
+    color: white;
+    padding: 15px;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.auth-card button:hover {
+    background: #1d4ed8;
+}
+
+.auth-links {
+    text-align: center;
+    margin-top: 22px;
+}
+
+.auth-links p {
+    margin: 0 0 6px;
+}
+
+.auth-links a {
+    color: #2563eb;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.back-link {
+    display: block;
+    text-align: center;
+    margin-top: 24px;
+    color: #64748b;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.login-options {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+    margin-bottom: 16px;
+}
+
+.login-options a {
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.login-options a:hover {
+    text-decoration: underline;
+}
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin: 12px 0 18px;
+    font-size: 14px;
+}
+
+.remember-option {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    cursor: pointer;
+}
+
+.remember-option input {
+    width: auto;
+    margin: 0;
+}
+
+.login-options a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-options a:hover {
+    text-decoration: underline;
+}
+/* Password field with eye icon */
+.auth-card .password-field {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.auth-card .password-field input {
+    display: block;
+    width: 100%;
+    padding-right: 52px;
+    box-sizing: border-box;
+}
+
+/* Strong reset prevents normal login-button styles from affecting the eye */
+.auth-card .password-field .password-eye {
+    all: unset !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+
+    position: absolute !important;
+    top: 0 !important;
+    right: 13px !important;
+    bottom: 0 !important;
+
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    max-width: 30px !important;
+
+    margin: auto 0 !important;
+    padding: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    box-shadow: none !important;
+
+    color: #64748b !important;
+    cursor: pointer !important;
+    z-index: 2;
+}
+
+/* Keep it gray instead of turning blue */
+.auth-card .password-field {
+    position: relative;
+    width: 100%;
+}
+
+.auth-card .password-field input {
+    display: block;
+    width: 100%;
+    padding-right: 52px;
+    box-sizing: border-box;
+}
+
+.auth-card .password-field .password-eye {
+    all: unset !important;
+
+    position: absolute !important;
+    top: 0 !important;
+    right: 13px !important;
+    bottom: 0 !important;
+
+    width: 30px !important;
+    height: 30px !important;
+    margin: auto 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    box-shadow: none !important;
+
+    color: #64748b !important;
+    cursor: pointer !important;
+    z-index: 2;
+}
+
+.auth-card .password-field .password-eye:hover,
+.auth-card .password-field .password-eye:active,
+.auth-card .password-field .password-eye:focus {
+    color: #64748b !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.auth-card .password-field .password-eye:focus-visible {
+    outline: 2px solid #94a3b8 !important;
+    outline-offset: 2px;
+}
+
+.auth-card .password-field .password-eye svg {
+    width: 20px;
+    height: 20px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    pointer-events: none;
+}
+
+.auth-card .password-field .eye-slash.is-hidden {
+    display: none;
+}
