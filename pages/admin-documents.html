@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/admin.css">
 </head>
-<body>
+<body class="admin-documents-page">
 
 <header class="public-nav">
     <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
@@ -43,15 +43,9 @@
     <div class="hero-seal">📄</div>
 </section>
 
-<main class="public-container">
+<main class="public-container admin-documents-container">
 
-    <section class="search-bar-section">
-        <input type="text" id="adminGlobalSearch" placeholder="🔍 Search projects, expenses, users..." onkeyup="handleAdminGlobalSearch()">
-        <button class="search-btn" onclick="handleAdminGlobalSearch()">Search</button>
-        <div id="adminGlobalSearchResults" class="search-results"></div>
-    </section>
-
-    <section class="public-grid">
+    <section class="public-grid admin-documents-grid">
 
         <!-- Left Panel: Add Document -->
         <div class="public-panel">
@@ -151,33 +145,174 @@
         <!-- Populated dynamically by admin-documents.js -->
     </section>
 
-<div id="ocrReviewModal" class="project-modal">
-    <div class="project-modal-content">
-        <button class="project-modal-close" onclick="closeOCRReviewModal()">X</button>
+<div
+    id="ocrReviewModal"
+    class="project-modal"
+>
+    <div class="project-modal-content ocr-review-content">
+
+        <button
+            type="button"
+            class="project-modal-close"
+            onclick="closeOCRReviewModal()"
+        >
+            X
+        </button>
 
         <h2>Review OCR Record</h2>
 
-        <input type="hidden" id="ocrReviewId">
+        <input
+            type="hidden"
+            id="ocrReviewId"
+        >
 
-        <p><b>File:</b> <span id="ocrReviewFileName"></span></p>
-        <p><b>Detected Vendor:</b> <span id="ocrReviewVendor"></span></p>
-        <p><b>Detected Amount:</b> <span id="ocrReviewAmount"></span></p>
-        <p><b>Confidence:</b> <span id="ocrReviewConfidence"></span></p>
+        <div class="ocr-review-summary">
+            <p>
+                <b>File:</b>
+                <span id="ocrReviewFileName"></span>
+            </p>
 
-        <label>Extracted / Corrected Text</label>
-        <textarea id="ocrCorrectedText" class="admin-input" rows="10"></textarea>
+            <p>
+                <b>Detected Vendor:</b>
+                <span id="ocrReviewVendor"></span>
+            </p>
 
-        <label>Status</label>
-        <select id="ocrReviewStatus" class="admin-input">
-            <option value="Validated Expense">Validated Expense</option>
-            <option value="Needs Admin Review">Needs Admin Review</option>
-            <option value="Flagged for Review">Flagged for Review</option>
+            <p>
+                <b>Detected Amount:</b>
+                <span id="ocrReviewAmount"></span>
+            </p>
+
+            <p>
+                <b>Confidence:</b>
+                <span id="ocrReviewConfidence"></span>
+            </p>
+        </div>
+
+        <div class="ocr-review-file-actions">
+
+            <button
+                type="button"
+                id="ocrViewOriginalBtn"
+                class="public-blue-btn"
+                onclick="viewOCRFile('original')"
+            >
+                View Original
+            </button>
+
+            <button
+                type="button"
+                id="ocrDownloadOriginalBtn"
+                class="public-green-btn"
+                onclick="downloadOCRFile('original')"
+            >
+                Download Original
+            </button>
+
+            <button
+                type="button"
+                id="ocrDownloadReportBtn"
+                class="public-blue-btn"
+                onclick="downloadOCRFile('ocr')"
+            >
+                Download OCR PDF
+            </button>
+
+            <button
+                type="button"
+                id="ocrDownloadCorrectedBtn"
+                class="public-green-btn"
+                onclick="downloadOCRFile('corrected')"
+            >
+                Download Corrected PDF
+            </button>
+
+        </div>
+
+        <label for="ocrCorrectedText">
+            Extracted / Corrected Text
+        </label>
+
+        <textarea
+            id="ocrCorrectedText"
+            class="admin-input"
+            rows="10"
+            placeholder="Review and correct the OCR text here."
+        ></textarea>
+
+        <label for="ocrCorrectedPdfFile">
+            Upload Manually Edited PDF
+        </label>
+
+        <input
+            type="file"
+            id="ocrCorrectedPdfFile"
+            class="admin-input"
+            accept=".pdf,application/pdf"
+        >
+
+        <small class="form-help-text">
+            Upload the PDF after editing it using Adobe Acrobat,
+            Microsoft Word, or another PDF editor. Maximum size: 5 MB.
+        </small>
+
+        <p
+            id="ocrCorrectedPdfInfo"
+            class="receipt-file-info"
+            hidden
+        ></p>
+
+        <label for="ocrReviewNotes">
+            Admin Review Notes
+        </label>
+
+        <textarea
+            id="ocrReviewNotes"
+            class="admin-input"
+            rows="3"
+            placeholder="Enter findings, corrections, or reasons for flagging."
+        ></textarea>
+
+        <label for="ocrReviewStatus">
+            Review Status
+        </label>
+
+        <select
+            id="ocrReviewStatus"
+            class="admin-input"
+        >
+            <option value="Validated Expense">
+                Validated Expense
+            </option>
+
+            <option value="Needs Admin Review">
+                Needs Admin Review
+            </option>
+
+            <option value="Flagged for Review">
+                Flagged for Review
+            </option>
         </select>
 
         <div class="dashboard-actions">
-            <button class="public-blue-btn" onclick="saveOCRReview()">Save Review</button>
-            <button class="public-green-btn" onclick="closeOCRReviewModal()">Cancel</button>
+
+            <button
+                type="button"
+                class="public-blue-btn"
+                onclick="saveOCRReview()"
+            >
+                Save Review
+            </button>
+
+            <button
+                type="button"
+                class="public-green-btn"
+                onclick="closeOCRReviewModal()"
+            >
+                Cancel
+            </button>
+
         </div>
+
     </div>
 </div>
 </main>
@@ -186,7 +321,7 @@
 <script src="../js/supabase.js"></script>
 <script src="../js/admin-auth.js"></script>
 <script src="../js/admin-documents.js"></script>
-<script src="../js/admin-dashboard-map.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="../js/backtotop.js"></script>
 </body>

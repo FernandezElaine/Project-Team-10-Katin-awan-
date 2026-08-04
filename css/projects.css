@@ -1124,3 +1124,18 @@ body.modal-open {
         height: 190px;
     }
 }
+.ocr-result-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 16px 0;
+}
+
+.ocr-result-actions button {
+    margin: 0;
+}
+
+.ocr-result-actions button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}

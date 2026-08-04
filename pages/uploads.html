@@ -54,20 +54,22 @@
             <div class="ocr-dropbox">
                 <div class="ocr-icon">📄</div>
                 <p>Select PDF, Word, image receipt, invoice, or document file.</p>
-
-                <input
-                    type="file"
-                    id="ocrFile"
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,image/*">
+<input
+    type="file"
+    id="ocrFile"
+    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+>
             </div>
 
             <button onclick="runOCR()">Upload / Run OCR Analysis</button>
 
             <div id="ocrProgress"></div>
 
-            <small>
-                Image files are scanned using OCR. PDF and Word files are uploaded for admin review/download.
-            </small>
+          <small>
+    Image files are scanned using OCR. PDF and Word files are securely uploaded
+    for administrator review. Files remain private unless an administrator
+    intentionally publishes them as public documents. Maximum size: 5 MB.
+</small>
         </div>
 
         <div class="ocr-result-card">
@@ -94,8 +96,8 @@
 <script src="../js/auth-nav.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-<script src="../js/main.js"></script>
-<script src="../js/uploads.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="../js/uploads.js"></script>
+<script src="../js/backtotop.js"></script>
 </body>
 </html>
