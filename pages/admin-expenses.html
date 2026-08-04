@@ -59,7 +59,22 @@
 
             <form id="expenseForm">
                 <input type="hidden" id="expenseId">
+<label for="expenseProject">
+    Related Project
+</label>
 
+<select
+    id="expenseProject"
+    class="admin-input"
+>
+    <option value="">
+        Unassigned / General Expense
+    </option>
+</select>
+
+<small class="form-help-text">
+    Select the project whose budget will be charged for this expense.
+</small>
                 <label>Expense Title</label>
                 <input type="text" id="expenseTitle" class="admin-input" placeholder="Example: Road Repair Materials">
 
@@ -76,18 +91,71 @@
                 <label>Amount</label>
                 <input type="number" id="expenseAmount" class="admin-input" placeholder="Example: 7500">
 
-                <label>Status</label>
-                <select id="expenseStatus" class="admin-input">
-                    <option value="Pending">Pending</option>
-                    <option value="Valid">Valid</option>
-                    <option value="Flagged">Flagged</option>
-                </select>
+               <label for="expenseStatus">
+    Review Status
+</label>
+
+<select
+    id="expenseStatus"
+    class="admin-input"
+>
+    <option value="Pending">Pending</option>
+    <option value="Approved">Approved</option>
+    <option value="Flagged">Flagged</option>
+</select>
 
                 <label>Description</label>
                 <textarea id="expenseDescription" class="admin-input" rows="4" placeholder="Enter expense description"></textarea>
 
-                <label>Receipt / File URL</label>
-                <input type="text" id="expenseFileUrl" class="admin-input" placeholder="Paste receipt or document link">
+               <label for="expenseReceipt">
+    Receipt / Supporting Document
+</label>
+
+<input
+    type="file"
+    id="expenseReceipt"
+    class="admin-input"
+    accept=".pdf,image/jpeg,image/png,image/webp"
+>
+
+<small class="form-help-text">
+    Upload PDF, JPG, PNG, or WebP. Maximum size: 5 MB.
+</small>
+
+<p
+    id="expenseSelectedFileInfo"
+    class="receipt-file-info"
+    hidden
+></p>
+
+<div
+    id="expenseExistingFileBox"
+    class="receipt-existing-box"
+    hidden
+>
+    <p>
+        <b>Current receipt:</b>
+        <span id="expenseExistingFileName"></span>
+    </p>
+
+    <div class="receipt-existing-actions">
+        <button
+            type="button"
+            class="public-blue-btn"
+            onclick="viewCurrentExpenseReceipt()"
+        >
+            View Current Receipt
+        </button>
+
+        <button
+            type="button"
+            class="danger-btn"
+            onclick="removeCurrentExpenseReceipt()"
+        >
+            Remove Current Receipt
+        </button>
+    </div>
+</div>
 
                 <div class="dashboard-actions">
                     <button type="submit" class="public-blue-btn">Save Expense</button>
@@ -105,8 +173,8 @@
             </div>
 
             <div class="report-item">
-                <b>Valid Records</b>
-                <p id="validExpenses">0</p>
+             <b>Approved Records</b>
+<p id="approvedExpenses">0</p>
             </div>
 
             <div class="report-item">
@@ -138,7 +206,7 @@
             <select id="adminExpenseFilter" onchange="filterAdminExpenses()">
                 <option value="All">All Status</option>
                 <option value="Pending">Pending</option>
-                <option value="Valid">Valid</option>
+                <option value="Approved">Approved</option>
                 <option value="Flagged">Flagged</option>
             </select>
         </div>
@@ -154,7 +222,6 @@
 <script src="../js/supabase.js"></script>
 <script src="../js/admin-auth.js"></script>
 <script src="../js/admin-expenses.js"></script>
-<script src="../js/admin-dashboard-map.js"></script>
 <script src="../js/backtotop.js"></script>
 </body>
 </html>

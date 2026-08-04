@@ -1,163 +1,462 @@
 // js/expenses.js
 
 let publicExpenses = [];
+let filteredPublicExpenses = [];
 
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("expenses.js loaded");
-    loadExpenses();
-});
+document.addEventListener(
+    "DOMContentLoaded",
+    async function () {
+        await loadExpenses();
+    }
+);
 
 async function loadExpenses() {
-    const expenseTable = document.getElementById("expenseTable");
+    const expenseTable =
+        document.getElementById(
+            "expenseTable"
+        );
 
     if (!expenseTable) {
-        console.error("expenseTable not found");
+        console.error(
+            "expenseTable not found"
+        );
         return;
     }
 
-    const { data, error } = await supabaseClient
-        .from("expenses")
-        .select("*")
-        .order("created_at", { ascending: false });
+    expenseTable.innerHTML = `
+        <tr>
+            <td colspan="8">
+                Loading expense records...
+            </td>
+        </tr>
+    `;
 
-    console.log("Public expenses data:", data);
-    console.log("Public expenses error:", error);
+    const { data, error } =
+        await supabaseClient
+            .from("expenses")
+            .select(`
+                id,
+                project_id,
+                title,
+                category,
+                amount,
+                status,
+                description,
+                file_url,
+                file_path,
+                file_name,
+                created_at,
+                project:projects (
+                    id,
+                    title
+                )
+            `)
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
 
     if (error) {
+        console.error(
+            "Public expenses error:",
+            error
+        );
+
         expenseTable.innerHTML = `
             <tr>
-                <td colspan="7" style="color:red;">
-                    Failed to load expenses: ${error.message}
+                <td
+                    colspan="8"
+                    class="red-text"
+                >
+                    Failed to load expenses:
+                    ${escapeHTML(error.message)}
                 </td>
             </tr>
         `;
+
         return;
     }
 
-    publicExpenses = data || [];
+    publicExpenses =
+        (data || []).map(
+            function (expense) {
+                return {
+                    ...expense,
+                    normalized_status:
+                        normalizeExpenseStatus(
+                            expense.status
+                        )
+                };
+            }
+        );
 
-    updateExpenseStats(publicExpenses);
-    renderExpenses(publicExpenses);
+    updateExpenseStats(
+        publicExpenses
+    );
+
+    applyExpenseFilters();
 }
 
 function renderExpenses(expenses) {
-    const expenseTable = document.getElementById("expenseTable");
+    const expenseTable =
+        document.getElementById(
+            "expenseTable"
+        );
 
-    if (!expenses || expenses.length === 0) {
-        expenseTable.innerHTML = `
-            <tr>
-                <td colspan="7">No expenses found.</td>
-            </tr>
-        `;
+    if (!expenseTable) {
         return;
     }
 
-    expenseTable.innerHTML = "";
-
-    expenses.forEach(expense => {
-        const row = document.createElement("tr");
-
-        row.innerHTML = `
-            <td>${expense.title || "Untitled Expense"}</td>
-            <td>${expense.category || "Other"}</td>
-            <td>₱${Number(expense.amount || 0).toLocaleString()}</td>
-            <td>${expense.description || "No description provided."}</td>
-            <td>${formatDate(expense.created_at)}</td>
-            <td>
-                <span class="${getStatusClass(expense.status)}">
-                    ${expense.status || "Pending"}
-                </span>
-            </td>
-            <td>
-                ${
-                    expense.file_url
-                        ? `<button onclick="viewExpenseFile('${expense.file_url}')">View</button>`
-                        : "No file"
-                }
-            </td>
+    if (
+        !expenses ||
+        expenses.length === 0
+    ) {
+        expenseTable.innerHTML = `
+            <tr>
+                <td colspan="8">
+                    No expenses found.
+                </td>
+            </tr>
         `;
 
-        expenseTable.appendChild(row);
-    });
+        return;
+    }
+
+    expenseTable.innerHTML =
+        expenses
+            .map(createExpenseRow)
+            .join("");
+}
+
+function createExpenseRow(expense) {
+    const projectName =
+        expense.project?.title ||
+        "Unassigned / General Expense";
+
+    const status =
+        normalizeExpenseStatus(
+            expense.status
+        );
+
+    /*
+     * Residents only see whether a supporting
+     * document exists. Private storage paths
+     * and signed links are not exposed.
+     */
+    const hasSupportingFile =
+        Boolean(
+            expense.file_path ||
+            expense.file_url
+        );
+
+    const fileLabel =
+        hasSupportingFile
+            ? "Available"
+            : "Not provided";
+
+    return `
+        <tr>
+            <td>
+                ${escapeHTML(
+                    expense.title ||
+                    "Untitled Expense"
+                )}
+            </td>
+
+            <td>
+                ${escapeHTML(
+                    projectName
+                )}
+            </td>
+
+            <td>
+                ${escapeHTML(
+                    expense.category ||
+                    "Other"
+                )}
+            </td>
+
+            <td>
+                ${formatPeso(
+                    expense.amount
+                )}
+            </td>
+
+            <td>
+                ${escapeHTML(
+                    expense.description ||
+                    "No description provided."
+                )}
+            </td>
+
+            <td>
+                ${formatDate(
+                    expense.created_at
+                )}
+            </td>
+
+            <td>
+                <span class="${
+                    getStatusClass(status)
+                }">
+                    ${escapeHTML(status)}
+                </span>
+            </td>
+
+            <td>
+                <span class="${
+                    hasSupportingFile
+                        ? "green-text"
+                        : ""
+                }">
+                    ${fileLabel}
+                </span>
+            </td>
+        </tr>
+    `;
 }
 
 function searchExpenses() {
-    const searchInput = document.getElementById("expenseSearch");
-
-    if (!searchInput) return;
-
-    const keyword = searchInput.value.toLowerCase().trim();
-    const selectedStatus = document.getElementById("expenseFilter")?.value || "All";
-
-    let filtered = publicExpenses;
-
-    if (selectedStatus !== "All") {
-        filtered = filtered.filter(expense => expense.status === selectedStatus);
-    }
-
-    if (keyword) {
-        filtered = filtered.filter(expense =>
-            (expense.title || "").toLowerCase().includes(keyword) ||
-            (expense.category || "").toLowerCase().includes(keyword) ||
-            (expense.description || "").toLowerCase().includes(keyword) ||
-            String(expense.amount || "").toLowerCase().includes(keyword) ||
-            (expense.status || "").toLowerCase().includes(keyword)
-        );
-    }
-
-    renderExpenses(filtered);
+    applyExpenseFilters();
 }
 
 function filterExpenses() {
-    searchExpenses();
+    applyExpenseFilters();
+}
+
+function applyExpenseFilters() {
+    const searchInput =
+        document.getElementById(
+            "expenseSearch"
+        );
+
+    const filterInput =
+        document.getElementById(
+            "expenseFilter"
+        );
+
+    const keyword =
+        searchInput?.value
+            .trim()
+            .toLowerCase() || "";
+
+    const selectedStatus =
+        filterInput?.value || "All";
+
+    filteredPublicExpenses =
+        publicExpenses.filter(
+            function (expense) {
+                const status =
+                    normalizeExpenseStatus(
+                        expense.status
+                    );
+
+                const projectName =
+                    expense.project?.title ||
+                    "Unassigned General Expense";
+
+                const searchableText = [
+                    expense.title,
+                    projectName,
+                    expense.category,
+                    expense.description,
+                    expense.amount,
+                    status,
+                    expense.file_name
+                ]
+                    .join(" ")
+                    .toLowerCase();
+
+                const matchesKeyword =
+                    !keyword ||
+                    searchableText.includes(
+                        keyword
+                    );
+
+                const matchesStatus =
+                    selectedStatus === "All" ||
+                    status === selectedStatus;
+
+                return (
+                    matchesKeyword &&
+                    matchesStatus
+                );
+            }
+        );
+
+    renderExpenses(
+        filteredPublicExpenses
+    );
 }
 
 function updateExpenseStats(expenses) {
-    const totalAmount = expenses.reduce((sum, expense) => {
-        return sum + Number(expense.amount || 0);
-    }, 0);
+    const totalAmount =
+        expenses.reduce(
+            function (sum, expense) {
+                return (
+                    sum +
+                    Number(
+                        expense.amount || 0
+                    )
+                );
+            },
+            0
+        );
 
-    document.getElementById("totalExpenses").textContent =
-        `₱${totalAmount.toLocaleString()}`;
+    const approvedCount =
+        expenses.filter(
+            function (expense) {
+                return (
+                    normalizeExpenseStatus(
+                        expense.status
+                    ) === "Approved"
+                );
+            }
+        ).length;
 
-    document.getElementById("validCount").textContent =
-        expenses.filter(expense => expense.status === "Valid").length;
+    const flaggedCount =
+        expenses.filter(
+            function (expense) {
+                return (
+                    normalizeExpenseStatus(
+                        expense.status
+                    ) === "Flagged"
+                );
+            }
+        ).length;
 
-    document.getElementById("flaggedCount").textContent =
-        expenses.filter(expense => expense.status === "Flagged").length;
+    const pendingCount =
+        expenses.filter(
+            function (expense) {
+                return (
+                    normalizeExpenseStatus(
+                        expense.status
+                    ) === "Pending"
+                );
+            }
+        ).length;
 
-    document.getElementById("pendingCount").textContent =
-        expenses.filter(expense => expense.status === "Pending").length;
+    setText(
+        "totalExpenses",
+        formatPeso(totalAmount)
+    );
+
+    setText(
+        "approvedCount",
+        approvedCount
+    );
+
+    setText(
+        "flaggedCount",
+        flaggedCount
+    );
+
+    setText(
+        "pendingCount",
+        pendingCount
+    );
 }
 
-function viewExpenseFile(fileUrl) {
-    if (!fileUrl) {
-        alert("No file available.");
-        return;
+function normalizeExpenseStatus(status) {
+    const normalized =
+        String(status || "")
+            .trim()
+            .toLowerCase();
+
+    /*
+     * Older records using Valid are displayed
+     * as Approved.
+     */
+    if (
+        normalized === "approved" ||
+        normalized === "valid"
+    ) {
+        return "Approved";
     }
 
-    window.open(fileUrl, "_blank");
+    if (normalized === "flagged") {
+        return "Flagged";
+    }
+
+    return "Pending";
 }
 
 function getStatusClass(status) {
-    switch (status) {
-        case "Valid":
+    switch (
+        normalizeExpenseStatus(status)
+    ) {
+        case "Approved":
             return "status-resolved";
+
         case "Flagged":
             return "status-pending";
+
         case "Pending":
-            return "status-review";
         default:
             return "status-review";
     }
 }
 
-function formatDate(dateValue) {
-    if (!dateValue) return "N/A";
+function formatPeso(amount) {
+    return new Intl.NumberFormat(
+        "en-PH",
+        {
+            style: "currency",
+            currency: "PHP",
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        }
+    ).format(
+        Number(amount || 0)
+    );
+}
 
-    return new Date(dateValue).toLocaleDateString("en-PH", {
-        year: "numeric",
-        month: "short",
-        day: "numeric"
-    });
+function formatDate(dateValue) {
+    if (!dateValue) {
+        return "N/A";
+    }
+
+    const date =
+        new Date(dateValue);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return "N/A";
+    }
+
+    return date.toLocaleDateString(
+        "en-PH",
+        {
+            year: "numeric",
+            month: "short",
+            day: "numeric"
+        }
+    );
+}
+
+function setText(id, value) {
+    const element =
+        document.getElementById(id);
+
+    if (element) {
+        element.textContent =
+            String(value ?? "");
+    }
+}
+
+function escapeHTML(value) {
+    return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 }

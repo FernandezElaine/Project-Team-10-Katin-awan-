@@ -2,6 +2,77 @@ console.log("CHATBOT JS LOADED");
 let chatbotData = [];
 let currentLanguage = 'english';
 
+function detectLanguage(text) {
+    const words =
+        String(text || "")
+            .toLowerCase()
+            .match(/[a-zñ'-]+/g) || [];
+
+    const bisayaWords = new Set([
+        "unsa",
+        "unsay",
+        "ngano",
+        "asa",
+        "kinsa",
+        "kanus-a",
+        "palihog",
+        "nimo",
+        "nako",
+        "inyong",
+        "aduna",
+        "maayo",
+        "giunsa",
+        "pila"
+    ]);
+
+    const tagalogWords = new Set([
+        "ano",
+        "bakit",
+        "saan",
+        "sino",
+        "kailan",
+        "paano",
+        "magkano",
+        "maaari",
+        "pwede",
+        "pakita",
+        "mayroon",
+        "ilan",
+        "alin",
+        "kumusta"
+    ]);
+
+    let bisayaScore = 0;
+    let tagalogScore = 0;
+
+    words.forEach(function (word) {
+        if (bisayaWords.has(word)) {
+            bisayaScore++;
+        }
+
+        if (tagalogWords.has(word)) {
+            tagalogScore++;
+        }
+    });
+
+    if (
+        bisayaScore > tagalogScore &&
+        bisayaScore > 0
+    ) {
+        return "bisaya";
+    }
+
+    if (tagalogScore > 0) {
+        return "tagalog";
+    }
+
+    /*
+     * English is the default when no clear
+     * Tagalog or Bisaya indicator is detected.
+     */
+    return "english";
+}
+
 // -------------------------
 // LOAD LOCAL DATA (optional fallback)
 // -------------------------
@@ -17,16 +88,89 @@ async function loadChatbotData() {
 // -------------------------
 // LANGUAGE SWITCH
 // -------------------------
-function setLanguage(lang) {
-    currentLanguage = lang;
-    console.log("LANGUAGE CHANGED TO:", currentLanguage);
+function detectLanguage(text) {
+    const message =
+        String(text || "")
+            .toLowerCase()
+            .replace(/[.,!?;:()[\]{}"]/g, " ");
 
-    document.querySelectorAll('.lang-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
+    const bisayaIndicators = [
+        "unsa",
+        "unsay",
+        "ngano",
+        "asa",
+        "kinsa",
+        "kanus-a",
+        "pila",
+        "palihog",
+        "nimo",
+        "nako",
+        "inyuha",
+        "aduna",
+        "maayo",
+        "mahimong",
+        "gipakita",
+        "giunsa"
+    ];
 
-    const activeBtn = document.querySelector(`.lang-btn[onclick*="${lang}"]`);
-    if (activeBtn) activeBtn.classList.add('active');
+    const tagalogIndicators = [
+        "ano",
+        "bakit",
+        "saan",
+        "sino",
+        "kailan",
+        "paano",
+        "magkano",
+        "maaari",
+        "pakisabi",
+        "pakita",
+        "aking",
+        "atin",
+        "mayroon",
+        "proyektong"
+    ];
+
+    const words =
+        new Set(
+            message
+                .split(/\s+/)
+                .filter(Boolean)
+        );
+
+    const bisayaScore =
+        bisayaIndicators.reduce(
+            function (score, word) {
+                return (
+                    score +
+                    (words.has(word) ? 1 : 0)
+                );
+            },
+            0
+        );
+
+    const tagalogScore =
+        tagalogIndicators.reduce(
+            function (score, word) {
+                return (
+                    score +
+                    (words.has(word) ? 1 : 0)
+                );
+            },
+            0
+        );
+
+    if (
+        bisayaScore > 0 &&
+        bisayaScore > tagalogScore
+    ) {
+        return "bisaya";
+    }
+
+    if (tagalogScore > 0) {
+        return "tagalog";
+    }
+
+    return "english";
 }
 
 // -------------------------
@@ -35,10 +179,27 @@ function setLanguage(lang) {
 async function sendMessage() {
 
     const input = document.getElementById("chatInput");
-    const text = input.value.trim();
+   const text =
+    input.value.trim();
 
-    if(!text) return;
+if (!text) {
+    return;
+}
 
+currentLanguage =
+    detectLanguage(text);
+
+console.log(
+    "Detected language:",
+    currentLanguage
+);
+currentLanguage =
+    detectLanguage(text);
+
+console.log(
+    "Automatically detected language:",
+    currentLanguage
+);
 
     addMessage("user", text);
 
@@ -74,55 +235,123 @@ reply = await getReply(text);
 if(!reply){
     reply = await askAI(text);
 }
+await typeMessage(
+    loading,
+    reply
+);
 
-typeMessage(loading, reply);
-
-
-    saveChat(text, reply);
+await saveChat(
+    text,
+    reply
+);
 
 }
 
-async function askAI(message){
+async function askAI(message) {
+    try {
+        const {
+            data: { session },
+            error: sessionError
+        } =
+            await supabaseClient.auth
+                .getSession();
 
-    try{
-console.log("CURRENT LANGUAGE:", currentLanguage);
-        const response = await fetch(
-            "http://localhost:3000/chat",
-            {
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
+        if (
+            sessionError ||
+            !session?.access_token
+        ) {
+            return getLocalizedMessage(
+                "login_required"
+            );
+        }
 
-                
-    body:JSON.stringify({
-    message:message,
-    language:currentLanguage
+        const response =
+            await fetch(
+                window.KATIN_AWAN_CHAT_API_URL,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        Authorization:
+                            `Bearer ${session.access_token}`
+                    },
+
+                  body: JSON.stringify({
+    message,
+    language:
+        currentLanguage
 })
-            }
+                }
+            );
+
+        const data =
+            await response.json();
+
+      if (!response.ok) {
+    return (
+        data.error ||
+        `Chat server error ${response.status}`
+    );
+}
+
+        if (
+            typeof data.reply ===
+                "string" &&
+            data.reply.trim()
+        ) {
+            return data.reply.trim();
+        }
+
+        throw new Error(
+            "Empty AI response."
+        );
+    } catch (error) {
+        console.error(
+            "AI request error:",
+            error
         );
 
-
-       const data = await response.json();
-
-console.log("AI RESPONSE:", data);
-if(data.reply){
-    return data.reply;
-}
-
-return "Sorry, I could not generate a response.";
-
-
-    }catch(error){
-
-        console.log(error);
-
-        return "Sorry, AI service is unavailable.";
-
+        return getLocalizedMessage(
+            "ai_unavailable"
+        );
     }
-
 }
 
+function getLocalizedMessage(key) {
+    const messages = {
+        login_required: {
+            english:
+                "Please log in before using the AI assistant.",
+
+            tagalog:
+                "Mangyaring mag-login muna bago gamitin ang AI assistant.",
+
+            bisaya:
+                "Palihog pag-login una sa dili pa gamiton ang AI assistant."
+        },
+
+        ai_unavailable: {
+            english:
+                "Sorry, the AI service is temporarily unavailable. Please try again later.",
+
+            tagalog:
+                "Paumanhin, pansamantalang hindi available ang AI service. Pakisubukan muli mamaya.",
+
+            bisaya:
+                "Pasayloa, temporaryong dili available ang AI service. Sulayi pag-usab unya."
+        }
+    };
+
+    return (
+        messages[key]?.[
+            currentLanguage
+        ] ||
+        messages[key]?.english ||
+        ""
+    );
+}
 function askQuestion(question) {
 
     console.log("Suggested question clicked:", question);

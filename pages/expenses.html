@@ -59,9 +59,9 @@
 
         <div class="public-stat-card">
             <div>
-                <p>Valid Records</p>
-                <h3 id="validCount">0</h3>
-                <span class="green-text">Validated records</span>
+                <p>Approved Records</p>
+<h3 id="approvedCount">0</h3>
+<span class="green-text">Approved expenditures</span>
             </div>
             <div class="stat-icon green-bg">✅</div>
         </div>
@@ -105,7 +105,7 @@
 
             <select id="expenseFilter" onchange="filterExpenses()">
                 <option value="All">All Status</option>
-                <option value="Valid">Valid</option>
+               <option value="Approved">Approved</option>
                 <option value="Flagged">Flagged</option>
                 <option value="Pending">Pending</option>
             </select>
@@ -116,8 +116,9 @@
         <table>
             <thead>
                 <tr>
-                    <th>Expense Title</th>
-                    <th>Category</th>
+                   <th>Expense Title</th>
+<th>Related Project</th>
+<th>Category</th>
                     <th>Amount</th>
                     <th>Description</th>
                     <th>Date</th>

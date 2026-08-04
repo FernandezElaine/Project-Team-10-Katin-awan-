@@ -1,23 +1,16 @@
 {
   "name": "katinawann",
   "version": "1.0.0",
-  "description": "Katin-awan is a web-based transparency portal designed to improve barangay governance by making budget, expense, and project information more accessible to residents. It integrates AI, OCR-based document processing, and geospatial tracking to promote accountability and citizen participation.",
-  "main": "index.js",
+  "description": "Katin-awan is a web-based transparency portal designed to improve barangay governance by making budget, expense, and project information more accessible to residents.",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "server": "node backend/server.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/FernandezElaine/Project-Team-10-Katin-awan-.git"
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/FernandezElaine/Project-Team-10-Katin-awan-/issues"
-  },
-  "homepage": "https://github.com/FernandezElaine/Project-Team-10-Katin-awan-#readme",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.110.7",

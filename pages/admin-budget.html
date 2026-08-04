@@ -1,136 +1,275 @@
 <!DOCTYPE html>
 <html lang="en" class="admin-auth-pending">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Budget | Katin-awan</title>
-<link
-    rel="icon"
-    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
->
-<link rel="stylesheet" href="../css/main.css">
-<link rel="stylesheet" href="../css/dashboard.css">
-<link rel="stylesheet" href="../css/admin.css">
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Budget Monitoring | Katin-awan Admin</title>
+
+    <link
+        rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
+    >
+
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/admin.css">
 </head>
-<body>
+
+<body class="budget-page">
 
 <header class="public-nav">
-    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+    <a
+        href="admin-dashboard.html"
+        class="public-logo"
+    >
+        🏛️ Katin-awan Admin
+    </a>
 
     <nav>
         <a href="admin-dashboard.html">Dashboard</a>
         <a href="admin-projects.html">Projects</a>
-        <a class="active" href="admin-budget.html">Budget</a>
+
+        <a
+            class="active"
+            href="admin-budget.html"
+        >
+            Budget
+        </a>
+
         <a href="admin-expenses.html">Expenses</a>
         <a href="admin-documents.html">Documents/OCR</a>
         <a href="admin-map.html">Map</a>
         <a href="admin-feedback.html">Feedback</a>
         <a href="admin-users.html">Users</a>
         <a href="admin-audit.html">Audit Logs</a>
-        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+
+        <button
+            type="button"
+            onclick="adminLogout()"
+            class="logout-btn"
+        >
+            Logout
+        </button>
     </nav>
 </header>
 
 <section class="public-hero">
     <div>
-        <span class="module-badge">Admin Module</span>
-        <h1>Manage Budget Allocations</h1>
-        <p>Track, update, and manage project budget allocations and spending records.</p>
+        <span class="module-badge">
+            Budget Monitoring
+        </span>
+
+        <h1>
+            Project Budget Overview
+        </h1>
+
+        <p>
+            Monitor project allocations, approved spending,
+            remaining funds, and budget warnings.
+        </p>
     </div>
 
-    <div class="hero-seal">💰</div>
+    <div class="hero-seal">
+        💰
+    </div>
 </section>
 
 <main class="public-container">
 
-    <section class="search-bar-section">
-        <input type="text" id="adminGlobalSearch" placeholder="🔍 Search projects, expenses, users..." onkeyup="handleAdminGlobalSearch()">
-        <button class="search-btn" onclick="handleAdminGlobalSearch()">Search</button>
-        <div id="adminGlobalSearchResults" class="search-results"></div>
+    <section class="public-stats">
+
+        <div class="public-stat-card">
+            <div>
+                <p>Total Project Budget</p>
+
+                <h3 id="totalBudget">
+                    ₱0
+                </h3>
+
+                <span class="blue-text">
+                    Allocated through projects
+                </span>
+            </div>
+
+            <div class="stat-icon blue-bg">
+                💰
+            </div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Approved Expenses</p>
+
+                <h3 id="totalExpenses">
+                    ₱0
+                </h3>
+
+                <span class="red-text">
+                    Linked project spending
+                </span>
+            </div>
+
+            <div class="stat-icon yellow-bg">
+                🧾
+            </div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Remaining Funds</p>
+
+                <h3 id="remainingBudget">
+                    ₱0
+                </h3>
+
+                <span class="green-text">
+                    Available project funds
+                </span>
+            </div>
+
+            <div class="stat-icon green-bg">
+                ✅
+            </div>
+        </div>
+
+        <div class="public-stat-card">
+            <div>
+                <p>Projects With Warnings</p>
+
+                <h3 id="warningProjectCount">
+                    0
+                </h3>
+
+                <span class="red-text">
+                    Near or above budget
+                </span>
+            </div>
+
+            <div class="stat-icon cyan-bg">
+                ⚠️
+            </div>
+        </div>
+
     </section>
 
-<section class="public-grid">
-    <div class="public-panel">
-        <h3>Add / Update Budget</h3>
+   <section class="budget-source-card">
+    <div>
+        <h3>Budget Source</h3>
 
-        <form id="budgetForm">
-            <input type="hidden" id="budgetId">
+        <p>
+            Project budgets are entered and updated from the
+            Admin Projects page. This page is for monitoring only.
+        </p>
+    </div>
 
-            <label>Project Name</label>
-            <input type="text" id="budgetProject" class="admin-input" placeholder="Example: Road Repair Project">
+    <a
+        href="admin-projects.html"
+        class="public-blue-btn budget-source-button"
+    >
+        Manage Project Budgets
+    </a>
+</section>
 
-            <label>Allocated Amount</label>
-            <input type="number" id="budgetAmount" class="admin-input" placeholder="Example: 850000">
+    <section class="section-title">
+        <h2>
+            Budget Alerts
+        </h2>
 
-            <label>Status</label>
-            <select id="budgetStatus" class="admin-input">
-                <option value="Planned">Planned</option>
-                <option value="Ongoing">Ongoing</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
+        <p>
+            Projects using at least 80% of their budget or
+            exceeding their budget appear here.
+        </p>
+    </section>
+
+    <section
+        id="budgetAlerts"
+        class="budget-alerts"
+    >
+        <!-- Alerts from JavaScript -->
+    </section>
+
+    <section class="tools-card">
+        <div>
+            <h3>
+                Project Budget Records
+            </h3>
+
+            <p>
+                Search and review each project’s financial status.
+            </p>
+        </div>
+
+        <div class="tools-row">
+            <input
+                type="text"
+                id="budgetSearch"
+                placeholder="Search project, category, or status..."
+                onkeyup="searchBudgets()"
+            >
+
+            <select
+                id="budgetFilter"
+                onchange="filterBudgets()"
+            >
+                <option value="All">
+                    All Project Status
+                </option>
+
+                <option value="Planned">
+                    Planned
+                </option>
+
+                <option value="Ongoing">
+                    Ongoing
+                </option>
+
+                <option value="Completed">
+                    Completed
+                </option>
+
+                <option value="Pending">
+                    Pending
+                </option>
             </select>
 
-            <label>Description</label>
-            <textarea id="budgetDescription" class="admin-input" rows="3" placeholder="Enter short project/budget description"></textarea>
+            <select
+                id="budgetHealthFilter"
+                onchange="filterBudgets()"
+            >
+                <option value="All">
+                    All Budget Conditions
+                </option>
 
-            <div class="dashboard-actions">
-                <button type="submit" class="public-blue-btn">Save Budget</button>
-                <button type="button" onclick="clearBudgetForm()" class="public-green-btn">Clear</button>
-            </div>
-        </form>
-    </div>
+                <option value="Safe">
+                    Within Budget
+                </option>
 
-    <div class="public-panel">
-        <h3>Budget Summary</h3>
+                <option value="Warning">
+                    Near Budget Limit
+                </option>
 
-        <div class="report-item">
-            <b>Total Project Budget</b>
-            <p id="totalBudget">₱0</p>
+                <option value="Danger">
+                    Over Budget
+                </option>
+
+                <option value="NoAllocation">
+                    No Allocation
+                </option>
+            </select>
         </div>
+    </section>
 
-        <div class="report-item">
-            <b>Total Expenses</b>
-            <p id="totalExpenses">₱0</p>
-        </div>
-
-        <div class="report-item">
-            <b>Remaining Budget</b>
-            <p id="remainingBudget">₱0</p>
-        </div>
-
-        <div class="report-item">
-            <b>Completed Projects</b>
-            <p id="completedBudget">0</p>
-        </div>
-    </div>
-</section>
-
-<section class="section-title">
-    <h2>Budget Records</h2>
-    <p>List of project budget allocations managed by the administrator.</p>
-</section>
-
-<section class="tools-card">
-    <div class="tools-row">
-        <input
-            type="text"
-            id="budgetSearch"
-            placeholder="Search budgets by project, status, or description..."
-            onkeyup="searchBudgets()">
-
-        <select id="budgetFilter" onchange="filterBudgets()">
-            <option value="All">All Status</option>
-            <option value="Planned">Planned</option>
-            <option value="Ongoing">Ongoing</option>
-            <option value="Completed">Completed</option>
-            <option value="Pending">Pending</option>
-        </select>
-    </div>
-</section>
-
-<section id="budgetList" class="documents-grid">
-    <!-- Loaded dynamically from Supabase -->
-</section>
+    <section
+        id="budgetList"
+        class="documents-grid"
+    >
+        <!-- Project budget cards -->
+    </section>
 
 </main>
 
@@ -138,7 +277,7 @@
 <script src="../js/supabase.js"></script>
 <script src="../js/admin-auth.js"></script>
 <script src="../js/admin-budget.js"></script>
-<script src="../js/admin-dashboard-map.js"></script>
 <script src="../js/backtotop.js"></script>
+
 </body>
 </html>
