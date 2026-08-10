@@ -11,7 +11,7 @@
     window.KATIN_AWAN_CHAT_API_URL =
         isLocal
             ? "http://127.0.0.1:3000/chat"
-            : "https://YOUR-DEPLOYED-BACKEND-DOMAIN/chat";
+            : "https://katin-awan-chat-api.fernandezelaine43.workers.dev/chat";
 
     console.log(
         "Chat API configured:",

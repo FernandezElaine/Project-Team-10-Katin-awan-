@@ -91,8 +91,8 @@
             <h2>Community Feedback Center</h2>
 
             <p>
-                Submit feedback securely and follow publicly approved
-                community concerns and barangay responses.
+                Submit feedback securely and view recent community
+concerns and barangay responses.
             </p>
         </div>
 
@@ -116,7 +116,7 @@
             <div>
                 <h3 id="residentTotalFeedback">0</h3>
                 <p>Published Feedback</p>
-                <small>Approved public submissions</small>
+               <small>Public community submissions</small>
             </div>
 
         </article>
@@ -159,9 +159,9 @@
             </div>
 
             <div>
-                <h3 id="residentPendingFeedback">0</h3>
-                <p>Pending</p>
-                <small>Waiting for initial review</small>
+               <h3 id="residentOpenFeedback">0</h3>
+<p>Open</p>
+<small>New community concerns</small>
             </div>
 
         </article>
@@ -308,30 +308,28 @@
 
                         <span>
                             <strong>Submit anonymously</strong>
-
-                            <small>
-                                Your account will not be connected to this
-                                submission.
-                            </small>
+<small>
+    Your identity will not be displayed publicly.
+    Your account remains linked internally for security
+    and abuse prevention.
+</small>
                         </span>
 
                     </label>
 
                 </div>
 
+<div class="feedback-review-note">
 
-                <div class="feedback-review-note">
+    <span>ℹ️</span>
 
-                    <span>ℹ️</span>
+    <p>
+        Feedback is published automatically after submission.
+        Administrators may review, respond to, or hide content
+        that violates community guidelines.
+    </p>
 
-                    <p>
-                        New submissions are marked as
-                        <strong>Pending</strong>. An administrator may later
-                        update the status or approve the feedback for public
-                        display.
-                    </p>
-
-                </div>
+</div>
 
 
                 <button
@@ -343,21 +341,20 @@
                     Submit Feedback
                 </button>
 
+<div
+    id="feedbackSuccess"
+    class="feedback-success"
+    role="status"
+    aria-live="polite"
+    hidden
+>
+    <strong>Feedback submitted successfully.</strong>
 
-                <div
-                    id="feedbackSuccess"
-                    class="feedback-success"
-                    role="status"
-                    aria-live="polite"
-                    hidden
-                >
-                    <strong>Feedback submitted successfully.</strong>
-
-                    <p>
-                        Your submission is now waiting for administrator
-                        review.
-                    </p>
-                </div>
+    <p>
+        Your feedback is now visible in the Community
+        Feedback section.
+    </p>
+</div>
 
             </form>
 
@@ -379,10 +376,10 @@
 
                     <h3>Recent Community Feedback</h3>
 
-                    <p>
-                        View submissions approved by the barangay for
-                        public transparency.
-                    </p>
+                 <p>
+    View recent community submissions and barangay
+    responses.
+</p>
 
                 </div>
 

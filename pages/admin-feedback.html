@@ -185,33 +185,34 @@
             </div>
         </div>
 
-        <div class="public-stat-card">
-            <div>
-                <p>Pending</p>
+    <div class="public-stat-card">
+    <div>
+        <p>Open</p>
 
-                <h3 id="pendingFeedback">
-                    0
-                </h3>
+        <h3 id="openFeedback">
+            0
+        </h3>
 
-                <span class="blue-text">
-                    Needs action
-                </span>
-            </div>
+        <span class="blue-text">
+            New public concerns
+        </span>
+    </div>
 
-            <div class="stat-icon yellow-bg">
-                ⏳
-            </div>
-        </div>
+    <div class="stat-icon yellow-bg">
+        📬
+    </div>
+</div>
 
     </section>
 
     <section class="section-title">
         <h2>Feedback Records</h2>
 
-        <p>
-            Review resident submissions, update their status,
-            publish approved feedback, and provide responses.
-        </p>
+     <p>
+    Review resident submissions, provide responses,
+    update their status, and hide inappropriate or
+    abusive feedback when necessary.
+</p>
     </section>
 
     <!-- SEARCH AND FILTER -->
@@ -226,26 +227,30 @@
                 onkeyup="searchAdminFeedback()"
             >
 
-            <select
-                id="adminFeedbackFilter"
-                onchange="filterAdminFeedback()"
-            >
-                <option value="All">
-                    All Status
-                </option>
+      <select
+    id="adminFeedbackFilter"
+    onchange="filterAdminFeedback()"
+>
+    <option value="All">
+        All Status
+    </option>
 
-                <option value="Pending">
-                    Pending
-                </option>
+    <option value="Open">
+        Open
+    </option>
 
-                <option value="Under Review">
-                    Under Review
-                </option>
+    <option value="Under Review">
+        Under Review
+    </option>
 
-                <option value="Resolved">
-                    Resolved
-                </option>
-            </select>
+    <option value="Resolved">
+        Resolved
+    </option>
+
+    <option value="Hidden">
+        Hidden / Troll / Spam
+    </option>
+</select>
 
             <button
                 type="button"

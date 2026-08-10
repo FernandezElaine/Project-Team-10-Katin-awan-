@@ -148,25 +148,27 @@ async function submitFeedback() {
 
 
     try {
-        const feedbackRecord = {
-            /*
-             * Login is required for every submission.
-             *
-             * When anonymous is checked, the account ID is not
-             * stored in the feedback record.
-             */
-            user_id: isAnonymous
-                ? null
-                : user.id,
+    const feedbackRecord = {
+    /*
+     * Always keep the authenticated account ID internally.
+     * is_anonymous only controls whether the identity is
+     * displayed publicly.
+     */
+    user_id: user.id,
 
-            subject: subject,
-            description: description,
-            category: category,
-            status: "Pending",
-            is_anonymous: isAnonymous,
-            is_public: false,
-            admin_response: null
-        };
+    subject: subject,
+    description: description,
+    category: category,
+
+    /*
+     * Feedback is published immediately.
+     */
+    status: "Open",
+    is_anonymous: isAnonymous,
+    is_public: true,
+
+    admin_response: null
+};
 
         const { error } = await supabaseClient
             .from("feedback")
@@ -190,28 +192,92 @@ async function submitFeedback() {
         const errorMessage =
             String(error?.message || "")
                 .toLowerCase();
+if (
+    errorMessage.includes(
+        "rate_limit_10_min"
+    )
+) {
+    alert(
+        "You have submitted several feedback entries in a short period. " +
+        "Please wait about 10 minutes before submitting another."
+    );
 
-        if (
-            errorMessage.includes("row-level security") ||
-            errorMessage.includes("permission")
-        ) {
-            alert(
-                "Your feedback was blocked by the database " +
-                "security policy. Please make sure you are logged in."
-            );
+} else if (
+    errorMessage.includes(
+        "rate_limit_24_hours"
+    )
+) {
+    alert(
+        "You have reached today's feedback submission limit. " +
+        "Please try again later."
+    );
 
-        } else if (errorMessage.includes("column")) {
-            alert(
-                "The feedback database columns do not match " +
-                "the feedback form."
-            );
+} else if (
+    errorMessage.includes(
+        "duplicate_feedback"
+    )
+) {
+    alert(
+        "You already submitted the same feedback recently. " +
+        "Please avoid submitting duplicate concerns."
+    );
 
-        } else {
-            alert(
-                "Feedback submission failed: " +
-                (error?.message || "Unknown error.")
-            );
-        }
+} else if (
+    errorMessage.includes(
+        "subject_too_short"
+    )
+) {
+    alert(
+        "Please provide a clearer feedback subject."
+    );
+
+} else if (
+    errorMessage.includes(
+        "message_too_short"
+    )
+) {
+    alert(
+        "Please provide more details about your concern."
+    );
+
+} else if (
+    errorMessage.includes(
+        "invalid_feedback_account"
+    ) ||
+    errorMessage.includes(
+        "login_required"
+    )
+) {
+    alert(
+        "Your account could not be verified. Please log in again."
+    );
+
+} else if (
+    errorMessage.includes(
+        "row-level security"
+    ) ||
+    errorMessage.includes(
+        "permission"
+    )
+) {
+    alert(
+        "Your feedback was blocked by the database security policy. " +
+        "Please make sure you are logged in."
+    );
+
+} else if (
+    errorMessage.includes("column")
+) {
+    alert(
+        "The feedback database columns do not match the feedback form."
+    );
+
+} else {
+    alert(
+        "Feedback submission failed: " +
+        (error?.message || "Unknown error.")
+    );
+}
 
     } finally {
         feedbackSubmitting = false;
@@ -237,9 +303,9 @@ async function loadPublicFeedback() {
 
     if (!container) return;
 
-    showPublicFeedbackMessage(
-        "Loading approved community feedback..."
-    );
+showPublicFeedbackMessage(
+    "Loading community feedback..."
+);
 
     try {
         const { data, error } = await supabaseClient
@@ -310,10 +376,10 @@ function updatePublicFeedbackStats(records) {
         "under review"
     ).length;
 
-    const pending = records.filter(record =>
-        normalizeFeedbackStatus(record.status) ===
-        "pending"
-    ).length;
+  const open = records.filter(record =>
+    normalizeFeedbackStatus(record.status) ===
+    "open"
+).length;
 
     setFeedbackText(
         "residentTotalFeedback",
@@ -330,10 +396,10 @@ function updatePublicFeedbackStats(records) {
         underReview
     );
 
-    setFeedbackText(
-        "residentPendingFeedback",
-        pending
-    );
+ setFeedbackText(
+    "residentOpenFeedback",
+    open
+);
 }
 
 
@@ -353,9 +419,8 @@ function renderPublicFeedback(records) {
 
     if (!records.length) {
         showPublicFeedbackMessage(
-            "No community feedback has been approved " +
-            "for public display yet."
-        );
+    "No community feedback has been submitted yet."
+);
 
         return;
     }
@@ -395,7 +460,7 @@ function createPublicFeedbackCard(record) {
 
     status.textContent =
         record.status ||
-        "Pending";
+        "Open";
 
     top.append(title, status);
 
@@ -528,7 +593,11 @@ function getFeedbackStatusClass(status) {
         return "status-review";
     }
 
-    return "status-pending";
+    if (normalized === "hidden") {
+        return "status-hidden";
+    }
+
+    return "status-open";
 }
 
 

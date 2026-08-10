@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+
+  "name": "katin-awan-chat-api",
+
+  "main": "server.js",
+
+ "compatibility_date": "2026-08-08",
+
+  "compatibility_flags": [
+    "nodejs_compat"
+  ]
+}

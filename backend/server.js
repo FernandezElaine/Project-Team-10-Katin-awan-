@@ -4,6 +4,10 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
+import {
+    httpServerHandler
+} from "cloudflare:node";
+
 const app = express();
 
 const PORT =
@@ -366,9 +370,13 @@ console.log(
              * This reveals the error description for
              * development, but never reveals key values.
              */
-            response.status(500).json({
+     console.error(
+    "Chat endpoint error:",
+    error
+);
+
+response.status(500).json({
     error:
-        error.message ||
         "The chat service is temporarily unavailable."
 });
         }
@@ -610,17 +618,10 @@ app.use(
 /* =====================================
    START SERVER
 ===================================== */
+const WORKER_PORT = 3000;
 
-app.listen(
-    PORT,
-    "0.0.0.0",
-    function () {
-        console.log(
-            `Katin-awan Chat API running on port ${PORT}`
-        );
+app.listen(WORKER_PORT);
 
-        console.log(
-            `Health check: http://localhost:${PORT}/health`
-        );
-    }
-);
+export default httpServerHandler({
+    port: WORKER_PORT
+});

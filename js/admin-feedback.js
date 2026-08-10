@@ -40,7 +40,6 @@ async function loadAdminFeedback() {
             .from("feedback")
             .select(`
                 id,
-                user_id,
                 subject,
                 description,
                 category,
@@ -197,7 +196,7 @@ function updateAdminFeedbackStats(records) {
     const pending = records.filter(record =>
         normalizeAdminFeedbackStatus(
             record.status
-        ) === "pending"
+        ) === "open"
     ).length;
 
     setAdminFeedbackText(
@@ -215,10 +214,10 @@ function updateAdminFeedbackStats(records) {
         underReview
     );
 
-    setAdminFeedbackText(
-        "pendingFeedback",
-        pending
-    );
+   setAdminFeedbackText(
+    "openFeedback",
+    open
+);
 }
 
 /*
@@ -290,8 +289,8 @@ function createAdminFeedbackCard(record) {
         );
 
     statusBadge.textContent =
-        record.status ||
-        "Pending";
+    record.status ||
+    "Open";
 
     header.append(
         title,
@@ -357,11 +356,12 @@ function createAdminFeedbackCard(record) {
     statusSelect.className =
         "feedback-status-select";
 
-    [
-        "Pending",
-        "Under Review",
-        "Resolved"
-    ].forEach(statusValue => {
+  [
+    "Open",
+    "Under Review",
+    "Resolved",
+    "Hidden"
+].forEach(statusValue => {
         const option =
             document.createElement("option");
 
@@ -453,18 +453,42 @@ function createAdminFeedbackCard(record) {
 
     actions.style.marginTop = "14px";
 
-    const saveButton =
-        document.createElement("button");
+   const saveButton =
+    document.createElement("button");
 
-    saveButton.type = "button";
-    saveButton.textContent = "Save Changes";
+saveButton.type = "button";
+saveButton.textContent = "Save Changes";
 
-    const deleteButton =
-        document.createElement("button");
 
-    deleteButton.type = "button";
-    deleteButton.textContent = "Delete";
-    deleteButton.className = "danger-btn";
+/*
+ * Quickly hide inappropriate feedback without
+ * permanently deleting the record.
+ */
+const hideButton =
+    document.createElement("button");
+
+hideButton.type = "button";
+hideButton.textContent = "Hide Troll / Spam";
+hideButton.className = "warning-btn";
+
+
+/*
+ * Restore previously hidden feedback.
+ */
+const restoreButton =
+    document.createElement("button");
+
+restoreButton.type = "button";
+restoreButton.textContent = "Restore Public";
+restoreButton.className = "restore-btn";
+
+
+const deleteButton =
+    document.createElement("button");
+
+deleteButton.type = "button";
+deleteButton.textContent = "Delete Permanently";
+deleteButton.className = "danger-btn";
 
     const resultMessage =
         document.createElement("small");
@@ -499,10 +523,32 @@ function createAdminFeedbackCard(record) {
         }
     );
 
-    actions.append(
-        saveButton,
-        deleteButton
-    );
+    hideButton.addEventListener(
+    "click",
+    () => {
+        hideAdminFeedback(
+            record.id,
+            hideButton
+        );
+    }
+);
+
+restoreButton.addEventListener(
+    "click",
+    () => {
+        restoreAdminFeedback(
+            record.id,
+            restoreButton
+        );
+    }
+);
+
+  actions.append(
+    saveButton,
+    hideButton,
+    restoreButton,
+    deleteButton
+);
 
     card.append(
         header,
@@ -677,6 +723,161 @@ async function deleteAdminFeedback(
 
 /*
 |--------------------------------------------------------------------------
+| HIDE TROLL / SPAM FEEDBACK
+|--------------------------------------------------------------------------
+*/
+
+async function hideAdminFeedback(
+    feedbackId,
+    hideButton
+) {
+    if (!feedbackId) return;
+
+    const confirmed = window.confirm(
+        "Hide this feedback from the public page as inappropriate, troll, or spam content?"
+    );
+
+    if (!confirmed) return;
+
+    hideButton.disabled = true;
+    hideButton.textContent = "Hiding...";
+
+    try {
+        const updatedAt =
+            new Date().toISOString();
+
+        const { error } = await supabaseClient
+            .from("feedback")
+            .update({
+                status: "Hidden",
+                is_public: false,
+                updated_at: updatedAt
+            })
+            .eq("id", feedbackId);
+
+        if (error) {
+            throw error;
+        }
+
+        const record =
+            adminFeedbackRecords.find(
+                item =>
+                    String(item.id) ===
+                    String(feedbackId)
+            );
+
+        if (record) {
+            record.status = "Hidden";
+            record.is_public = false;
+            record.updated_at = updatedAt;
+        }
+
+        updateAdminFeedbackStats(
+            adminFeedbackRecords
+        );
+
+        applyAdminFeedbackFilters();
+
+        alert(
+            "Feedback hidden successfully. It is no longer visible on the resident page."
+        );
+
+    } catch (error) {
+        console.error(
+            "Failed to hide feedback:",
+            error
+        );
+
+        alert(
+            "Unable to hide feedback: " +
+            (error?.message || "Unknown error.")
+        );
+
+        hideButton.disabled = false;
+        hideButton.textContent =
+            "Hide Troll / Spam";
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| RESTORE HIDDEN FEEDBACK
+|--------------------------------------------------------------------------
+*/
+
+async function restoreAdminFeedback(
+    feedbackId,
+    restoreButton
+) {
+    if (!feedbackId) return;
+
+    const confirmed = window.confirm(
+        "Restore this feedback to the public community page?"
+    );
+
+    if (!confirmed) return;
+
+    restoreButton.disabled = true;
+    restoreButton.textContent = "Restoring...";
+
+    try {
+        const updatedAt =
+            new Date().toISOString();
+
+        const { error } = await supabaseClient
+            .from("feedback")
+            .update({
+                status: "Open",
+                is_public: true,
+                updated_at: updatedAt
+            })
+            .eq("id", feedbackId);
+
+        if (error) {
+            throw error;
+        }
+
+        const record =
+            adminFeedbackRecords.find(
+                item =>
+                    String(item.id) ===
+                    String(feedbackId)
+            );
+
+        if (record) {
+            record.status = "Open";
+            record.is_public = true;
+            record.updated_at = updatedAt;
+        }
+
+        updateAdminFeedbackStats(
+            adminFeedbackRecords
+        );
+
+        applyAdminFeedbackFilters();
+
+        alert(
+            "Feedback restored to the public community page."
+        );
+
+    } catch (error) {
+        console.error(
+            "Failed to restore feedback:",
+            error
+        );
+
+        alert(
+            "Unable to restore feedback: " +
+            (error?.message || "Unknown error.")
+        );
+
+        restoreButton.disabled = false;
+        restoreButton.textContent =
+            "Restore Public";
+    }
+}
+/*
+|--------------------------------------------------------------------------
 | HELPERS
 |--------------------------------------------------------------------------
 */
@@ -723,7 +924,11 @@ function getAdminFeedbackStatusClass(status) {
         return "status-review";
     }
 
-    return "status-pending";
+    if (normalized === "hidden") {
+        return "status-hidden";
+    }
+
+    return "status-open";
 }
 
 function formatAdminFeedbackDate(value) {

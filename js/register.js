@@ -5,7 +5,7 @@ registerForm.addEventListener("submit", async function (event) {
 
     const fullName = document.getElementById("fullName").value.trim();
     const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value.trim();
+ const password = document.getElementById("password").value;
 
     if (!fullName || !email || !password) {
         alert("Please complete all fields.");
