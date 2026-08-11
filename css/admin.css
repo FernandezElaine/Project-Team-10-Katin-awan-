@@ -2180,3 +2180,179 @@ html.admin-auth-verified body {
         width: 100%;
     }
 }
+/* ================================
+   MAP PROJECT MODAL HEADER
+================================ */
+
+.project-modal-content {
+    position: relative;
+}
+
+/* Header */
+.project-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding-right: 60px;
+    margin-bottom: 20px;
+}
+
+.project-modal-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 26px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.project-modal-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 15px;
+}
+
+
+/* CLOSE X BUTTON */
+.modal-close-btn {
+    position: absolute;
+
+    top: 22px;
+    right: 22px;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+    margin: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #f1f5f9;
+    color: #334155;
+
+    font-size: 25px;
+    font-weight: 400;
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background: #fee2e2;
+    color: #dc2626;
+    transform: scale(1.05);
+}
+/* =================================
+   PROJECT PROGRESS CONTROL
+================================= */
+
+.project-progress-field {
+    margin: 18px 0 22px;
+}
+
+.project-progress-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    margin-bottom: 10px;
+}
+
+.project-progress-header label {
+    margin: 0;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    color: #0f172a;
+}
+
+.project-progress-value {
+    min-width: 54px;
+
+    padding: 5px 10px;
+
+    border-radius: 999px;
+
+    background: #e8f0ff;
+    color: #2563eb;
+
+    font-size: 13px;
+    font-weight: 700;
+    text-align: center;
+}
+
+
+/* SLIDER */
+
+.project-progress-slider {
+    width: 100%;
+    height: 7px;
+
+    margin: 0;
+    padding: 0;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    border: none;
+    border-radius: 999px;
+
+    background: #dbe3ef;
+
+    outline: none;
+    cursor: pointer;
+}
+
+
+/* Chrome / Edge */
+
+.project-progress-slider::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 18px;
+    height: 18px;
+
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+
+    background: #2563eb;
+
+    box-shadow:
+        0 0 0 1px #2563eb,
+        0 2px 6px rgba(0, 0, 0, 0.15);
+
+    cursor: pointer;
+}
+
+
+/* Firefox */
+
+.project-progress-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+
+    background: #2563eb;
+
+    box-shadow:
+        0 0 0 1px #2563eb,
+        0 2px 6px rgba(0, 0, 0, 0.15);
+
+    cursor: pointer;
+}

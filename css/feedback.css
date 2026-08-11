@@ -1153,3 +1153,62 @@
     background: #fee2e2;
     color: #b91c1c;
 }
+
+/* =====================================
+   FEEDBACK STATUS BADGES
+===================================== */
+
+.feedback-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    min-width: 64px;
+
+    padding: 6px 12px;
+
+    border-radius: 999px;
+
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+
+    white-space: nowrap;
+}
+
+
+/* NEW / OPEN */
+.feedback-status-badge.status-open {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+
+/* UNDER REVIEW */
+.feedback-status-badge.status-review {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+
+/* RESOLVED */
+.feedback-status-badge.status-resolved {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+
+/* LEGACY PENDING */
+.feedback-status-badge.status-pending {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+
+/* HIDDEN */
+.feedback-status-badge.status-hidden {
+    background: #fee2e2;
+    color: #b91c1c;
+}

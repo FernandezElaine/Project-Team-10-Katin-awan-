@@ -454,9 +454,12 @@ function createPublicFeedbackCard(record) {
 
     const status =
         document.createElement("span");
-
-    status.className =
-        getFeedbackStatusClass(record.status);
+        
+status.className =
+    "feedback-status-badge " +
+    getFeedbackStatusClass(
+        record.status
+    );
 
     status.textContent =
         record.status ||
@@ -580,7 +583,6 @@ function clearFeedbackForm() {
     }
 }
 
-
 function getFeedbackStatusClass(status) {
     const normalized =
         normalizeFeedbackStatus(status);
@@ -593,8 +595,16 @@ function getFeedbackStatusClass(status) {
         return "status-review";
     }
 
+    if (normalized === "open") {
+        return "status-open";
+    }
+
     if (normalized === "hidden") {
         return "status-hidden";
+    }
+
+    if (normalized === "open") {
+        return "status-open";
     }
 
     return "status-open";

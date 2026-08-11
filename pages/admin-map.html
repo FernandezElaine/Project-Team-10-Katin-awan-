@@ -98,6 +98,279 @@
     gap: 8px;
     margin-top: 12px;
 }
+
+/* =====================================
+   PROJECT PROGRESS CONTROL
+===================================== */
+
+.project-progress-field {
+    margin: 18px 0 22px;
+}
+
+.project-progress-header {
+    margin-bottom: 10px;
+}
+
+.project-progress-header label {
+    margin: 0;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.project-progress-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.project-progress-slider {
+    flex: 1;
+    min-width: 0;
+    height: 7px;
+
+    appearance: none;
+    -webkit-appearance: none;
+
+    border-radius: 999px;
+    border: none;
+
+    background: #dbe3ef;
+
+    cursor: pointer;
+    outline: none;
+}
+
+.project-progress-slider::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 18px;
+    height: 18px;
+
+    border-radius: 50%;
+    border: 3px solid white;
+
+    background: #2563eb;
+
+    box-shadow:
+        0 0 0 1px #2563eb,
+        0 2px 5px rgba(0, 0, 0, 0.15);
+
+    cursor: pointer;
+}
+
+.progress-number-box {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    flex-shrink: 0;
+}
+
+.progress-number-box input {
+    width: 72px;
+
+    padding: 9px 8px;
+
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+
+    text-align: center;
+
+    font-weight: 700;
+    color: #2563eb;
+}
+
+.progress-number-box span {
+    font-weight: 700;
+    color: #475569;
+}
+
+
+/* =====================================
+   PROJECT PHOTO GALLERY
+===================================== */
+
+.map-gallery-modal {
+    position: fixed;
+    inset: 0;
+
+    z-index: 99999;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background:
+        rgba(15, 23, 42, 0.72);
+}
+
+
+.map-gallery-content {
+    position: relative;
+
+    width: min(900px, 95vw);
+    max-height: 88vh;
+
+    padding: 26px;
+
+    overflow-y: auto;
+
+    background: #ffffff;
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 24px 70px
+        rgba(0, 0, 0, 0.25);
+}
+
+
+.map-gallery-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 22px;
+}
+
+
+.map-gallery-header h2 {
+    margin: 0 0 5px;
+
+    color: #0f172a;
+}
+
+
+.map-gallery-header p {
+    margin: 0;
+
+    color: #64748b;
+}
+
+
+.map-gallery-close {
+    width: 40px;
+    height: 40px;
+
+    flex-shrink: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #f1f5f9;
+
+    font-size: 24px;
+
+    cursor: pointer;
+}
+
+
+.map-gallery-close:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+
+.map-gallery-images {
+    display: grid;
+
+    grid-template-columns:
+        repeat(
+            auto-fit,
+            minmax(230px, 1fr)
+        );
+
+    gap: 18px;
+}
+
+
+.map-gallery-item {
+    overflow: hidden;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+
+    background: #f8fafc;
+}
+
+
+.map-gallery-item img {
+    display: block;
+
+    width: 100%;
+    height: 220px;
+
+    object-fit: cover;
+}
+
+
+.map-gallery-item span {
+    display: block;
+
+    padding: 10px 12px;
+
+    color: #475569;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+.map-gallery-empty {
+    grid-column: 1 / -1;
+
+    padding: 40px;
+
+    border-radius: 14px;
+
+    background: #f8fafc;
+
+    color: #64748b;
+
+    text-align: center;
+}
+
+
+/* MAP POPUP BUTTONS */
+
+.admin-map-popup-actions {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 8px;
+
+    margin-top: 12px;
+}
+
+
+.admin-map-popup-actions button {
+    min-height: 42px;
+
+    padding: 8px;
+
+    border-radius: 9px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.map-gallery-btn {
+    border: none;
+
+    background: #0f766e;
+    color: white;
+}
+
     </style>
 </head>
 <body>
@@ -180,6 +453,319 @@
         Select a project, enable location mode, then click its location on the map.
     </span>
 </div>
+<!-- ===============================
+     NEW MAP PROJECT MODAL
+================================ -->
+<div
+    id="mapProjectModal"
+    class="project-modal"
+    style="display: none;"
+>
+    <div class="project-modal-content">
+
+        <div class="project-modal-header">
+            <div>
+              <h2 id="mapProjectModalTitle">
+    Add New Project
+</h2>
+
+                <p>
+                    Add the project information for the
+                    selected map location.
+                </p>
+            </div>
+
+            <button
+                type="button"
+                class="modal-close-btn"
+                onclick="closeMapProjectModal()"
+            >
+                ×
+            </button>
+        </div>
+
+
+        <form id="mapProjectForm">
+<input
+    type="hidden"
+    id="mapProjectId"
+>
+            <!-- Coordinates -->
+            <input
+                type="hidden"
+                id="mapProjectLatitude"
+            >
+
+            <input
+                type="hidden"
+                id="mapProjectLongitude"
+            >
+
+
+            <!-- Project Title -->
+            <label for="mapProjectTitle">
+                Project Title
+            </label>
+
+            <input
+                type="text"
+                id="mapProjectTitle"
+                placeholder="Enter project title"
+                required
+            >
+
+
+            <!-- Description -->
+            <label for="mapProjectDescription">
+                Description
+            </label>
+
+            <textarea
+                id="mapProjectDescription"
+                rows="4"
+                placeholder="Describe the project..."
+                required
+            ></textarea>
+
+
+            <!-- Category -->
+            <label for="mapProjectCategory">
+                Category
+            </label>
+
+            <input
+                type="text"
+                id="mapProjectCategory"
+                placeholder="Infrastructure, Health, Education..."
+            >
+
+
+            <!-- Written Location -->
+            <label for="mapProjectLocation">
+                Location
+            </label>
+
+            <input
+                type="text"
+                id="mapProjectLocation"
+                placeholder="Example: Purok 3"
+                required
+            >
+
+
+            <!-- Budget -->
+            <label for="mapProjectBudget">
+                Project Budget
+            </label>
+
+            <input
+                type="number"
+                id="mapProjectBudget"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                required
+            >
+
+            <label for="mapProjectTimeline">
+    Timeline / Due Date
+</label>
+
+<input
+    type="text"
+    id="mapProjectTimeline"
+    placeholder="Example: December 2026"
+>
+
+            <!-- Status -->
+            <label for="mapProjectStatus">
+                Status
+            </label>
+
+            <select
+                id="mapProjectStatus"
+                required
+            >
+                <option value="Planned">
+                    Planned
+                </option>
+
+                <option value="Ongoing">
+                    Ongoing
+                </option>
+
+                <option value="Completed">
+                    Completed
+                </option>
+            </select>
+
+
+        
+<div class="project-progress-field">
+
+    <div class="project-progress-header">
+        <label for="mapProjectProgress">
+            Project Progress
+        </label>
+    </div>
+
+    <div class="project-progress-controls">
+
+        <input
+            type="range"
+            id="mapProjectProgress"
+            class="project-progress-slider"
+            min="0"
+            max="100"
+            value="0"
+            step="1"
+        >
+
+        <div class="progress-number-box">
+
+            <input
+                type="number"
+                id="mapProjectProgressNumber"
+                min="0"
+                max="100"
+                step="1"
+                value="0"
+            >
+
+            <span>%</span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+            <!-- Contractor -->
+            <label for="mapProjectContractor">
+                Contractor
+            </label>
+
+            <input
+                type="text"
+                id="mapProjectContractor"
+                placeholder="Contractor name"
+            >
+
+
+            <!-- Bidder -->
+            <label for="mapProjectBidder">
+                Winning Bidder
+            </label>
+
+            <input
+                type="text"
+                id="mapProjectBidder"
+                placeholder="Winning bidder"
+            >
+
+
+       
+
+
+            <!-- Multiple Photos -->
+            <label for="mapProjectPhotos">
+                Project Photos
+            </label>
+
+            <input
+                type="file"
+                id="mapProjectPhotos"
+                accept="image/*"
+                multiple
+            >
+
+            <small>
+                You can select multiple project photos.
+            </small>
+
+
+            <!-- Preview -->
+            <div
+                id="mapProjectPhotoPreview"
+                class="map-project-photo-preview"
+            ></div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    onclick="closeMapProjectModal()"
+                >
+                    Cancel
+                </button>
+
+                <!--
+                    DO NOT connect this to Supabase yet.
+                    We will connect it after checking
+                    admin-projects.js.
+                -->
+              <button
+    type="submit"
+    id="saveMapProjectBtn"
+    class="public-blue-btn"
+>
+    Save Project
+</button>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<!-- ===============================
+     PROJECT PHOTO GALLERY
+================================ -->
+<div
+    id="mapPhotoGalleryModal"
+    class="map-gallery-modal"
+    style="display: none;"
+>
+
+    <div class="map-gallery-content">
+
+        <div class="map-gallery-header">
+
+            <div>
+                <h2 id="mapPhotoGalleryTitle">
+                    Project Photos
+                </h2>
+
+                <p id="mapPhotoGalleryCount">
+                    0 photos
+                </p>
+            </div>
+
+
+            <button
+                type="button"
+                class="map-gallery-close"
+                onclick="closeMapPhotoGallery()"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <div
+            id="mapPhotoGalleryImages"
+            class="map-gallery-images"
+        >
+        </div>
+
+    </div>
+
+</div>
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

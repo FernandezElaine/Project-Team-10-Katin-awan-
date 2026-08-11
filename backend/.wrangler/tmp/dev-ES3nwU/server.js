@@ -25118,10 +25118,10 @@ var require_lib3 = __commonJS({
   }
 });
 
-// .wrangler/tmp/bundle-2hbFgz/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-RwMo3D/middleware-loader.entry.ts
 init_modules_watch_stub();
 
-// .wrangler/tmp/bundle-2hbFgz/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-RwMo3D/middleware-insertion-facade.js
 init_modules_watch_stub();
 
 // server.js
@@ -25233,27 +25233,6 @@ app.post(
   "/chat",
   async function(request, response) {
     try {
-      const authorizationHeader = request.get(
-        "authorization"
-      ) || "";
-      const accessToken = authorizationHeader.startsWith(
-        "Bearer "
-      ) ? authorizationHeader.slice(7) : "";
-      if (!accessToken) {
-        response.status(401).json({
-          error: "Please log in before using the chatbot."
-        });
-        return;
-      }
-      const authenticatedUser = await verifySupabaseUser(
-        accessToken
-      );
-      if (!authenticatedUser?.id) {
-        response.status(401).json({
-          error: "Your login session is invalid or has expired. Please log in again."
-        });
-        return;
-      }
       const message = String(
         request.body?.message || ""
       ).trim();
@@ -25356,41 +25335,6 @@ app.post(
     }
   }
 );
-async function verifySupabaseUser(accessToken) {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseApiKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY;
-  if (!supabaseUrl) {
-    throw new Error(
-      "SUPABASE_URL is missing from backend/.env."
-    );
-  }
-  if (!supabaseApiKey) {
-    throw new Error(
-      "Supabase publishable key is missing from backend/.env."
-    );
-  }
-  const authResponse = await fetch(
-    `${supabaseUrl}/auth/v1/user`,
-    {
-      method: "GET",
-      headers: {
-        apikey: supabaseApiKey,
-        Authorization: `Bearer ${accessToken}`
-      }
-    }
-  );
-  if (!authResponse.ok) {
-    const errorText = await authResponse.text();
-    console.error(
-      "Supabase authentication failed:",
-      authResponse.status,
-      errorText
-    );
-    return null;
-  }
-  return authResponse.json();
-}
-__name(verifySupabaseUser, "verifySupabaseUser");
 function detectResponseLanguage(message) {
   const words = String(message || "").toLowerCase().match(/[a-zñ'-]+/g) || [];
   const englishWords = /* @__PURE__ */ new Set([
@@ -25585,7 +25529,7 @@ var jsonError = /* @__PURE__ */ __name(async (request, env, _ctx, middlewareCtx)
 }, "jsonError");
 var middleware_miniflare3_json_error_default = jsonError;
 
-// .wrangler/tmp/bundle-2hbFgz/middleware-insertion-facade.js
+// .wrangler/tmp/bundle-RwMo3D/middleware-insertion-facade.js
 var __INTERNAL_WRANGLER_MIDDLEWARE__ = [
   middleware_ensure_req_body_drained_default,
   middleware_miniflare3_json_error_default
@@ -25618,7 +25562,7 @@ function __facade_invoke__(request, env, ctx, dispatch, finalMiddleware) {
 }
 __name(__facade_invoke__, "__facade_invoke__");
 
-// .wrangler/tmp/bundle-2hbFgz/middleware-loader.entry.ts
+// .wrangler/tmp/bundle-RwMo3D/middleware-loader.entry.ts
 var __Facade_ScheduledController__ = class ___Facade_ScheduledController__ {
   constructor(scheduledTime, cron, noRetry) {
     this.scheduledTime = scheduledTime;

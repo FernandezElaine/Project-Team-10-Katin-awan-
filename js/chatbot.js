@@ -240,65 +240,43 @@ await typeMessage(
     reply
 );
 
-await saveChat(
-    text,
-    reply
-);
+// Guest chatbot conversations are not stored.
 
 }
 
 async function askAI(message) {
     try {
-        const {
-            data: { session },
-            error: sessionError
-        } =
-            await supabaseClient.auth
-                .getSession();
-
-        if (
-            sessionError ||
-            !session?.access_token
-        ) {
-            return getLocalizedMessage(
-                "login_required"
-            );
-        }
-
         const response =
             await fetch(
                 window.KATIN_AWAN_CHAT_API_URL,
                 {
                     method: "POST",
+
                     headers: {
                         "Content-Type":
-                            "application/json",
-
-                        Authorization:
-                            `Bearer ${session.access_token}`
+                            "application/json"
                     },
 
-                  body: JSON.stringify({
-    message,
-    language:
-        currentLanguage
-})
+                    body: JSON.stringify({
+                        message,
+                        language:
+                            currentLanguage
+                    })
                 }
             );
 
         const data =
             await response.json();
 
-      if (!response.ok) {
-    return (
-        data.error ||
-        `Chat server error ${response.status}`
-    );
-}
+        if (!response.ok) {
+            return (
+                data.error ||
+                `Chat server error ${response.status}`
+            );
+        }
 
         if (
-            typeof data.reply ===
-                "string" &&
+            typeof data.reply === "string" &&
             data.reply.trim()
         ) {
             return data.reply.trim();
@@ -307,6 +285,7 @@ async function askAI(message) {
         throw new Error(
             "Empty AI response."
         );
+
     } catch (error) {
         console.error(
             "AI request error:",
@@ -321,17 +300,7 @@ async function askAI(message) {
 
 function getLocalizedMessage(key) {
     const messages = {
-        login_required: {
-            english:
-                "Please log in before using the AI assistant.",
-
-            tagalog:
-                "Mangyaring mag-login muna bago gamitin ang AI assistant.",
-
-            bisaya:
-                "Palihog pag-login una sa dili pa gamiton ang AI assistant."
-        },
-
+      
         ai_unavailable: {
             english:
                 "Sorry, the AI service is temporarily unavailable. Please try again later.",
@@ -660,30 +629,53 @@ ${data.length}
 `;
 
 }
-if(msg.includes("feedback")){
+// =========================
+// 📢 PUBLIC FEEDBACK
+// =========================
+if (msg.includes("feedback")) {
 
-const {data,error}=await supabaseClient
-.from("feedback")
-.select("*");
+    const {
+        count,
+        error
+    } = await supabaseClient
+        .from("feedback")
+        .select(
+            "id",
+            {
+                count: "exact",
+                head: true
+            }
+        )
+        .eq("is_public", true);
 
+    if (error) {
+        console.log(
+            "Feedback count error:",
+            error
+        );
 
-if(error)
-return "Feedback data unavailable.";
+        return "Feedback information unavailable.";
+    }
 
-let title =
-currentLanguage === "bisaya"
-? "📢 Mga Feedback sa mga Residente"
-: currentLanguage === "tagalog"
-? "📢 Mga Feedback ng mga Residente"
-: "📢 Resident Feedback Information";
+    let title =
+        currentLanguage === "bisaya"
+            ? "📢 Mga Feedback sa mga Residente"
+            : currentLanguage === "tagalog"
+            ? "📢 Mga Feedback ng mga Residente"
+            : "📢 Resident Feedback Information";
 
+    let totalText =
+        currentLanguage === "bisaya"
+            ? "Kinatibuk-ang Publikong Feedback"
+            : currentLanguage === "tagalog"
+            ? "Kabuuang Pampublikong Feedback"
+            : "Total Public Feedback";
 
-return `
+    return `
 ${title}
 
-Total Feedback:
-${data.length}
-
+${totalText}:
+${count || 0}
 `;
 }
 

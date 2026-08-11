@@ -173,44 +173,7 @@ app.post(
         response
     ) {
         try {
-            const authorizationHeader =
-                request.get(
-                    "authorization"
-                ) || "";
-
-            const accessToken =
-                authorizationHeader.startsWith(
-                    "Bearer "
-                )
-                    ? authorizationHeader.slice(7)
-                    : "";
-
-            if (!accessToken) {
-                response.status(401).json({
-                    error:
-                        "Please log in before using the chatbot."
-                });
-
-                return;
-            }
-
-            /*
-             * Confirm that the Supabase JWT really
-             * belongs to a signed-in user.
-             */
-            const authenticatedUser =
-                await verifySupabaseUser(
-                    accessToken
-                );
-
-            if (!authenticatedUser?.id) {
-                response.status(401).json({
-                    error:
-                        "Your login session is invalid or has expired. Please log in again."
-                });
-
-                return;
-            }
+           
 
             const message =
                 String(
