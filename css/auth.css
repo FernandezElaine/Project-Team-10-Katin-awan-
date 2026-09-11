@@ -263,3 +263,833 @@
 .auth-card .password-field .eye-slash.is-hidden {
     display: none;
 }
+/* =========================================================
+   KATIN-AWAN REGISTER
+   CLEAN, BALANCED, NOT TOO SMALL
+========================================================= */
+
+
+/* =========================================================
+   PAGE / CARD
+========================================================= */
+
+.auth-page {
+    padding: 36px 20px;
+}
+
+
+.auth-card {
+    width: 100%;
+    max-width: 560px;
+
+    padding: 38px 36px;
+
+    border-radius: 18px;
+
+    background: #ffffff;
+
+    font-family:
+        "Inter",
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    color: #1f2937;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.auth-logo {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+
+.auth-card h1 {
+    margin:
+        20px
+        0
+        8px;
+
+    color: #172033;
+
+    font-size: 30px;
+    line-height: 1.2;
+
+    font-weight: 700;
+
+    letter-spacing: -0.4px;
+}
+
+
+.auth-card > p {
+    margin:
+        0
+        0
+        22px;
+
+    color: #6f7b8d;
+
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   LABELS
+========================================================= */
+
+.auth-card form label {
+    display: block;
+
+    margin:
+        14px
+        0
+        7px;
+
+    color: #344054;
+
+    font-size: 13.5px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   INPUTS / SELECTS
+========================================================= */
+
+.auth-card form input,
+.auth-card form select {
+    width: 100%;
+
+    min-height: 48px;
+
+    padding:
+        0
+        14px;
+
+    border:
+        1px solid
+        #d8e0eb;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    color: #273449;
+
+    font-family:
+        "Inter",
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
+}
+
+
+.auth-card form input::placeholder {
+    color: #9aa5b4;
+}
+
+
+.auth-card form input:hover,
+.auth-card form select:hover {
+    border-color: #bdc8d8;
+}
+
+
+.auth-card form input:focus,
+.auth-card form select:focus {
+    border-color: #3d70dc;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(61, 112, 220, 0.10);
+}
+
+
+/* =========================================================
+   SECTION TITLES
+========================================================= */
+
+.register-section-title {
+    margin-top: 24px;
+
+    padding-top: 18px;
+
+    border-top:
+        1px solid
+        #eef1f5;
+
+    color: #244a86;
+
+    font-size: 15px;
+    font-weight: 700;
+}
+
+
+.register-section-note {
+    margin:
+        4px
+        0
+        10px;
+
+    color: #7d8898;
+
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   ADDRESS PICKER TRIGGER
+========================================================= */
+
+.address-picker-trigger {
+    width: 100%;
+
+    min-height: 48px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 12px;
+
+    margin: 0;
+
+    padding:
+        0
+        14px;
+
+    border:
+        1px solid
+        #d8e0eb;
+
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    color: #273449;
+
+    font-family:
+        "Inter",
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    font-size: 14px;
+    font-weight: 400;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    box-shadow: none;
+
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
+}
+
+
+.address-picker-trigger:hover {
+    border-color: #bdc8d8;
+
+    background: #fcfdff;
+}
+
+
+.address-picker-trigger:focus {
+    outline: none;
+
+    border-color: #3d70dc;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(61, 112, 220, 0.10);
+}
+
+.address-picker-placeholder {
+    color: #ffffff;
+    font-weight: 400;
+}
+
+.address-picker-arrow {
+    color: #8a95a5;
+
+    font-size: 20px;
+}
+
+
+/* =========================================================
+   ADDRESS OVERLAY
+========================================================= */
+
+.address-picker-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    display: none;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(15, 28, 52, 0.38);
+}
+
+
+.address-picker-overlay.show {
+    display: flex;
+}
+
+
+/* =========================================================
+   ADDRESS PANEL
+========================================================= */
+
+.address-picker-panel {
+    width: 100%;
+
+    max-width: 430px;
+
+    max-height: 580px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        #e1e7ef;
+
+    border-radius: 14px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 22px 60px
+        rgba(20, 38, 70, 0.22);
+}
+
+
+/* =========================================================
+   PANEL HEADER
+========================================================= */
+
+.address-picker-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 14px;
+
+    padding:
+        18px
+        18px
+        14px;
+
+    border-bottom:
+        1px solid
+        #edf1f5;
+}
+
+
+.address-picker-header h3 {
+    margin:
+        0
+        0
+        4px;
+
+    color: #172033;
+
+    font-size: 17px;
+    font-weight: 700;
+}
+
+
+.address-picker-header p {
+    margin: 0;
+
+    color: #7f8a9a;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   CLOSE
+========================================================= */
+
+.address-picker-close {
+    width: 32px;
+    height: 32px;
+
+    display: grid;
+
+    place-items: center;
+
+    margin: 0;
+
+    padding: 0;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #f3f5f8;
+
+    color: #667085;
+
+    font-size: 19px;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   SEARCH
+========================================================= */
+
+.address-search-wrapper {
+    position: relative;
+
+    margin:
+        12px
+        16px
+        10px;
+}
+
+
+.address-search-wrapper input {
+    width: 100%;
+
+    min-height: 42px;
+
+    margin: 0;
+
+    padding:
+        0
+        40px
+        0
+        13px;
+
+    border:
+        1px solid
+        #d8e0eb;
+
+    border-radius: 9px;
+
+    font-size: 13px;
+}
+
+
+.address-search-icon {
+    position: absolute;
+
+    top: 50%;
+    right: 13px;
+
+    transform:
+        translateY(-50%);
+
+    font-size: 14px;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   OPTIONS
+========================================================= */
+
+.address-options {
+    max-height: 320px;
+
+    overflow-y: auto;
+
+    padding:
+        4px
+        8px
+        12px;
+}
+
+
+.address-option {
+    width: 100%;
+
+    min-height: 42px;
+
+    display: flex;
+
+    align-items: center;
+
+    padding:
+        9px
+        11px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: #344054;
+
+    font-family:
+        "Inter",
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    font-size: 13px;
+
+    text-align: left;
+
+    cursor: pointer;
+}
+
+
+.address-option:hover {
+    background: #f1f6ff;
+
+    color: #2f5ea8;
+}
+
+
+/* =========================================================
+   SUBMIT BUTTON
+========================================================= */
+
+#registerButton {
+    width: 100%;
+
+    min-height: 48px;
+
+    margin-top: 22px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    font-family:
+        "Inter",
+        "Segoe UI",
+        Arial,
+        sans-serif;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   REMOVE EXCESSIVE VERTICAL GAPS
+========================================================= */
+
+.auth-card form > * {
+    margin-bottom: 0;
+}
+
+
+.register-section-title + .register-section-note {
+    margin-top: 4px;
+}
+
+
+.register-section-note + label {
+    margin-top: 10px;
+}
+
+
+.address-picker-trigger + label {
+    margin-top: 14px;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 560px) {
+
+    .auth-page {
+        padding: 18px 12px;
+    }
+
+
+    .auth-card {
+        padding: 30px 22px;
+
+        border-radius: 16px;
+    }
+
+
+    .auth-card h1 {
+        font-size: 28px;
+    }
+
+
+    .address-picker-overlay {
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+
+    .address-picker-panel {
+        max-width: none;
+
+        border-radius:
+            16px
+            16px
+            0
+            0;
+    }
+}
+/* =========================================================
+   KATIN-AWAN TYPOGRAPHY CLEANUP
+========================================================= */
+
+.auth-page,
+.auth-card,
+.auth-card input,
+.auth-card select,
+.auth-card button,
+.address-picker-panel,
+.address-picker-panel input,
+.address-picker-panel button {
+    font-family:
+        "DM Sans",
+        sans-serif !important;
+}
+
+
+/* Main title */
+
+.auth-card h1 {
+    font-family:
+        "DM Sans",
+        sans-serif;
+
+    font-size: 30px;
+    font-weight: 600;
+
+    letter-spacing: -0.6px;
+
+    color: #172033;
+}
+
+
+/* Intro text */
+
+.auth-card > p {
+    font-size: 14px;
+    font-weight: 400;
+
+    line-height: 1.6;
+
+    color: #6f7b8d;
+}
+
+
+/* Normal field labels */
+
+.auth-card form label {
+    font-size: 13.5px;
+    font-weight: 500;
+
+    letter-spacing: 0;
+
+    color: #344054;
+}
+
+
+/* Input + dropdown text */
+
+.auth-card form input,
+.auth-card form select {
+    font-size: 14px;
+    font-weight: 400;
+
+    letter-spacing: 0;
+
+    color: #273449;
+}
+
+
+/* Placeholder text */
+
+.auth-card form input::placeholder {
+    font-family:
+        "DM Sans",
+        sans-serif;
+
+    font-weight: 400;
+
+    color: #98a2b3;
+}
+
+
+/* Residential Address / Account Information */
+
+.register-section-title {
+    font-size: 15px;
+    font-weight: 600;
+
+    letter-spacing: -0.1px;
+
+    color: #244a86;
+}
+
+
+/* Small description under section */
+
+.register-section-note {
+    font-size: 12.5px;
+    font-weight: 400;
+
+    line-height: 1.55;
+
+    color: #7d8898;
+}
+
+
+/* Address picker */
+
+.address-picker-trigger {
+    font-family:
+        "DM Sans",
+        sans-serif !important;
+
+    font-size: 14px;
+    font-weight: 400;
+
+    color: #273449 !important;
+}
+
+
+/* Don't make Select your address look disabled */
+
+.address-picker-placeholder {
+    color: #ffffff !important;
+    font-weight: 400;
+}
+
+
+/* Address modal title */
+
+.address-picker-header h3 {
+    font-family:
+        "DM Sans",
+        sans-serif;
+
+    font-size: 18px;
+    font-weight: 600;
+
+    letter-spacing: -0.2px;
+}
+
+
+/* Modal description */
+
+.address-picker-header p {
+    font-size: 12.5px;
+    font-weight: 400;
+}
+
+
+/* Address choices */
+
+.address-option {
+    font-family:
+        "DM Sans",
+        sans-serif !important;
+
+    font-size: 14px;
+    font-weight: 400;
+}
+
+
+/* Create Account button */
+
+#registerButton {
+    font-family:
+        "DM Sans",
+        sans-serif !important;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* Logo can remain stronger */
+
+.auth-logo {
+    font-family:
+        "DM Sans",
+        sans-serif;
+
+    font-weight: 700;
+}
+/* =========================================================
+   FIX REMEMBER ME CHECKBOX
+========================================================= */
+
+.auth-card .remember-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    margin: 0;
+
+    font-size: 14px;
+    font-weight: 400;
+
+    color: #344054;
+
+    cursor: pointer;
+}
+
+.auth-card .remember-option input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    flex-shrink: 0;
+
+    accent-color: #2563eb;
+
+    cursor: pointer;
+}

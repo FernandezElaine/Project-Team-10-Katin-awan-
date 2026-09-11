@@ -10,7 +10,7 @@
 
     window.KATIN_AWAN_CHAT_API_URL =
         isLocal
-            ? "http://127.0.0.1:8787/chat"
+            ? "http://127.0.0.1:3000/chat"
             : "https://katin-awan-chat-api.fernandezelaine43.workers.dev/chat";
 
     console.log(

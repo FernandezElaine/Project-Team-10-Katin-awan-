@@ -2356,3 +2356,208 @@ html.admin-auth-verified body {
 
     cursor: pointer;
 }
+.chat-inquiry-card{
+
+    background:white;
+
+    border-radius:20px;
+
+    padding:30px;
+
+    margin-bottom:25px;
+
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+
+}
+
+
+
+.chat-top{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:flex-start;
+
+    margin-bottom:25px;
+
+}
+
+
+
+.question-area h3{
+
+    margin:0;
+
+    font-size:18px;
+
+    color:#1e3a8a;
+
+}
+
+
+
+.question-area small{
+
+    display:block;
+
+    margin-top:8px;
+
+    color:#64748b;
+
+}
+
+
+
+
+
+.status-badge{
+
+    padding:8px 15px;
+
+    border-radius:20px;
+
+    font-size:13px;
+
+    font-weight:700;
+
+    text-transform:capitalize;
+
+}
+
+
+
+.status-badge.pending{
+
+    background:#fef3c7;
+
+    color:#92400e;
+
+}
+
+
+
+.status-badge.answered{
+
+    background:#dcfce7;
+
+    color:#166534;
+
+}
+
+
+
+
+
+.response-box{
+
+    background:#f8fafc;
+
+    padding:20px;
+
+    border-radius:15px;
+
+    margin-bottom:25px;
+
+}
+
+
+
+.response-box h4{
+
+    margin-top:0;
+
+    color:#2563eb;
+
+}
+
+
+
+.response-box p{
+
+    line-height:1.7;
+
+}
+
+
+
+
+
+.reply-section label{
+
+    display:block;
+
+    font-weight:700;
+
+    margin-bottom:10px;
+
+}
+
+
+
+.chat-reply-box{
+
+    width:100%;
+
+    min-height:130px;
+
+    padding:15px;
+
+    border-radius:15px;
+
+    border:1px solid #cbd5e1;
+
+    resize:vertical;
+
+    font-size:15px;
+
+}
+
+
+
+
+
+.chat-send-btn{
+
+    margin-top:15px;
+
+    background:#2563eb;
+
+    color:white;
+
+    border:none;
+
+    padding:12px 25px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-weight:700;
+
+}
+
+
+
+.chat-send-btn:hover{
+
+    background:#1d4ed8;
+
+}
+
+
+
+
+
+.admin-reply{
+
+    background:#ecfdf5;
+
+    padding:20px;
+
+    border-radius:15px;
+
+    border-left:5px solid #22c55e;
+
+}

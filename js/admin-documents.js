@@ -1,356 +1,1085 @@
-// js/admin-documents.js
 
-let adminDocuments = [];
+
+const OCR_BUCKET = "ocr-files";
+
+const MAX_OCR_FILE_SIZE = 5 * 1024 * 1024;
+const MAX_DOCUMENT_FILE_SIZE = 10 * 1024 * 1024;
+
+const OCR_EXTENSIONS = [
+    "pdf",
+    "doc",
+    "docx",
+    "jpg",
+    "jpeg",
+    "png",
+    "webp"
+];
+
+const DOCUMENT_EXTENSIONS = [
+    "pdf",
+    "doc",
+    "docx",
+    "xls",
+    "xlsx",
+    "jpg",
+    "jpeg",
+    "png",
+    "webp"
+];
+
 let adminOCRRecords = [];
-let currentOCRReviewRecord = null;
+let adminDocumentRecords = [];
 
-const PUBLIC_DOCUMENT_BUCKET = "documents";
-const PRIVATE_OCR_BUCKET = "ocr-files";
+let currentOCRRecord = null;
 
-const MAX_PUBLIC_DOCUMENT_SIZE =
-    10 * 1024 * 1024;
 
-const MAX_CORRECTED_PDF_SIZE =
-    5 * 1024 * 1024;
+/* =========================================================
+   INITIALIZATION
+   ========================================================= */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    async function () {
-        const form =
-            document.getElementById(
-                "addDocumentForm"
-            );
+document.addEventListener("DOMContentLoaded", async function () {
 
-        const correctedPdfInput =
-            document.getElementById(
-                "ocrCorrectedPdfFile"
-            );
+    console.log("Katin-awan Admin Documents/OCR starting...");
 
-        if (form) {
-            form.addEventListener(
-                "submit",
-                saveDocument
-            );
+    const allowed = await verifyAdminAccess();
+
+    if (!allowed) {
+        return;
+    }
+
+    setupAdminEvents();
+
+    await loadAdminOCRRecords();
+
+    await loadAdminDocuments();
+
+    console.log("Katin-awan Admin Documents/OCR ready.");
+
+});
+
+
+/* =========================================================
+   ADMIN ACCESS
+   ========================================================= */
+
+async function verifyAdminAccess() {
+
+    try {
+
+        const {
+            data: { session },
+            error: sessionError
+        } = await supabaseClient.auth.getSession();
+
+        if (sessionError) {
+            throw new Error(sessionError.message);
         }
 
-        if (correctedPdfInput) {
-            correctedPdfInput.addEventListener(
-                "change",
-                handleCorrectedPdfSelection
+        if (!session) {
+
+            showAdminAccessError(
+                "Please log in with an administrator account."
             );
+
+            return false;
         }
 
-        await loadDocumentsAndOCR();
-    }
-);
 
-/* =====================================
-   LOAD RECORDS
-===================================== */
+        const {
+            data: profile,
+            error: profileError
+        } = await supabaseClient
+            .from("profiles")
+            .select("role")
+            .eq("id", session.user.id)
+            .maybeSingle();
 
-async function loadDocumentsAndOCR() {
-    const [
-        documentsResult,
-        ocrResult
-    ] = await Promise.all([
-        supabaseClient
-            .from("documents")
-            .select("*")
-            .order("created_at", {
-                ascending: false
-            }),
+        if (profileError) {
+            throw new Error(profileError.message);
+        }
 
-        supabaseClient
-            .from("ocr_records")
-            .select("*")
-            .order("created_at", {
-                ascending: false
-            })
-    ]);
+        if (!profile) {
 
-    if (documentsResult.error) {
-        console.error(
-            "Documents load error:",
-            documentsResult.error
+            showAdminAccessError(
+                "Your administrator profile could not be found."
+            );
+
+            return false;
+        }
+
+
+        const role = String(profile.role || "")
+            .trim()
+            .toLowerCase();
+
+        if (role !== "admin") {
+
+            showAdminAccessError(
+                "Access denied. Documents/OCR is available to administrators only."
+            );
+
+            return false;
+        }
+
+        return true;
+
+    } catch (error) {
+
+        console.error("Admin access error:", error);
+
+        showAdminAccessError(
+            "Unable to verify administrator access."
         );
 
-        adminDocuments = [];
-    } else {
-        adminDocuments =
-            documentsResult.data || [];
+        return false;
     }
-
-    if (ocrResult.error) {
-        console.error(
-            "OCR records load error:",
-            ocrResult.error
-        );
-
-        adminOCRRecords = [];
-    } else {
-        adminOCRRecords =
-            ocrResult.data || [];
-    }
-
-    renderAllRecords();
 }
 
-/* =====================================
-   RENDER DOCUMENTS AND OCR
-===================================== */
 
-function renderAllRecords() {
+/* =========================================================
+   ACCESS ERROR
+   ========================================================= */
+
+function showAdminAccessError(message) {
+
     const container =
-        document.getElementById(
-            "documentsContainer"
+        document.querySelector(
+            ".admin-documents-container"
         );
 
     if (!container) {
         return;
     }
 
-    const search =
+    container.innerHTML = `
+        <section class="ocr-upload-card">
+
+            <h2>🔒 Access Restricted</h2>
+
+            <p>
+                ${escapeHTML(message)}
+            </p>
+
+            <button
+                type="button"
+                class="public-blue-btn"
+                onclick="window.location.href='login.html'"
+            >
+                Log In
+            </button>
+
+        </section>
+    `;
+}
+
+
+/* =========================================================
+   EVENTS
+   ========================================================= */
+
+function setupAdminEvents() {
+
+    const ocrButton =
         document.getElementById(
-            "adminDocumentSearch"
-        )?.value
-            .trim()
-            .toLowerCase() || "";
-
-    const filter =
-        document.getElementById(
-            "adminDocumentFilter"
-        )?.value || "All";
-
-    const records = [];
-
-    adminDocuments.forEach(
-        function (documentRecord) {
-            records.push({
-                type: "Document",
-                id: documentRecord.id,
-                title:
-                    documentRecord.title ||
-                    "Untitled Document",
-                category:
-                    documentRecord.category ||
-                    "Other",
-                description:
-                    documentRecord.description ||
-                    "",
-                fileUrl:
-                    documentRecord.file_url ||
-                    "",
-                createdAt:
-                    documentRecord.created_at
-            });
-        }
-    );
-
-    adminOCRRecords.forEach(
-        function (ocrRecord) {
-            records.push({
-                type: "OCR",
-                id: ocrRecord.id,
-                title:
-                    ocrRecord.file_name ||
-                    "OCR Record",
-                category: "OCR Record",
-                description:
-                    ocrRecord.review_notes ||
-                    ocrRecord.message ||
-                    "",
-                status:
-                    ocrRecord.review_status ||
-                    ocrRecord.status ||
-                    "Pending",
-                vendor:
-                    ocrRecord.detected_vendor ||
-                    "Unknown Vendor",
-                amount:
-                    ocrRecord.detected_amount,
-                confidence:
-                    ocrRecord.confidence,
-                createdAt:
-                    ocrRecord.created_at,
-                source: ocrRecord
-            });
-        }
-    );
-
-    const filteredRecords =
-        records.filter(
-            function (record) {
-                const searchableText = [
-                    record.title,
-                    record.category,
-                    record.description,
-                    record.status,
-                    record.vendor
-                ]
-                    .join(" ")
-                    .toLowerCase();
-
-                const matchesSearch =
-                    !search ||
-                    searchableText.includes(
-                        search
-                    );
-
-                const matchesFilter =
-                    filter === "All" ||
-                    record.category === filter ||
-                    (
-                        filter === "Receipt" &&
-                        record.type === "OCR"
-                    );
-
-                return (
-                    matchesSearch &&
-                    matchesFilter
-                );
-            }
+            "runOCRButton"
         );
 
-    updateDocumentSummary();
+    if (ocrButton) {
 
-    if (filteredRecords.length === 0) {
+        ocrButton.addEventListener(
+            "click",
+            runAdminOCR
+        );
+    }
+
+
+    const documentForm =
+        document.getElementById(
+            "addDocumentForm"
+        );
+
+    if (documentForm) {
+
+        documentForm.addEventListener(
+            "submit",
+            handleDocumentFormSubmit
+        );
+    }
+}
+
+
+/* =========================================================
+   CURRENT ADMIN
+   ========================================================= */
+
+async function getCurrentAdmin() {
+
+    const {
+        data: { user },
+        error
+    } = await supabaseClient.auth.getUser();
+
+    if (error) {
+
+        console.error(
+            "Current admin error:",
+            error
+        );
+
+        return null;
+    }
+
+    return user || null;
+}
+
+
+/* =========================================================
+   ADMIN OCR
+   ========================================================= */
+
+async function runAdminOCR() {
+
+    const admin =
+        await getCurrentAdmin();
+
+    if (!admin) {
+
+        alert(
+            "Please log in as an administrator."
+        );
+
+        return;
+    }
+
+
+    const fileInput =
+        document.getElementById(
+            "ocrFile"
+        );
+
+    const progress =
+        document.getElementById(
+            "ocrProgress"
+        );
+
+    const resultBox =
+        document.getElementById(
+            "ocrResult"
+        );
+
+    const button =
+        document.getElementById(
+            "runOCRButton"
+        );
+
+    const file =
+        fileInput?.files?.[0];
+
+
+    if (!file) {
+
+        alert(
+            "Please select a document first."
+        );
+
+        return;
+    }
+
+
+    const validation =
+        validateOCRFile(file);
+
+    if (validation) {
+
+        alert(validation);
+
+        fileInput.value = "";
+
+        return;
+    }
+
+
+    if (button) {
+
+        button.disabled = true;
+
+        button.textContent =
+            "Processing...";
+    }
+
+
+    if (progress) {
+
+        progress.textContent =
+            "Preparing secure upload...";
+    }
+
+
+    if (resultBox) {
+
+        resultBox.innerHTML = `
+            <p class="muted-text">
+                Processing document...
+            </p>
+        `;
+    }
+
+
+    let originalPath = null;
+    let ocrPdfPath = null;
+
+
+    try {
+
+        /* -------------------------------------------------
+           UPLOAD ORIGINAL
+        ------------------------------------------------- */
+
+        if (progress) {
+            progress.textContent =
+                "Uploading original document...";
+        }
+
+        const upload =
+            await uploadOCRFile(
+                file,
+                admin.id,
+                "originals"
+            );
+
+        originalPath =
+            upload.path;
+
+
+        /* -------------------------------------------------
+           FILE INFORMATION
+        ------------------------------------------------- */
+
+        const fileType =
+            getFileType(file);
+
+        const isImage =
+            isOCRImage(file);
+
+
+        let extractedText = "";
+
+        let confidence = 0;
+
+        let detectedVendor =
+            "Not scanned";
+
+        let detectedAmount = null;
+
+
+        let validation = {
+            status:
+                "Needs Admin Review",
+
+            message:
+                "Document uploaded successfully and requires administrator review."
+        };
+
+
+        /* -------------------------------------------------
+           IMAGE OCR
+        ------------------------------------------------- */
+
+        if (isImage) {
+
+            if (!window.Tesseract) {
+
+                throw new Error(
+                    "Tesseract OCR is not loaded. Make sure the Tesseract script is included in admin-documents.html."
+                );
+            }
+
+
+            if (progress) {
+
+                progress.textContent =
+                    "Starting OCR...";
+            }
+
+
+            const result =
+                await Tesseract.recognize(
+                    file,
+                    "eng",
+                    {
+                        logger: function (message) {
+
+                            if (
+                                message.status ===
+                                "recognizing text"
+                            ) {
+
+                                const percent =
+                                    Math.round(
+                                        (
+                                            message.progress ||
+                                            0
+                                        ) * 100
+                                    );
+
+                                if (progress) {
+
+                                    progress.textContent =
+                                        `OCR Progress: ${percent}%`;
+                                }
+                            }
+                        }
+                    }
+                );
+
+
+            extractedText =
+                String(
+                    result?.data?.text || ""
+                ).trim();
+
+
+            confidence =
+                Number(
+                    result?.data?.confidence || 0
+                );
+
+
+            detectedAmount =
+                extractAmount(
+                    extractedText
+                );
+
+
+            detectedVendor =
+                extractVendor(
+                    extractedText
+                );
+
+
+            validation =
+                validateOCRResult(
+                    extractedText,
+                    detectedAmount,
+                    confidence
+                );
+
+
+            /* -------------------------------------------------
+               CREATE OCR PDF
+            ------------------------------------------------- */
+
+            if (progress) {
+
+                progress.textContent =
+                    "Creating OCR PDF...";
+            }
+
+
+            const ocrPDF =
+                createOCRPDF({
+
+                    title:
+                        "OCR Extracted Text Report",
+
+                    fileName:
+                        file.name,
+
+                    fileType,
+
+                    vendor:
+                        detectedVendor,
+
+                    amount:
+                        detectedAmount,
+
+                    confidence,
+
+                    status:
+                        validation.status,
+
+                    text:
+                        extractedText
+                });
+
+
+            const reportUpload =
+                await uploadOCRFile(
+                    ocrPDF,
+                    admin.id,
+                    "ocr-reports"
+                );
+
+
+            ocrPdfPath =
+                reportUpload.path;
+        }
+
+
+        /* -------------------------------------------------
+           PDF / WORD
+        ------------------------------------------------- */
+
+        else {
+
+            extractedText = "";
+
+            confidence = 0;
+
+            detectedVendor =
+                "Not scanned";
+
+            detectedAmount =
+                null;
+
+            validation = {
+
+                status:
+                    "Needs Admin Review",
+
+                message:
+                    "The document was uploaded successfully. Automatic browser OCR is performed on image files only. Administrator review is required."
+            };
+        }
+
+
+        /* -------------------------------------------------
+           SAVE OCR DATABASE RECORD
+        ------------------------------------------------- */
+
+        if (progress) {
+
+            progress.textContent =
+                "Saving OCR record...";
+        }
+
+
+        const saved =
+            await saveOCRRecord({
+
+                userId:
+                    admin.id,
+
+                fileName:
+                    file.name,
+
+                fileType,
+
+                originalFilePath:
+                    originalPath,
+
+                ocrPdfPath,
+
+                extractedText,
+
+                detectedVendor,
+
+                detectedAmount,
+
+                confidence,
+
+                validation
+            });
+
+
+        /* -------------------------------------------------
+           DISPLAY RESULT
+        ------------------------------------------------- */
+
+        if (resultBox) {
+
+            resultBox.innerHTML =
+                buildOCRResultHTML(
+                    saved
+                );
+        }
+
+
+        if (progress) {
+
+            progress.textContent =
+                isImage
+                    ? "Upload and OCR completed successfully."
+                    : "Document uploaded successfully. Administrator review is required.";
+        }
+
+
+        fileInput.value = "";
+
+
+        await loadAdminOCRRecords();
+
+        await loadAdminDocuments();
+
+
+    } catch (error) {
+
+        console.error(
+            "ADMIN OCR ERROR:",
+            error
+        );
+
+
+        await removeOCRFiles(
+            [
+                originalPath,
+                ocrPdfPath
+            ].filter(Boolean)
+        );
+
+
+        if (progress) {
+
+            progress.textContent =
+                "Upload / OCR failed.";
+        }
+
+
+        if (resultBox) {
+
+            resultBox.innerHTML = `
+                <div class="ocr-summary ocr-flagged">
+
+                    <h4>
+                        Upload / OCR Failed
+                    </h4>
+
+                    <p>
+                        ${escapeHTML(
+                            error.message ||
+                            "Unknown error."
+                        )}
+                    </p>
+
+                </div>
+            `;
+        }
+
+
+        alert(
+            "Upload / OCR failed:\n\n" +
+            (
+                error.message ||
+                "Unknown error."
+            )
+        );
+
+    } finally {
+
+        if (button) {
+
+            button.disabled = false;
+
+            button.textContent =
+                "Upload / Run OCR Analysis";
+        }
+    }
+}
+
+
+/* =========================================================
+   OCR FILE UPLOAD
+   ========================================================= */
+
+async function uploadOCRFile(
+    file,
+    userId,
+    folder
+) {
+
+    const safeName =
+        createSafeFileName(
+            file.name
+        );
+
+
+    const path =
+        `${userId}/${folder}/` +
+        `${Date.now()}-` +
+        `${createRandomToken()}-` +
+        `${safeName}`;
+
+
+    const {
+        error
+    } =
+        await supabaseClient.storage
+            .from(OCR_BUCKET)
+            .upload(
+                path,
+                file,
+                {
+                    cacheControl:
+                        "3600",
+
+                    upsert:
+                        false,
+
+                    contentType:
+                        getUploadMimeType(file)
+                }
+            );
+
+
+    if (error) {
+
+        throw new Error(
+            "File upload failed: " +
+            error.message
+        );
+    }
+
+
+    return {
+        path
+    };
+}
+
+
+/* =========================================================
+   REMOVE OCR FILES
+   ========================================================= */
+
+async function removeOCRFiles(paths) {
+
+    const validPaths =
+        [
+            ...new Set(
+                paths.filter(Boolean)
+            )
+        ];
+
+
+    if (!validPaths.length) {
+        return;
+    }
+
+
+    const { error } =
+        await supabaseClient.storage
+            .from(OCR_BUCKET)
+            .remove(validPaths);
+
+
+    if (error) {
+
+        console.warn(
+            "File cleanup failed:",
+            error.message
+        );
+    }
+}
+
+
+/* =========================================================
+   SAVE OCR RECORD
+   ========================================================= */
+
+async function saveOCRRecord(record) {
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("ocr_records")
+            .insert([
+                {
+
+                    user_id:
+                        record.userId,
+
+                    file_name:
+                        record.fileName,
+
+                    file_type:
+                        record.fileType,
+
+                    extracted_text:
+                        record.extractedText || "",
+
+                    corrected_text:
+                        null,
+
+                    detected_vendor:
+                        record.detectedVendor ||
+                        "Not detected",
+
+                    detected_amount:
+                        record.detectedAmount,
+
+                    confidence:
+                        Number(
+                            record.confidence || 0
+                        ),
+
+                    status:
+                        record.validation.status,
+
+                    review_status:
+                        record.validation.status,
+
+                    message:
+                        record.validation.message,
+
+                    review_notes:
+                        null,
+
+                    original_file_path:
+                        record.originalFilePath,
+
+                    ocr_pdf_path:
+                        record.ocrPdfPath,
+
+                    corrected_pdf_path:
+                        null,
+
+                    is_public:
+                        false,
+
+                    file_url:
+                        null,
+
+                    ocr_pdf_url:
+                        null,
+
+                    corrected_pdf_url:
+                        null
+                }
+            ])
+            .select("*")
+            .single();
+
+
+    if (error) {
+
+        throw new Error(
+            "OCR record could not be saved: " +
+            error.message
+        );
+    }
+
+
+    return data;
+}
+
+
+/* =========================================================
+   LOAD OCR RECORDS
+   ========================================================= */
+
+async function loadAdminOCRRecords() {
+
+    const container =
+        document.getElementById(
+            "adminOCRHistory"
+        );
+
+
+
+
+ if (container) {
+
+    container.innerHTML = `
+        <p class="muted-text">
+            Loading OCR records...
+        </p>
+    `;
+
+}
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("ocr_records")
+            .select("*")
+            .order(
+                "created_at",
+                {
+                    ascending: false
+                }
+            );
+
+
+    if (error) {
+
+        console.error(
+            "OCR records loading error:",
+            error
+        );
+
+
+if (container) {
+
+    container.innerHTML = `
+        <div class="document-card">
+
+            <h3>
+                Unable to load OCR records
+            </h3>
+
+            <p class="red-text">
+                ${escapeHTML(
+                    error.message
+                )}
+            </p>
+
+        </div>
+    `;
+
+}
+
+        return;
+    }
+
+
+    adminOCRRecords =
+        data || [];
+
+if (container) {
+
+    renderAdminOCRRecords();
+
+}
+
+renderAdminDocumentRecords();
+
+updateDocumentCounts();
+}
+
+
+/* =========================================================
+   RENDER OCR RECORDS
+   ========================================================= */
+
+function renderAdminOCRRecords() {
+
+    const container =
+        document.getElementById(
+            "adminOCRHistory"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    if (
+        adminOCRRecords.length === 0
+    ) {
+
         container.innerHTML = `
-            <div
-                class="public-panel"
-                style="grid-column: 1 / -1;"
-            >
-                <p>
-                    No document or OCR records found.
-                </p>
+            <div class="document-card">
+
+                <div class="doc-icon">
+                    📄
+                </div>
+
+                <div>
+
+                    <h3>
+                        No OCR records yet
+                    </h3>
+
+                    <p>
+                        Uploaded documents processed by OCR will appear here.
+                    </p>
+
+                </div>
+
             </div>
         `;
 
         return;
     }
 
+
     container.innerHTML =
-        filteredRecords
-            .map(function (record) {
-                return record.type === "OCR"
-                    ? createOCRCard(record)
-                    : createDocumentCard(record);
-            })
+        adminOCRRecords
+            .map(
+                createAdminOCRCard
+            )
             .join("");
 }
 
-function createDocumentCard(record) {
-    const hasFile =
-        Boolean(record.fileUrl);
 
-    return `
-        <article class="document-card">
-            <div class="doc-icon">
-                📄
-            </div>
+/* =========================================================
+   OCR CARD
+   ========================================================= */
 
-            <div>
-                <h3>
-                    ${escapeHTML(record.title)}
-                </h3>
+function createAdminOCRCard(record) {
 
-                <p>
-                    <b>Category:</b>
-                    ${escapeHTML(record.category)}
-                </p>
+    const status =
+        record.review_status ||
+        record.status ||
+        "Pending";
 
-                <p>
-                    ${escapeHTML(
-                        record.description ||
-                        "No description provided."
-                    )}
-                </p>
-
-                <p>
-                    <small>
-                        Uploaded:
-                        ${formatDate(record.createdAt)}
-                    </small>
-                </p>
-            </div>
-
-            <div class="admin-card-actions">
-                <button
-                    type="button"
-                    onclick="viewDocumentById(${Number(record.id)})"
-                    ${hasFile ? "" : "disabled"}
-                >
-                    ${hasFile ? "View File" : "No File"}
-                </button>
-
-                <button
-                    type="button"
-                    onclick="editDocument(${Number(record.id)})"
-                >
-                    Edit
-                </button>
-
-                <button
-                    type="button"
-                    onclick="deleteDocument(${Number(record.id)})"
-                    class="danger-btn"
-                >
-                    Delete
-                </button>
-            </div>
-        </article>
-    `;
-}
-
-function createOCRCard(record) {
-    const source =
-        record.source;
 
     const hasOriginal =
-        hasOCRFile(source, "original");
+        Boolean(
+            record.original_file_path ||
+            record.file_url
+        );
 
-    const hasOCRReport =
-        hasOCRFile(source, "ocr");
+
+    const hasOCR =
+        Boolean(
+            record.ocr_pdf_path ||
+            record.ocr_pdf_url
+        );
+
 
     const hasCorrected =
-        hasOCRFile(source, "corrected");
+        Boolean(
+            record.corrected_pdf_path ||
+            record.corrected_pdf_url
+        );
+
 
     return `
         <article class="document-card">
+
             <div class="doc-icon">
-                🔍
+                ${getOCRStatusIcon(status)}
             </div>
 
             <div>
+
                 <h3>
-                    ${escapeHTML(record.title)}
+                    ${escapeHTML(
+                        record.file_name ||
+                        "OCR Document"
+                    )}
                 </h3>
 
                 <p>
                     <b>Type:</b>
-                    OCR Record
-                </p>
-
-                <p>
-                    <b>Status:</b>
-
-                    <span class="${getOCRStatusClass(
-                        record.status
-                    )}">
-                        ${escapeHTML(record.status)}
-                    </span>
+                    ${escapeHTML(
+                        record.file_type ||
+                        "Document"
+                    )}
                 </p>
 
                 <p>
                     <b>Vendor:</b>
-                    ${escapeHTML(record.vendor)}
+                    ${escapeHTML(
+                        record.detected_vendor ||
+                        "Not detected"
+                    )}
                 </p>
 
                 <p>
                     <b>Amount:</b>
                     ${
-                        record.amount !== null &&
-                        record.amount !== ""
-                            ? formatPeso(record.amount)
+                        record.detected_amount !== null &&
+                        record.detected_amount !== ""
+                            ? formatPeso(
+                                record.detected_amount
+                            )
                             : "Not detected"
                     }
                 </p>
@@ -363,466 +1092,85 @@ function createOCRCard(record) {
                 </p>
 
                 <p>
+                    <b>Status:</b>
+                    <span class="${
+                        getOCRStatusClass(
+                            status
+                        )
+                    }">
+                        ${escapeHTML(status)}
+                    </span>
+                </p>
+
+                <p>
                     <small>
                         Uploaded:
-                        ${formatDate(record.createdAt)}
+                        ${formatDate(
+                            record.created_at
+                        )}
                     </small>
                 </p>
 
-                <div class="admin-file-links">
-                    <span>
-                        Original:
-                        ${hasOriginal
-                            ? "Available"
-                            : "Not available"}
-                    </span>
+                <div class="admin-card-actions">
 
-                    <span>
-                        OCR PDF:
-                        ${hasOCRReport
-                            ? "Available"
-                            : "Not available"}
-                    </span>
+                    <button
+                        type="button"
+                        onclick="openOCRReview(${Number(record.id)})"
+                    >
+                        Review / Correct
+                    </button>
 
-                    <span>
-                        Corrected PDF:
-                        ${hasCorrected
-                            ? "Available"
-                            : "Not available"}
-                    </span>
+                    <button
+                        type="button"
+                        onclick="openOCRRecordFile(${Number(record.id)}, 'original', false)"
+                        ${hasOriginal ? "" : "disabled"}
+                    >
+                        View Original
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="openOCRRecordFile(${Number(record.id)}, 'original', true)"
+                        ${hasOriginal ? "" : "disabled"}
+                    >
+                        Download Original
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="openOCRRecordFile(${Number(record.id)}, 'ocr', true)"
+                        ${hasOCR ? "" : "disabled"}
+                    >
+                        Download OCR PDF
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="openOCRRecordFile(${Number(record.id)}, 'corrected', true)"
+                        ${hasCorrected ? "" : "disabled"}
+                    >
+                        Download Corrected PDF
+                    </button>
+
                 </div>
+
             </div>
 
-            <div class="admin-card-actions">
-                <button
-                    type="button"
-                    onclick="openOCRReviewModal(${Number(record.id)})"
-                >
-                    Review / Edit
-                </button>
-
-                <button
-                    type="button"
-                    onclick="quickMarkOCR(
-                        ${Number(record.id)},
-                        'Validated Expense'
-                    )"
-                >
-                    Mark Valid
-                </button>
-
-                <button
-                    type="button"
-                    onclick="quickMarkOCR(
-                        ${Number(record.id)},
-                        'Flagged for Review'
-                    )"
-                    class="danger-btn"
-                >
-                    Flag
-                </button>
-
-                <button
-                    type="button"
-                    onclick="deleteOCRRecord(${Number(record.id)})"
-                    class="danger-btn"
-                >
-                    Delete OCR
-                </button>
-            </div>
         </article>
     `;
 }
 
-/* =====================================
-   PUBLIC DOCUMENT CRUD
-===================================== */
 
-async function saveDocument(event) {
-    event.preventDefault();
+/* =========================================================
+   OCR REVIEW
+   ========================================================= */
 
-    const idValue =
-        document.getElementById(
-            "docId"
-        ).value;
+function openOCRReview(id) {
 
-    const documentId =
-        idValue
-            ? Number(idValue)
-            : null;
-
-    const title =
-        document.getElementById(
-            "docTitle"
-        ).value.trim();
-
-    const category =
-        document.getElementById(
-            "docCategory"
-        ).value;
-
-    const description =
-        document.getElementById(
-            "docDescription"
-        ).value.trim();
-
-    const fileInput =
-        document.getElementById(
-            "docFile"
-        );
-
-    const selectedFile =
-        fileInput?.files?.[0] || null;
-
-    const existingUrl =
-        document.getElementById(
-            "existingDocFileUrl"
-        )?.value || "";
-
-    if (!title || !category) {
-        alert(
-            "Please enter the document title and category."
-        );
-
-        return;
-    }
-
-    if (
-        !selectedFile &&
-        !existingUrl
-    ) {
-        alert(
-            "Please upload a document file."
-        );
-
-        return;
-    }
-
-    if (selectedFile) {
-        const validationError =
-            validatePublicDocumentFile(
-                selectedFile
-            );
-
-        if (validationError) {
-            alert(validationError);
-            return;
-        }
-    }
-
-    let newFileUrl =
-        existingUrl;
-
-    let newFilePath =
-        null;
-
-    const oldFilePath =
-        extractStoragePathFromPublicUrl(
-            existingUrl,
-            PUBLIC_DOCUMENT_BUCKET
-        );
-
-    try {
-        if (selectedFile) {
-            const upload =
-                await uploadPublicDocument(
-                    selectedFile
-                );
-
-            newFileUrl =
-                upload.publicUrl;
-
-            newFilePath =
-                upload.path;
-        }
-
-        const payload = {
-            title,
-            category,
-            description,
-            file_url: newFileUrl
-        };
-
-        const result =
-            documentId
-                ? await supabaseClient
-                    .from("documents")
-                    .update(payload)
-                    .eq("id", documentId)
-                : await supabaseClient
-                    .from("documents")
-                    .insert([payload]);
-
-        if (result.error) {
-            throw result.error;
-        }
-
-        if (
-            selectedFile &&
-            oldFilePath &&
-            oldFilePath !== newFilePath
-        ) {
-            await removeStorageFiles(
-                PUBLIC_DOCUMENT_BUCKET,
-                [oldFilePath]
-            );
-        }
-
-        await logAudit(
-            documentId
-                ? "Updated document"
-                : "Added document",
-            "Documents",
-            `${documentId ? "Updated" : "Added"} document: ${title}`,
-            true
-        );
-
-        alert(
-            documentId
-                ? "Document updated successfully."
-                : "Document added successfully."
-        );
-
-        clearDocumentForm();
-
-        await loadDocumentsAndOCR();
-    } catch (error) {
-        console.error(
-            "Document save error:",
-            error
-        );
-
-        if (newFilePath) {
-            await removeStorageFiles(
-                PUBLIC_DOCUMENT_BUCKET,
-                [newFilePath]
-            );
-        }
-
-        alert(
-            "Document could not be saved: " +
-            error.message
-        );
-    }
-}
-
-async function uploadPublicDocument(file) {
-    const safeFileName =
-        createSafeFileName(file.name);
-
-    const filePath =
-        `public-documents/` +
-        `${Date.now()}-${safeFileName}`;
-
-    const { error } =
-        await supabaseClient.storage
-            .from(PUBLIC_DOCUMENT_BUCKET)
-            .upload(
-                filePath,
-                file,
-                {
-                    cacheControl: "3600",
-                    upsert: false,
-                    contentType: file.type
-                }
-            );
-
-    if (error) {
-        throw new Error(
-            "File upload failed: " +
-            error.message
-        );
-    }
-
-    const { data } =
-        supabaseClient.storage
-            .from(PUBLIC_DOCUMENT_BUCKET)
-            .getPublicUrl(filePath);
-
-    if (!data?.publicUrl) {
-        throw new Error(
-            "The public document URL could not be generated."
-        );
-    }
-
-    return {
-        path: filePath,
-        publicUrl: data.publicUrl
-    };
-}
-
-function editDocument(id) {
-    const documentRecord =
-        adminDocuments.find(
-            function (item) {
-                return (
-                    Number(item.id) ===
-                    Number(id)
-                );
-            }
-        );
-
-    if (!documentRecord) {
-        alert("Document not found.");
-        return;
-    }
-
-    document.getElementById(
-        "docId"
-    ).value =
-        documentRecord.id;
-
-    document.getElementById(
-        "docTitle"
-    ).value =
-        documentRecord.title || "";
-
-    document.getElementById(
-        "docCategory"
-    ).value =
-        documentRecord.category || "Other";
-
-    document.getElementById(
-        "docDescription"
-    ).value =
-        documentRecord.description || "";
-
-    document.getElementById(
-        "existingDocFileUrl"
-    ).value =
-        documentRecord.file_url || "";
-
-    document.getElementById(
-        "docFile"
-    ).value = "";
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
-}
-
-async function deleteDocument(id) {
-    const documentRecord =
-        adminDocuments.find(
-            function (item) {
-                return (
-                    Number(item.id) ===
-                    Number(id)
-                );
-            }
-        );
-
-    const confirmed =
-        confirm(
-            `Delete "${
-                documentRecord?.title ||
-                "this document"
-            }"?`
-        );
-
-    if (!confirmed) {
-        return;
-    }
-
-    const { error } =
-        await supabaseClient
-            .from("documents")
-            .delete()
-            .eq("id", Number(id));
-
-    if (error) {
-        alert(
-            "Document deletion failed: " +
-            error.message
-        );
-
-        return;
-    }
-
-    const filePath =
-        extractStoragePathFromPublicUrl(
-            documentRecord?.file_url,
-            PUBLIC_DOCUMENT_BUCKET
-        );
-
-    if (filePath) {
-        await removeStorageFiles(
-            PUBLIC_DOCUMENT_BUCKET,
-            [filePath]
-        );
-    }
-
-    await logAudit(
-        "Deleted document",
-        "Documents",
-        `Deleted document: ${
-            documentRecord?.title ||
-            "Document ID " + id
-        }`,
-        true
-    );
-
-    alert(
-        "Document deleted successfully."
-    );
-
-    await loadDocumentsAndOCR();
-}
-
-function viewDocumentById(id) {
-    const documentRecord =
-        adminDocuments.find(
-            function (item) {
-                return (
-                    Number(item.id) ===
-                    Number(id)
-                );
-            }
-        );
-
-    if (
-        !documentRecord ||
-        !documentRecord.file_url
-    ) {
-        alert(
-            "No document file is available."
-        );
-
-        return;
-    }
-
-    openSafeURL(
-        documentRecord.file_url
-    );
-}
-
-function clearDocumentForm() {
-    setInputValue("docId", "");
-    setInputValue("docTitle", "");
-    setInputValue(
-        "docCategory",
-        "Financial Report"
-    );
-    setInputValue(
-        "docDescription",
-        ""
-    );
-    setInputValue("docFile", "");
-    setInputValue(
-        "existingDocFileUrl",
-        ""
-    );
-}
-
-/* =====================================
-   OCR REVIEW MODAL
-===================================== */
-
-function openOCRReviewModal(id) {
     const record =
         adminOCRRecords.find(
             function (item) {
+
                 return (
                     Number(item.id) ===
                     Number(id)
@@ -830,7 +1178,9 @@ function openOCRReviewModal(id) {
             }
         );
 
+
     if (!record) {
+
         alert(
             "OCR record not found."
         );
@@ -838,252 +1188,553 @@ function openOCRReviewModal(id) {
         return;
     }
 
-    currentOCRReviewRecord =
+
+    currentOCRRecord =
         record;
 
-    setInputValue(
-        "ocrReviewId",
-        record.id
-    );
 
-    setText(
-        "ocrReviewFileName",
-        record.file_name || "Unknown"
-    );
+    const modal =
+        document.getElementById(
+            "ocrReviewModal"
+        );
 
-    setText(
-        "ocrReviewVendor",
+
+    if (!modal) {
+
+        alert(
+            "OCR review modal was not found in admin-documents.html."
+        );
+
+        return;
+    }
+
+
+    document.getElementById(
+        "ocrReviewId"
+    ).value =
+        record.id;
+
+
+    document.getElementById(
+        "ocrReviewFileName"
+    ).textContent =
+        record.file_name ||
+        "Document";
+
+
+    document.getElementById(
+        "ocrReviewVendor"
+    ).textContent =
         record.detected_vendor ||
-        "Unknown Vendor"
-    );
+        "Not detected";
 
-    setText(
-        "ocrReviewAmount",
+
+    document.getElementById(
+        "ocrReviewAmount"
+    ).textContent =
         record.detected_amount !== null &&
         record.detected_amount !== ""
             ? formatPeso(
                 record.detected_amount
             )
-            : "Not detected"
-    );
+            : "Not detected";
 
-    setText(
-        "ocrReviewConfidence",
+
+    document.getElementById(
+        "ocrReviewConfidence"
+    ).textContent =
         `${Number(
             record.confidence || 0
-        ).toFixed(2)}%`
-    );
+        ).toFixed(2)}%`;
 
-    setInputValue(
-        "ocrCorrectedText",
+
+    document.getElementById(
+        "ocrCorrectedText"
+    ).value =
         record.corrected_text ||
         record.extracted_text ||
-        ""
-    );
+        "";
 
-    setInputValue(
-        "ocrReviewNotes",
-        record.review_notes || ""
-    );
 
-    setInputValue(
-        "ocrReviewStatus",
+    document.getElementById(
+        "ocrReviewNotes"
+    ).value =
+        record.review_notes ||
+        record.message ||
+        "";
+
+
+    document.getElementById(
+        "ocrReviewStatus"
+    ).value =
         record.review_status ||
         record.status ||
-        "Needs Admin Review"
-    );
+        "Needs Admin Review";
 
-    setInputValue(
-        "ocrCorrectedPdfFile",
-        ""
-    );
 
     const correctedInfo =
         document.getElementById(
             "ocrCorrectedPdfInfo"
         );
 
+
     if (correctedInfo) {
-        correctedInfo.textContent = "";
-        correctedInfo.hidden = true;
+
+        correctedInfo.hidden =
+            !record.corrected_pdf_path;
+
+        correctedInfo.textContent =
+            record.corrected_pdf_path
+                ? "A corrected PDF already exists. Saving the review again will update it."
+                : "";
     }
 
-    updateOCRFileButtons(record);
 
-    const modal =
+    const originalButton =
         document.getElementById(
-            "ocrReviewModal"
+            "ocrViewOriginalBtn"
         );
 
-    if (modal) {
-        modal.classList.add(
-            "active"
+    const originalDownload =
+        document.getElementById(
+            "ocrDownloadOriginalBtn"
         );
+
+    const ocrDownload =
+        document.getElementById(
+            "ocrDownloadReportBtn"
+        );
+
+    const correctedDownload =
+        document.getElementById(
+            "ocrDownloadCorrectedBtn"
+        );
+
+
+    if (originalButton) {
+        originalButton.disabled =
+            !(
+                record.original_file_path ||
+                record.file_url
+            );
     }
+
+
+    if (originalDownload) {
+        originalDownload.disabled =
+            !(
+                record.original_file_path ||
+                record.file_url
+            );
+    }
+
+
+    if (ocrDownload) {
+        ocrDownload.disabled =
+            !(
+                record.ocr_pdf_path ||
+                record.ocr_pdf_url
+            );
+    }
+
+
+    if (correctedDownload) {
+        correctedDownload.disabled =
+            !(
+                record.corrected_pdf_path ||
+                record.corrected_pdf_url
+            );
+    }
+
+
+    modal.style.display =
+        "flex";
 }
+
+
+/* =========================================================
+   CLOSE OCR REVIEW
+   ========================================================= */
 
 function closeOCRReviewModal() {
+
     const modal =
         document.getElementById(
             "ocrReviewModal"
         );
 
     if (modal) {
-        modal.classList.remove(
-            "active"
-        );
+
+        modal.style.display =
+            "none";
     }
 
-    currentOCRReviewRecord = null;
+    currentOCRRecord =
+        null;
 }
 
-function updateOCRFileButtons(record) {
-    setButtonAvailability(
-        "ocrViewOriginalBtn",
-        hasOCRFile(record, "original")
-    );
 
-    setButtonAvailability(
-        "ocrDownloadOriginalBtn",
-        hasOCRFile(record, "original")
-    );
+/* =========================================================
+   SAVE OCR REVIEW
+   ========================================================= */
 
-    setButtonAvailability(
-        "ocrDownloadReportBtn",
-        hasOCRFile(record, "ocr")
-    );
+async function saveOCRReview() {
 
-    setButtonAvailability(
-        "ocrDownloadCorrectedBtn",
-        hasOCRFile(record, "corrected")
-    );
-}
+    if (!currentOCRRecord) {
 
-function setButtonAvailability(
-    buttonId,
-    available
-) {
-    const button =
+        alert(
+            "No OCR record is currently selected."
+        );
+
+        return;
+    }
+
+
+    const correctedText =
         document.getElementById(
-            buttonId
-        );
+            "ocrCorrectedText"
+        ).value.trim();
 
-    if (button) {
-        button.disabled =
-            !available;
 
-        button.title =
-            available
-                ? ""
-                : "File not available";
-    }
-}
+    const notes =
+        document.getElementById(
+            "ocrReviewNotes"
+        ).value.trim();
 
-function handleCorrectedPdfSelection() {
-    const input =
+
+    const status =
+        document.getElementById(
+            "ocrReviewStatus"
+        ).value;
+
+
+    const manualPDFInput =
         document.getElementById(
             "ocrCorrectedPdfFile"
         );
 
-    const info =
-        document.getElementById(
-            "ocrCorrectedPdfInfo"
-        );
 
-    const file =
-        input?.files?.[0];
+    const manualPDF =
+        manualPDFInput?.files?.[0] ||
+        null;
 
-    if (!info) {
-        return;
-    }
 
-    if (!file) {
-        info.hidden = true;
-        info.textContent = "";
-        return;
-    }
+    try {
 
-    const validationError =
-        validateCorrectedPDF(file);
+        const admin =
+            await getCurrentAdmin();
 
-    if (validationError) {
-        alert(validationError);
 
-        input.value = "";
-        info.hidden = true;
-        info.textContent = "";
+        if (!admin) {
 
-        return;
-    }
+            throw new Error(
+                "Administrator session is no longer available."
+            );
+        }
 
-    info.hidden = false;
 
-    info.textContent =
-        `Selected: ${file.name} ` +
-        `(${formatFileSize(file.size)})`;
-}
+        let correctedPDFPath =
+            currentOCRRecord.corrected_pdf_path ||
+            null;
 
-/* =====================================
-   OCR VIEW AND DOWNLOAD
-===================================== */
 
-async function viewOCRFile(type) {
-    if (!currentOCRReviewRecord) {
+        /* -------------------------------------------------
+           MANUALLY UPLOADED CORRECTED PDF
+        ------------------------------------------------- */
+
+        if (manualPDF) {
+
+            if (
+                manualPDF.size >
+                MAX_OCR_FILE_SIZE
+            ) {
+
+                throw new Error(
+                    "Corrected PDF must not exceed 5 MB."
+                );
+            }
+
+
+            if (
+                getFileExtension(
+                    manualPDF.name
+                ) !== "pdf"
+            ) {
+
+                throw new Error(
+                    "The corrected file must be a PDF."
+                );
+            }
+
+
+            if (
+                correctedPDFPath
+            ) {
+
+                await removeOCRFiles(
+                    [
+                        correctedPDFPath
+                    ]
+                );
+            }
+
+
+            const upload =
+                await uploadOCRFile(
+                    manualPDF,
+                    admin.id,
+                    "corrected"
+                );
+
+
+            correctedPDFPath =
+                upload.path;
+        }
+
+
+        /* -------------------------------------------------
+           AUTOMATIC CORRECTED PDF
+           WHEN TEXT WAS EDITED
+        ------------------------------------------------- */
+
+        else if (
+            correctedText
+        ) {
+
+            const correctedPDF =
+                createCorrectedOCRPDF({
+
+                    fileName:
+                        currentOCRRecord.file_name,
+
+                    fileType:
+                        currentOCRRecord.file_type,
+
+                    vendor:
+                        currentOCRRecord.detected_vendor,
+
+                    amount:
+                        currentOCRRecord.detected_amount,
+
+                    confidence:
+                        currentOCRRecord.confidence,
+
+                    status,
+
+                    text:
+                        correctedText
+                });
+
+
+            if (
+                correctedPDFPath
+            ) {
+
+                await removeOCRFiles(
+                    [
+                        correctedPDFPath
+                    ]
+                );
+            }
+
+
+            const upload =
+                await uploadOCRFile(
+                    correctedPDF,
+                    admin.id,
+                    "corrected"
+                );
+
+
+            correctedPDFPath =
+                upload.path;
+        }
+
+
+        /* -------------------------------------------------
+           UPDATE DATABASE
+        ------------------------------------------------- */
+
+        const {
+            data,
+            error
+        } =
+            await supabaseClient
+                .from("ocr_records")
+                .update({
+
+                    corrected_text:
+                        correctedText ||
+                        null,
+
+                    review_status:
+                        status,
+
+                    status:
+                        status,
+
+                    review_notes:
+                        notes ||
+                        null,
+
+                    corrected_pdf_path:
+                        correctedPDFPath,
+
+                    corrected_pdf_url:
+                        null
+                })
+                .eq(
+                    "id",
+                    currentOCRRecord.id
+                )
+                .select("*")
+                .single();
+
+
+        if (error) {
+
+            throw new Error(
+                "OCR review could not be saved: " +
+                error.message
+            );
+        }
+
+
         alert(
-            "No OCR record is currently selected."
+            "OCR review and correction saved successfully."
         );
 
-        return;
-    }
 
-    await openOrDownloadOCRFile(
-        currentOCRReviewRecord,
-        type,
-        false
-    );
-}
+        closeOCRReviewModal();
 
-async function downloadOCRFile(type) {
-    if (!currentOCRReviewRecord) {
+
+        await loadAdminOCRRecords();
+
+        await loadAdminDocuments();
+
+
+    } catch (error) {
+
+        console.error(
+            "OCR review save error:",
+            error
+        );
+
+
         alert(
-            "No OCR record is currently selected."
+            "Unable to save OCR review:\n\n" +
+            error.message
         );
-
-        return;
     }
-
-    await openOrDownloadOCRFile(
-        currentOCRReviewRecord,
-        type,
-        true
-    );
 }
 
-async function openOrDownloadOCRFile(
-    record,
+
+/* =========================================================
+   VIEW / DOWNLOAD OCR FILE
+   ========================================================= */
+
+async function openOCRRecordFile(
+    id,
     type,
     download
 ) {
-    const reference =
-        getOCRFileReference(
-            record,
-            type
+
+    const record =
+        adminOCRRecords.find(
+            function (item) {
+
+                return (
+                    Number(item.id) ===
+                    Number(id)
+                );
+            }
         );
 
-    if (
-        !reference.path &&
-        !reference.url
-    ) {
+
+    if (!record) {
+
         alert(
-            "The requested file is not available."
+            "OCR record not found."
         );
 
         return;
     }
 
+
+    let path = "";
+    let externalURL = "";
+    let fileName =
+        record.file_name ||
+        "document";
+
+
+    if (type === "original") {
+
+        path =
+            record.original_file_path ||
+            "";
+
+        externalURL =
+            record.file_url ||
+            "";
+
+        fileName =
+            record.file_name ||
+            "original-document";
+
+    }
+
+
+    else if (type === "ocr") {
+
+        path =
+            record.ocr_pdf_path ||
+            "";
+
+        externalURL =
+            record.ocr_pdf_url ||
+            "";
+
+        fileName =
+            `${makeBaseName(
+                record.file_name
+            )}-OCR-report.pdf`;
+
+    }
+
+
+    else if (type === "corrected") {
+
+        path =
+            record.corrected_pdf_path ||
+            "";
+
+        externalURL =
+            record.corrected_pdf_url ||
+            "";
+
+        fileName =
+            `${makeBaseName(
+                record.file_name
+            )}-corrected.pdf`;
+    }
+
+
+    if (!path && !externalURL) {
+
+        alert(
+            "The requested file is not available yet."
+        );
+
+        return;
+    }
+
+
     let pendingWindow = null;
 
+
     if (!download) {
+
         pendingWindow =
             window.open(
                 "",
@@ -1091,57 +1742,72 @@ async function openOrDownloadOCRFile(
             );
     }
 
+
     try {
-        let fileUrl = "";
 
-        if (reference.path) {
-            const options =
-                download
-                    ? {
-                        download:
-                            reference.fileName
-                    }
-                    : {};
+        let url = "";
 
-            const { data, error } =
+
+        if (path) {
+
+            const {
+                data,
+                error
+            } =
                 await supabaseClient.storage
-                    .from(PRIVATE_OCR_BUCKET)
+                    .from(OCR_BUCKET)
                     .createSignedUrl(
-                        reference.path,
+                        path,
                         300,
-                        options
+                        download
+                            ? {
+                                download:
+                                    fileName
+                            }
+                            : {}
                     );
+
 
             if (
                 error ||
                 !data?.signedUrl
             ) {
+
                 throw new Error(
                     error?.message ||
-                    "Signed URL could not be created."
+                    "Temporary file URL could not be created."
                 );
             }
 
-            fileUrl =
+
+            url =
                 data.signedUrl;
-        } else {
-            fileUrl =
+
+        }
+
+
+        else {
+
+            url =
                 validateExternalURL(
-                    reference.url
+                    externalURL
                 );
         }
 
+
         if (download) {
+
             const link =
                 document.createElement(
                     "a"
                 );
 
+
             link.href =
-                fileUrl;
+                url;
 
             link.download =
-                reference.fileName;
+                fileName;
 
             link.target =
                 "_blank";
@@ -1149,397 +1815,1018 @@ async function openOrDownloadOCRFile(
             link.rel =
                 "noopener noreferrer";
 
+
             document.body.appendChild(
                 link
             );
 
             link.click();
+
             link.remove();
-        } else if (pendingWindow) {
-            pendingWindow.location.href =
-                fileUrl;
+
         }
+
+
+        else if (
+            pendingWindow
+        ) {
+
+            pendingWindow.location.href =
+                url;
+        }
+
+
     } catch (error) {
+
         if (pendingWindow) {
+
             pendingWindow.close();
         }
+
 
         console.error(
             "OCR file access error:",
             error
         );
 
+
         alert(
-            "The file could not be opened: " +
+            "The file could not be opened:\n\n" +
             error.message
         );
     }
 }
 
-function getOCRFileReference(
-    record,
-    type
+
+/* =========================================================
+   DOCUMENT FORM
+   ========================================================= */
+
+async function handleDocumentFormSubmit(
+    event
 ) {
-    const baseName =
-        makeBaseName(
-            record.file_name ||
-            "ocr-document"
-        );
 
-    if (type === "original") {
-        return {
-            path:
-                record.original_file_path ||
-                "",
-            url:
-                record.file_url ||
-                "",
-            fileName:
-                record.file_name ||
-                "original-document"
-        };
-    }
+    event.preventDefault();
 
-    if (type === "ocr") {
-        return {
-            path:
-                record.ocr_pdf_path ||
-                "",
-            url:
-                record.ocr_pdf_url ||
-                "",
-            fileName:
-                `${baseName}-OCR-report.pdf`
-        };
-    }
 
-    return {
-        path:
-            record.corrected_pdf_path ||
-            "",
-        url:
-            record.corrected_pdf_url ||
-            "",
-        fileName:
-            `${baseName}-corrected.pdf`
-    };
-}
+    const admin =
+        await getCurrentAdmin();
 
-function hasOCRFile(record, type) {
-    const reference =
-        getOCRFileReference(
-            record,
-            type
-        );
 
-    return Boolean(
-        reference.path ||
-        reference.url
-    );
-}
+    if (!admin) {
 
-/* =====================================
-   SAVE OCR REVIEW
-===================================== */
-
-async function saveOCRReview() {
-    if (!currentOCRReviewRecord) {
         alert(
-            "No OCR record is selected."
+            "Please log in as an administrator."
         );
 
         return;
     }
 
-    const record =
-        currentOCRReviewRecord;
 
-    const correctedText =
+    const title =
         document.getElementById(
-            "ocrCorrectedText"
+            "docTitle"
         ).value.trim();
 
-    const reviewStatus =
+
+    const category =
         document.getElementById(
-            "ocrReviewStatus"
+            "docCategory"
         ).value;
 
-    const reviewNotes =
+
+    const description =
         document.getElementById(
-            "ocrReviewNotes"
+            "docDescription"
         ).value.trim();
 
-    const correctedPdfInput =
+
+    const docId =
         document.getElementById(
-            "ocrCorrectedPdfFile"
+            "docId"
+        ).value;
+
+
+    const fileInput =
+        document.getElementById(
+            "docFile"
         );
 
-    const selectedPdf =
-        correctedPdfInput
-            ?.files?.[0] || null;
 
-    if (selectedPdf) {
-        const validationError =
-            validateCorrectedPDF(
-                selectedPdf
-            );
+    const file =
+        fileInput?.files?.[0] ||
+        null;
 
-        if (validationError) {
-            alert(validationError);
-            return;
-        }
-    }
 
-    const {
-        data: { user }
-    } =
-        await supabaseClient.auth
-            .getUser();
+    if (!title) {
 
-    if (!user) {
         alert(
-            "Your admin session has expired. Please log in again."
+            "Please enter a document title."
         );
 
         return;
     }
 
-    const oldCorrectedPath =
-        record.corrected_pdf_path ||
-        null;
-
-    let newCorrectedPath =
-        null;
 
     try {
-        let correctedPdfFile =
-            selectedPdf;
 
-        /*
-         * When text was corrected but no manually edited
-         * PDF was selected, generate a corrected PDF.
-         */
-        const correctedTextChanged =
-            correctedText !==
-            String(
-                record.corrected_text ||
-                record.extracted_text ||
-                ""
-            ).trim();
+        if (file) {
 
-        if (
-            !correctedPdfFile &&
-            correctedText &&
-            (
-                correctedTextChanged ||
-                !hasOCRFile(
-                    record,
-                    "corrected"
-                )
-            )
-        ) {
-            correctedPdfFile =
-                createOCRPDF({
-                    title:
-                        "Corrected OCR Text Report",
-                    fileName:
-                        record.file_name ||
-                        `ocr-record-${record.id}`,
-                    vendor:
-                        record.detected_vendor ||
-                        "Unknown Vendor",
-                    amount:
-                        record.detected_amount,
-                    confidence:
-                        record.confidence,
-                    status:
-                        reviewStatus,
-                    text:
-                        correctedText
-                });
-        }
-
-        const payload = {
-            corrected_text:
-                correctedText || null,
-            review_status:
-                reviewStatus,
-            review_notes:
-                reviewNotes || null,
-
-            /*
-             * Keep the old status fields compatible.
-             */
-            status:
-                reviewStatus,
-            message:
-                buildOCRReviewMessage(
-                    reviewStatus
-                ),
-
-            reviewed_by:
-                user.id,
-            reviewed_at:
-                new Date().toISOString()
-        };
-
-        if (correctedPdfFile) {
-            const upload =
-                await uploadPrivateOCRFile(
-                    correctedPdfFile,
-                    record,
-                    "corrected-reports"
+            const error =
+                validateDocumentFile(
+                    file
                 );
 
-            newCorrectedPath =
-                upload.path;
+            if (error) {
 
-            payload.corrected_pdf_path =
-                newCorrectedPath;
+                alert(error);
 
-            /*
-             * Stop using the legacy public URL.
-             */
-            payload.corrected_pdf_url =
-                null;
+                return;
+            }
         }
 
-        const { error } =
-            await supabaseClient
-                .from("ocr_records")
-                .update(payload)
-                .eq(
-                    "id",
-                    Number(record.id)
+
+        let filePath = "";
+
+
+        /* -------------------------------------------------
+           UPDATE EXISTING DOCUMENT
+        ------------------------------------------------- */
+
+        if (docId) {
+
+            const existing =
+                adminDocumentRecords.find(
+                    function (item) {
+
+                        return (
+                            Number(item.id) ===
+                            Number(docId)
+                        );
+                    }
                 );
 
-        if (error) {
-            throw error;
-        }
 
-        if (
-            newCorrectedPath &&
-            oldCorrectedPath &&
-            newCorrectedPath !==
-                oldCorrectedPath
-        ) {
-            await removeStorageFiles(
-                PRIVATE_OCR_BUCKET,
-                [oldCorrectedPath]
+            filePath =
+                existing?.file_path ||
+                "";
+
+
+            if (file) {
+
+                if (filePath) {
+
+                    await removeOCRFiles(
+                        [
+                            filePath
+                        ]
+                    );
+                }
+
+
+                const upload =
+                    await uploadOCRFile(
+                        file,
+                        admin.id,
+                        "official-documents"
+                    );
+
+
+                filePath =
+                    upload.path;
+            }
+
+
+            const {
+                error
+            } =
+                await supabaseClient
+                    .from("documents")
+                    .update({
+
+                        title,
+
+                        category,
+
+                        description,
+
+                        file_path:
+                            filePath ||
+                            null
+                    })
+                    .eq(
+                        "id",
+                        docId
+                    );
+
+
+            if (error) {
+
+                throw new Error(
+                    "Document could not be updated: " +
+                    error.message
+                );
+            }
+
+
+            alert(
+                "Official document updated successfully."
             );
         }
 
-        await logAudit(
-            "Reviewed OCR record",
-            "Documents/OCR",
-            `${reviewStatus}: ${
-                record.file_name ||
-                "OCR Record ID " +
-                record.id
-            }`,
-            true
-        );
 
-        alert(
-            "OCR review saved successfully."
-        );
+        /* -------------------------------------------------
+           CREATE NEW DOCUMENT
+        ------------------------------------------------- */
 
-        closeOCRReviewModal();
+        else {
 
-        await loadDocumentsAndOCR();
+            if (!file) {
+
+                throw new Error(
+                    "Please select an official document file."
+                );
+            }
+
+
+            const upload =
+                await uploadOCRFile(
+                    file,
+                    admin.id,
+                    "official-documents"
+                );
+
+
+            filePath =
+                upload.path;
+
+
+            const {
+                error
+            } =
+                await supabaseClient
+                    .from("documents")
+                    .insert([
+                        {
+
+                            title,
+
+                            category,
+
+                            description,
+
+                            file_path:
+                                filePath,
+
+                            is_public:
+                                false
+                        }
+                    ]);
+
+
+            if (error) {
+
+                await removeOCRFiles(
+                    [
+                        filePath
+                    ]
+                );
+
+                throw new Error(
+                    "Document could not be saved: " +
+                    error.message
+                );
+            }
+
+
+            alert(
+                "Official document saved successfully."
+            );
+        }
+
+
+        clearDocumentForm();
+
+        await loadAdminDocuments();
+
+        updateDocumentCounts();
+
+
     } catch (error) {
+
         console.error(
-            "OCR review save error:",
+            "Document save error:",
             error
         );
 
-        if (newCorrectedPath) {
-            await removeStorageFiles(
-                PRIVATE_OCR_BUCKET,
-                [newCorrectedPath]
-            );
-        }
 
         alert(
-            "OCR review could not be saved: " +
+            "Document could not be saved:\n\n" +
             error.message
         );
     }
 }
 
-async function uploadPrivateOCRFile(
-    file,
-    record,
-    folder
-) {
-    const ownerFolder =
-        record.user_id ||
-        "unassigned";
 
-    const safeFileName =
-        createSafeFileName(
-            file.name
+/* =========================================================
+   LOAD OFFICIAL DOCUMENTS
+   ========================================================= */
+
+async function loadAdminDocuments() {
+
+    const container =
+        document.getElementById(
+            "documentsContainer"
         );
 
-    const filePath =
-        `${ownerFolder}/${folder}/` +
-        `${record.id}/` +
-        `${Date.now()}-${safeFileName}`;
 
-    const { error } =
-        await supabaseClient.storage
-            .from(PRIVATE_OCR_BUCKET)
-            .upload(
-                filePath,
-                file,
+    if (!container) {
+        return;
+    }
+
+
+    container.innerHTML = `
+        <p class="muted-text">
+            Loading records...
+        </p>
+    `;
+
+
+    const {
+        data,
+        error
+    } =
+        await supabaseClient
+            .from("documents")
+            .select("*")
+            .order(
+                "created_at",
                 {
-                    cacheControl: "3600",
-                    upsert: false,
-                    contentType: file.type
+                    ascending: false
                 }
             );
 
+
     if (error) {
-        throw new Error(
-            "Corrected PDF upload failed: " +
+
+        console.error(
+            "Documents loading error:",
+            error
+        );
+
+
+        container.innerHTML = `
+            <div class="document-card">
+
+                <h3>
+                    Unable to load documents
+                </h3>
+
+                <p class="red-text">
+                    ${escapeHTML(
+                        error.message
+                    )}
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    adminDocumentRecords =
+        data || [];
+
+
+    renderAdminDocumentRecords();
+
+    updateDocumentCounts();
+}
+
+
+/* =========================================================
+   RENDER ALL DOCUMENT + OCR RECORDS
+   ========================================================= */
+
+function renderAdminDocumentRecords() {
+
+    const container =
+        document.getElementById(
+            "documentsContainer"
+        );
+
+
+    if (!container) {
+        return;
+    }
+
+
+    const searchInput =
+        document.getElementById(
+            "adminDocumentSearch"
+        );
+
+
+    const filterInput =
+        document.getElementById(
+            "adminDocumentFilter"
+        );
+
+
+    const search =
+        String(
+            searchInput?.value || ""
+        )
+            .trim()
+            .toLowerCase();
+
+
+    const filter =
+        filterInput?.value ||
+        "All";
+
+
+    const combined = [];
+
+
+    /* -------------------------------------------------
+       OFFICIAL DOCUMENTS
+    ------------------------------------------------- */
+
+    adminDocumentRecords.forEach(
+        function (doc) {
+
+            combined.push({
+
+                type:
+                    "DOCUMENT",
+
+                id:
+                    doc.id,
+
+                title:
+                    doc.title ||
+                    "Untitled Document",
+
+                category:
+                    doc.category ||
+                    "Other",
+
+                description:
+                    doc.description ||
+                    "",
+
+                createdAt:
+                    doc.created_at,
+
+                isPublic:
+                    Boolean(
+                        doc.is_public
+                    ),
+
+                source:
+                    doc
+            });
+        }
+    );
+
+
+    /* -------------------------------------------------
+       OCR RECORDS
+    ------------------------------------------------- */
+
+    adminOCRRecords.forEach(
+        function (ocr) {
+
+            combined.push({
+
+                type:
+                    "OCR",
+
+                id:
+                    ocr.id,
+
+                title:
+                    ocr.file_name ||
+                    "OCR Record",
+
+                category:
+                    "OCR Record",
+
+                description:
+                    [
+                        ocr.detected_vendor,
+                        ocr.review_status,
+                        ocr.review_notes
+                    ]
+                        .filter(Boolean)
+                        .join(" "),
+
+                vendor:
+                    ocr.detected_vendor ||
+                    "",
+
+                createdAt:
+                    ocr.created_at,
+
+          isPublic:
+    Boolean(
+        ocr.is_public
+    ),
+
+                source:
+                    ocr
+            });
+        }
+    );
+
+
+    const filtered =
+        combined.filter(
+            function (record) {
+
+                const text =
+                    [
+                        record.title,
+                        record.category,
+                        record.description,
+                        record.vendor
+                    ]
+                        .join(" ")
+                        .toLowerCase();
+
+
+                const matchesSearch =
+                    !search ||
+                    text.includes(
+                        search
+                    );
+
+
+                const matchesFilter =
+                    filter === "All" ||
+                    record.category ===
+                        filter;
+
+
+                return (
+                    matchesSearch &&
+                    matchesFilter
+                );
+            }
+        );
+
+
+    if (
+        filtered.length === 0
+    ) {
+
+        container.innerHTML = `
+            <div
+                class="public-panel"
+                style="grid-column:1/-1;"
+            >
+
+                <p>
+                    No document or OCR records found.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+container.innerHTML =
+    filtered
+        .map(
+            function (record) {
+
+                if (
+                    record.type ===
+                    "OCR"
+                ) {
+
+                    return createAdminOCRCard(
+                        record.source
+                    );
+
+                }
+
+                return createDocumentCard(
+                    record.source
+                );
+
+            }
+        )
+        .join("");
+}
+
+
+/* =========================================================
+   DOCUMENT CARD
+   ========================================================= */
+
+function createDocumentCard(
+    record
+) {
+
+    const hasFile =
+        Boolean(
+            record.file_path ||
+            record.file_url
+        );
+
+
+    return `
+        <article class="document-card">
+
+            <div class="doc-icon">
+                📄
+            </div>
+
+            <div>
+
+                <h3>
+                    ${escapeHTML(
+                        record.title ||
+                        "Untitled Document"
+                    )}
+                </h3>
+
+                <p>
+                    <b>Category:</b>
+                    ${escapeHTML(
+                        record.category ||
+                        "Other"
+                    )}
+                </p>
+
+                <p>
+                    ${escapeHTML(
+                        record.description ||
+                        "No description provided."
+                    )}
+                </p>
+
+                <p>
+                    <b>Visibility:</b>
+                    ${
+                        record.is_public
+                            ? "Published"
+                            : "Private"
+                    }
+                </p>
+
+                <p>
+                    <small>
+                        Uploaded:
+                        ${formatDate(
+                            record.created_at
+                        )}
+                    </small>
+                </p>
+
+            </div>
+
+            <div class="admin-card-actions">
+
+                <button
+                    type="button"
+                    onclick="viewOfficialDocument(${Number(record.id)})"
+                    ${hasFile ? "" : "disabled"}
+                >
+                    View File
+                </button>
+
+                <button
+                    type="button"
+                    onclick="downloadOfficialDocument(${Number(record.id)})"
+                    ${hasFile ? "" : "disabled"}
+                >
+                    Download
+                </button>
+
+                <button
+                    type="button"
+                    onclick="editDocument(${Number(record.id)})"
+                >
+                    Edit
+                </button>
+
+                <button
+                    type="button"
+                    onclick="toggleDocumentPublication(${Number(record.id)})"
+                >
+                    ${
+                        record.is_public
+                            ? "Unpublish"
+                            : "Publish"
+                    }
+                </button>
+
+                <button
+                    type="button"
+                    class="danger-btn"
+                    onclick="deleteDocument(${Number(record.id)})"
+                >
+                    Delete
+                </button>
+
+            </div>
+
+        </article>
+    `;
+}
+
+
+/* =========================================================
+   COMBINED OCR CARD
+   ========================================================= */
+
+function createCombinedOCRCard(
+    record
+) {
+
+    const status =
+        record.review_status ||
+        record.status ||
+        "Pending";
+
+
+    const hasOriginal =
+        Boolean(
+            record.original_file_path
+        );
+
+
+    const hasOCR =
+        Boolean(
+            record.ocr_pdf_path
+        );
+
+
+    const hasCorrected =
+        Boolean(
+            record.corrected_pdf_path
+        );
+
+
+    return `
+        <article class="document-card">
+
+            <div class="doc-icon">
+                ${getOCRStatusIcon(status)}
+            </div>
+
+            <div>
+
+                <h3>
+                    ${escapeHTML(
+                        record.file_name ||
+                        "OCR Record"
+                    )}
+                </h3>
+
+                <p>
+                    <b>Category:</b>
+                    OCR Record
+                </p>
+
+                <p>
+                    <b>Vendor:</b>
+                    ${escapeHTML(
+                        record.detected_vendor ||
+                        "Not detected"
+                    )}
+                </p>
+
+                <p>
+                    <b>Amount:</b>
+                    ${
+                        record.detected_amount !== null &&
+                        record.detected_amount !== ""
+                            ? formatPeso(
+                                record.detected_amount
+                            )
+                            : "Not detected"
+                    }
+                </p>
+
+                <p>
+                    <b>Confidence:</b>
+                    ${Number(
+                        record.confidence || 0
+                    ).toFixed(2)}%
+                </p>
+
+                <p>
+                    <b>Status:</b>
+                    ${escapeHTML(status)}
+                </p>
+
+            </div>
+
+            <div class="admin-card-actions">
+
+                <button
+                    type="button"
+                    onclick="openOCRReview(${Number(record.id)})"
+                >
+                    Review / Correct
+                </button>
+
+                <button
+    type="button"
+    onclick="toggleOCRPublication(${Number(record.id)})"
+>
+    ${
+        record.is_public
+            ? "Unpublish"
+            : "Publish"
+    }
+</button>
+
+                <button
+                    type="button"
+                    onclick="openOCRRecordFile(${Number(record.id)}, 'original', false)"
+                    ${hasOriginal ? "" : "disabled"}
+                >
+                    View Original
+                </button>
+
+                <button
+                    type="button"
+                    onclick="openOCRRecordFile(${Number(record.id)}, 'original', true)"
+                    ${hasOriginal ? "" : "disabled"}
+                >
+                    Download Original
+                </button>
+
+                <button
+                    type="button"
+                    onclick="openOCRRecordFile(${Number(record.id)}, 'ocr', true)"
+                    ${hasOCR ? "" : "disabled"}
+                >
+                    Download OCR PDF
+                </button>
+
+                <button
+                    type="button"
+                    onclick="openOCRRecordFile(${Number(record.id)}, 'corrected', true)"
+                    ${hasCorrected ? "" : "disabled"}
+                >
+                    Download Corrected PDF
+                </button>
+
+            </div>
+
+        </article>
+    `;
+}
+
+
+/* =========================================================
+   OFFICIAL DOCUMENT FILE ACCESS
+   ========================================================= */
+
+async function openOfficialDocumentFile(
+    record,
+    download
+) {
+
+    const path =
+        record.file_path ||
+        "";
+
+
+    const externalURL =
+        record.file_url ||
+        "";
+
+
+    if (!path && !externalURL) {
+
+        alert(
+            "This document does not have a file."
+        );
+
+        return;
+    }
+
+
+    let url = "";
+
+
+    try {
+
+        if (path) {
+
+            const {
+                data,
+                error
+            } =
+                await supabaseClient.storage
+                    .from(OCR_BUCKET)
+                    .createSignedUrl(
+                        path,
+                        300,
+                        download
+                            ? {
+                                download:
+                                    record.title ||
+                                    "document"
+                            }
+                            : {}
+                    );
+
+
+            if (
+                error ||
+                !data?.signedUrl
+            ) {
+
+                throw new Error(
+                    error?.message ||
+                    "Could not create temporary file link."
+                );
+            }
+
+
+            url =
+                data.signedUrl;
+
+        } else {
+
+            url =
+                validateExternalURL(
+                    externalURL
+                );
+        }
+
+
+        if (download) {
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+            link.href =
+                url;
+
+            link.download =
+                record.title ||
+                "document";
+
+            link.target =
+                "_blank";
+
+            link.rel =
+                "noopener noreferrer";
+
+
+            document.body.appendChild(
+                link
+            );
+
+            link.click();
+
+            link.remove();
+
+        } else {
+
+            window.open(
+                url,
+                "_blank"
+            );
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "Official document file error:",
+            error
+        );
+
+
+        alert(
+            "The document could not be opened:\n\n" +
             error.message
         );
     }
-
-    return {
-        path: filePath
-    };
 }
 
-function buildOCRReviewMessage(status) {
-    if (status === "Validated Expense") {
-        return (
-            "The OCR record was manually validated by the administrator."
-        );
-    }
 
-    if (status === "Flagged for Review") {
-        return (
-            "The OCR record was flagged by the administrator for further review."
-        );
-    }
+async function viewOfficialDocument(id) {
 
-    return (
-        "The OCR record still needs administrator review."
-    );
-}
-
-/* =====================================
-   QUICK OCR ACTIONS
-===================================== */
-
-async function quickMarkOCR(
-    id,
-    status
-) {
     const record =
-        adminOCRRecords.find(
+        adminDocumentRecords.find(
             function (item) {
+
                 return (
                     Number(item.id) ===
                     Number(id)
@@ -1547,73 +2834,283 @@ async function quickMarkOCR(
             }
         );
 
+
     if (!record) {
+
         alert(
-            "OCR record not found."
+            "Document not found."
         );
 
         return;
     }
 
-    const {
-        data: { user }
-    } =
-        await supabaseClient.auth
-            .getUser();
 
-    const { error } =
+    await openOfficialDocumentFile(
+        record,
+        false
+    );
+}
+
+
+async function downloadOfficialDocument(id) {
+
+    const record =
+        adminDocumentRecords.find(
+            function (item) {
+
+                return (
+                    Number(item.id) ===
+                    Number(id)
+                );
+            }
+        );
+
+
+    if (!record) {
+
+        alert(
+            "Document not found."
+        );
+
+        return;
+    }
+
+
+    await openOfficialDocumentFile(
+        record,
+        true
+    );
+}
+
+
+/* =========================================================
+   EDIT DOCUMENT
+   ========================================================= */
+
+function editDocument(id) {
+
+    const record =
+        adminDocumentRecords.find(
+            function (item) {
+
+                return (
+                    Number(item.id) ===
+                    Number(id)
+                );
+            }
+        );
+
+
+    if (!record) {
+
+        alert(
+            "Document not found."
+        );
+
+        return;
+    }
+
+
+    document.getElementById(
+        "docId"
+    ).value =
+        record.id;
+
+
+    document.getElementById(
+        "docTitle"
+    ).value =
+        record.title ||
+        "";
+
+
+    document.getElementById(
+        "docCategory"
+    ).value =
+        record.category ||
+        "Other";
+
+
+    document.getElementById(
+        "docDescription"
+    ).value =
+        record.description ||
+        "";
+
+
+    document.getElementById(
+        "existingDocFileUrl"
+    ).value =
+        record.file_path ||
+        record.file_url ||
+        "";
+
+
+    window.scrollTo({
+
+        top:
+            document.getElementById(
+                "addDocumentForm"
+            ).getBoundingClientRect().top +
+            window.scrollY -
+            100,
+
+        behavior:
+            "smooth"
+    });
+}
+
+
+/* =========================================================
+   CLEAR DOCUMENT FORM
+   ========================================================= */
+
+function clearDocumentForm() {
+
+    const form =
+        document.getElementById(
+            "addDocumentForm"
+        );
+
+
+    if (form) {
+
+        form.reset();
+    }
+
+
+    const docId =
+        document.getElementById(
+            "docId"
+        );
+
+
+    if (docId) {
+
+        docId.value = "";
+    }
+
+
+    const existing =
+        document.getElementById(
+            "existingDocFileUrl"
+        );
+
+
+    if (existing) {
+
+        existing.value = "";
+    }
+}
+
+
+/* =========================================================
+   PUBLISH / UNPUBLISH DOCUMENT
+   ========================================================= */
+
+async function toggleDocumentPublication(
+    id
+) {
+
+    const record =
+        adminDocumentRecords.find(
+            function (item) {
+
+                return (
+                    Number(item.id) ===
+                    Number(id)
+                );
+            }
+        );
+
+
+    if (!record) {
+
+        alert(
+            "Document not found."
+        );
+
+        return;
+    }
+
+
+    const newValue =
+        !Boolean(
+            record.is_public
+        );
+
+
+    const action =
+        newValue
+            ? "publish"
+            : "unpublish";
+
+
+    if (
+        !confirm(
+            `Are you sure you want to ${action} this document?`
+        )
+    ) {
+
+        return;
+    }
+
+
+    const {
+        error
+    } =
         await supabaseClient
-            .from("ocr_records")
+            .from("documents")
             .update({
-                status,
-                review_status:
-                    status,
-                message:
-                    buildOCRReviewMessage(
-                        status
-                    ),
-                reviewed_by:
-                    user?.id || null,
-                reviewed_at:
-                    new Date().toISOString()
+
+                is_public:
+                    newValue
+
             })
             .eq(
                 "id",
-                Number(id)
+                record.id
             );
 
+
     if (error) {
+
+        console.error(
+            "Publication update error:",
+            error
+        );
+
+
         alert(
-            "OCR status update failed: " +
+            "Could not update publication status:\n\n" +
             error.message
         );
 
         return;
     }
 
-    await logAudit(
-        status === "Validated Expense"
-            ? "Validated OCR record"
-            : "Flagged OCR record",
-        "Documents/OCR",
-        `${status}: ${
-            record.file_name ||
-            "OCR Record"
-        }`,
-        true
-    );
 
     alert(
-        "OCR status updated."
+        newValue
+            ? "Document published. Residents can now see it on the Documents page."
+            : "Document unpublished. Residents can no longer see it."
     );
 
-    await loadDocumentsAndOCR();
+
+    await loadAdminDocuments();
 }
 
-async function deleteOCRRecord(id) {
+
+/* =========================================================
+   DELETE DOCUMENT
+   ========================================================= */
+
+async function deleteDocument(id) {
+
     const record =
-        adminOCRRecords.find(
+        adminDocumentRecords.find(
             function (item) {
+
                 return (
                     Number(item.id) ===
                     Number(id)
@@ -1621,158 +3118,448 @@ async function deleteOCRRecord(id) {
             }
         );
 
-    const confirmed =
-        confirm(
-            `Delete "${
-                record?.file_name ||
-                "this OCR record"
-            }"? This cannot be undone.`
+
+    if (!record) {
+
+        alert(
+            "Document not found."
         );
 
-    if (!confirmed) {
         return;
     }
 
-    const { error } =
-        await supabaseClient
-            .from("ocr_records")
-            .delete()
-            .eq(
-                "id",
-                Number(id)
-            );
 
-    if (error) {
+    if (
+        !confirm(
+            "Delete this official document?"
+        )
+    ) {
+
+        return;
+    }
+
+
+    try {
+
+        if (record.file_path) {
+
+            await removeOCRFiles(
+                [
+                    record.file_path
+                ]
+            );
+        }
+
+
+        const {
+            error
+        } =
+            await supabaseClient
+                .from("documents")
+                .delete()
+                .eq(
+                    "id",
+                    record.id
+                );
+
+
+        if (error) {
+
+            throw new Error(
+                error.message
+            );
+        }
+
+
         alert(
-            "OCR record deletion failed: " +
+            "Document deleted successfully."
+        );
+
+
+        await loadAdminDocuments();
+
+
+    } catch (error) {
+
+        console.error(
+            "Document deletion error:",
+            error
+        );
+
+
+        alert(
+            "Document could not be deleted:\n\n" +
             error.message
         );
-
-        return;
     }
-
-    const privatePaths = [
-        record?.original_file_path,
-        record?.ocr_pdf_path,
-        record?.corrected_pdf_path
-    ].filter(Boolean);
-
-    if (privatePaths.length > 0) {
-        await removeStorageFiles(
-            PRIVATE_OCR_BUCKET,
-            privatePaths
-        );
-    }
-
-    /*
-     * Clean up legacy OCR files that were stored
-     * publicly in the documents bucket.
-     */
-    const legacyPaths = [
-        record?.file_url,
-        record?.ocr_pdf_url,
-        record?.corrected_pdf_url
-    ]
-        .map(function (url) {
-            return extractStoragePathFromPublicUrl(
-                url,
-                PUBLIC_DOCUMENT_BUCKET
-            );
-        })
-        .filter(Boolean);
-
-    if (legacyPaths.length > 0) {
-        await removeStorageFiles(
-            PUBLIC_DOCUMENT_BUCKET,
-            legacyPaths
-        );
-    }
-
-    await logAudit(
-        "Deleted OCR record",
-        "Documents/OCR",
-        `Deleted OCR record: ${
-            record?.file_name ||
-            "OCR Record ID " + id
-        }`,
-        true
-    );
-
-    alert(
-        "OCR record deleted successfully."
-    );
-
-    await loadDocumentsAndOCR();
 }
 
-/* =====================================
-   PDF CREATION
-===================================== */
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
+function searchAdminDocuments() {
+
+    renderAdminDocumentRecords();
+}
+
+
+function filterAdminDocuments() {
+
+    renderAdminDocumentRecords();
+}
+
+
+/* =========================================================
+   COUNTS
+   ========================================================= */
+
+function updateDocumentCounts() {
+
+    const total =
+        document.getElementById(
+            "totalDocuments"
+        );
+
+
+    const financial =
+        document.getElementById(
+            "financialReports"
+        );
+
+
+    const receipts =
+        document.getElementById(
+            "receiptDocuments"
+        );
+
+
+    const projects =
+        document.getElementById(
+            "projectDocuments"
+        );
+
+
+    const ocr =
+        document.getElementById(
+            "ocrRecordsCount"
+        );
+
+
+    if (total) {
+
+        total.textContent =
+            adminDocumentRecords.length;
+    }
+
+
+    if (financial) {
+
+        financial.textContent =
+            adminDocumentRecords.filter(
+                function (item) {
+
+                    return (
+                        item.category ===
+                        "Financial Report"
+                    );
+                }
+            ).length;
+    }
+
+
+    if (receipts) {
+
+        receipts.textContent =
+            adminDocumentRecords.filter(
+                function (item) {
+
+                    return (
+                        item.category ===
+                        "Receipt"
+                    );
+                }
+            ).length;
+    }
+
+
+    if (projects) {
+
+        projects.textContent =
+            adminDocumentRecords.filter(
+                function (item) {
+
+                    return (
+                        item.category ===
+                        "Project Document"
+                    );
+                }
+            ).length;
+    }
+
+
+    if (ocr) {
+
+        ocr.textContent =
+            adminOCRRecords.length;
+    }
+}
+
+
+/* =========================================================
+   OCR RESULT
+   ========================================================= */
+
+function buildOCRResultHTML(record) {
+
+    const status =
+        record.review_status ||
+        record.status ||
+        "Pending";
+
+
+    const displayText =
+        record.corrected_text ||
+        record.extracted_text ||
+        "No text extracted.";
+
+
+    const hasOriginal =
+        Boolean(
+            record.original_file_path ||
+            record.file_url
+        );
+
+
+    const hasOCR =
+        Boolean(
+            record.ocr_pdf_path ||
+            record.ocr_pdf_url
+        );
+
+
+    const hasCorrected =
+        Boolean(
+            record.corrected_pdf_path ||
+            record.corrected_pdf_url
+        );
+
+
+    return `
+        <div class="ocr-summary ${
+            getOCRStatusClass(status)
+        }">
+
+            <h4>
+                ${escapeHTML(status)}
+            </h4>
+
+            <p>
+                ${escapeHTML(
+                    record.review_notes ||
+                    record.message ||
+                    "Administrator review required."
+                )}
+            </p>
+
+        </div>
+
+
+        <div class="ocr-details">
+
+            <p>
+                <b>File:</b>
+                ${escapeHTML(
+                    record.file_name ||
+                    "Document"
+                )}
+            </p>
+
+            <p>
+                <b>File Type:</b>
+                ${escapeHTML(
+                    record.file_type ||
+                    "Document"
+                )}
+            </p>
+
+            <p>
+                <b>Detected Vendor:</b>
+                ${escapeHTML(
+                    record.detected_vendor ||
+                    "Not detected"
+                )}
+            </p>
+
+            <p>
+                <b>Detected Amount:</b>
+                ${
+                    record.detected_amount !== null &&
+                    record.detected_amount !== ""
+                        ? formatPeso(
+                            record.detected_amount
+                        )
+                        : "Not detected"
+                }
+            </p>
+
+            <p>
+                <b>OCR Confidence:</b>
+                ${Number(
+                    record.confidence || 0
+                ).toFixed(2)}%
+            </p>
+
+
+            <div class="ocr-result-actions">
+
+                <button
+                    type="button"
+                    onclick="openOCRRecordFile(${Number(record.id)}, 'original', false)"
+                    ${hasOriginal ? "" : "disabled"}
+                >
+                    View Original
+                </button>
+
+                <button
+                    type="button"
+                    onclick="openOCRRecordFile(${Number(record.id)}, 'original', true)"
+                    ${hasOriginal ? "" : "disabled"}
+                >
+                    Download Original
+                </button>
+
+                <button
+                    type="button"
+                    onclick="openOCRRecordFile(${Number(record.id)}, 'ocr', true)"
+                    ${hasOCR ? "" : "disabled"}
+                >
+                    Download OCR PDF
+                </button>
+
+                <button
+                    type="button"
+                    onclick="openOCRRecordFile(${Number(record.id)}, 'corrected', true)"
+                    ${hasCorrected ? "" : "disabled"}
+                >
+                    Download Corrected PDF
+                </button>
+
+                <button
+                    type="button"
+                    onclick="openOCRReview(${Number(record.id)})"
+                >
+                    Review / Correct
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <h4>
+            ${
+                record.corrected_text
+                    ? "Administrator-Corrected Text"
+                    : "Extracted Text"
+            }
+        </h4>
+
+
+        <pre class="ocr-text">${escapeHTML(
+            displayText
+        )}</pre>
+    `;
+}
+
+
+/* =========================================================
+   OCR PDF
+   ========================================================= */
 
 function createOCRPDF(info) {
+
     if (
         !window.jspdf ||
         !window.jspdf.jsPDF
     ) {
+
         throw new Error(
-            "PDF generator is not available."
+            "jsPDF is not loaded."
         );
     }
 
+
     const {
         jsPDF
-    } = window.jspdf;
+    } =
+        window.jspdf;
+
 
     const pdf =
         new jsPDF();
+
 
     pdf.setFontSize(16);
 
     pdf.text(
         info.title ||
-        "OCR Text Report",
+        "OCR Extracted Text Report",
         15,
         20
     );
 
+
     pdf.setFontSize(10);
 
+
     pdf.text(
-        `File: ${
-            info.fileName ||
-            "Unknown"
-        }`,
+        `File: ${info.fileName}`,
         15,
         32
     );
 
+
     pdf.text(
-        `Detected Vendor: ${
-            info.vendor ||
-            "N/A"
-        }`,
+        `File Type: ${info.fileType}`,
         15,
         39
     );
+
+
+    pdf.text(
+        `Detected Vendor: ${
+            info.vendor ||
+            "Not detected"
+        }`,
+        15,
+        46
+    );
+
 
     pdf.text(
         `Detected Amount: ${
             info.amount !== null &&
             info.amount !== ""
-                ? formatPeso(info.amount)
+                ? formatPeso(
+                    info.amount
+                )
                 : "Not detected"
         }`,
         15,
-        46
+        53
     );
+
 
     pdf.text(
         `OCR Confidence: ${Number(
             info.confidence || 0
         ).toFixed(2)}%`,
         15,
-        53
+        60
     );
+
 
     pdf.text(
         `Status: ${
@@ -1780,34 +3567,44 @@ function createOCRPDF(info) {
             "Pending"
         }`,
         15,
-        60
+        67
     );
+
 
     pdf.setFontSize(12);
 
+
     pdf.text(
-        "Corrected Text:",
+        "Extracted Text:",
         15,
-        75
+        80
     );
+
 
     const lines =
         pdf.splitTextToSize(
             info.text ||
-            "No text available.",
+            "No text extracted.",
             180
         );
 
+
     pdf.setFontSize(10);
 
-    let y = 85;
+
+    let y = 90;
+
 
     lines.forEach(
         function (line) {
+
             if (y > 280) {
+
                 pdf.addPage();
+
                 y = 20;
             }
+
 
             pdf.text(
                 line,
@@ -1815,320 +3612,741 @@ function createOCRPDF(info) {
                 y
             );
 
+
             y += 6;
         }
     );
 
-    const baseName =
+
+    const base =
         makeBaseName(
-            info.fileName ||
-            "ocr-document"
+            info.fileName
         );
 
+
     const blob =
-        pdf.output("blob");
+        pdf.output(
+            "blob"
+        );
+
 
     return new File(
+
         [blob],
-        `${baseName}-corrected.pdf`,
+
+        `${base}-OCR-report.pdf`,
+
         {
-            type: "application/pdf"
+            type:
+                "application/pdf"
         }
     );
 }
 
-/* =====================================
-   VALIDATION
-===================================== */
 
-function validatePublicDocumentFile(
-    file
+/* =========================================================
+   CORRECTED PDF
+   ========================================================= */
+
+function createCorrectedOCRPDF(info) {
+
+    if (
+        !window.jspdf ||
+        !window.jspdf.jsPDF
+    ) {
+
+        throw new Error(
+            "jsPDF is not loaded."
+        );
+    }
+
+
+    const {
+        jsPDF
+    } =
+        window.jspdf;
+
+
+    const pdf =
+        new jsPDF();
+
+
+    pdf.setFontSize(16);
+
+    pdf.text(
+        "Corrected OCR Document",
+        15,
+        20
+    );
+
+
+    pdf.setFontSize(10);
+
+
+    pdf.text(
+        `Original File: ${
+            info.fileName ||
+            "Document"
+        }`,
+        15,
+        32
+    );
+
+
+    pdf.text(
+        `File Type: ${
+            info.fileType ||
+            "Document"
+        }`,
+        15,
+        39
+    );
+
+
+    pdf.text(
+        `Vendor: ${
+            info.vendor ||
+            "Not detected"
+        }`,
+        15,
+        46
+    );
+
+
+    pdf.text(
+        `Amount: ${
+            info.amount !== null &&
+            info.amount !== ""
+                ? formatPeso(
+                    info.amount
+                )
+                : "Not detected"
+        }`,
+        15,
+        53
+    );
+
+
+    pdf.text(
+        `OCR Confidence: ${Number(
+            info.confidence || 0
+        ).toFixed(2)}%`,
+        15,
+        60
+    );
+
+
+    pdf.text(
+        `Review Status: ${
+            info.status ||
+            "Reviewed"
+        }`,
+        15,
+        67
+    );
+
+
+    pdf.setFontSize(12);
+
+
+    pdf.text(
+        "Corrected Text:",
+        15,
+        80
+    );
+
+
+    const lines =
+        pdf.splitTextToSize(
+            info.text ||
+            "No corrected text.",
+            180
+        );
+
+
+    pdf.setFontSize(10);
+
+
+    let y = 90;
+
+
+    lines.forEach(
+        function (line) {
+
+            if (y > 280) {
+
+                pdf.addPage();
+
+                y = 20;
+            }
+
+
+            pdf.text(
+                line,
+                15,
+                y
+            );
+
+
+            y += 6;
+        }
+    );
+
+
+    const base =
+        makeBaseName(
+            info.fileName
+        );
+
+
+    const blob =
+        pdf.output(
+            "blob"
+        );
+
+
+    return new File(
+
+        [blob],
+
+        `${base}-corrected.pdf`,
+
+        {
+            type:
+                "application/pdf"
+        }
+    );
+}
+
+
+/* =========================================================
+   OCR VALIDATION
+   ========================================================= */
+
+function validateOCRResult(
+    text,
+    amount,
+    confidence
 ) {
-    const allowedExtensions = [
-        "pdf",
-        "doc",
-        "docx",
-        "xls",
-        "xlsx",
+
+    if (
+        !String(text || "").trim()
+    ) {
+
+        return {
+
+            status:
+                "Flagged for Review",
+
+            message:
+                "No readable text was extracted. Manual administrator review is required."
+        };
+    }
+
+
+    if (
+        Number(confidence) < 60
+    ) {
+
+        return {
+
+            status:
+                "Flagged for Review",
+
+            message:
+                "OCR confidence is low. Manual administrator checking is required."
+        };
+    }
+
+
+    if (
+        Number(confidence) >= 80 &&
+        amount !== null
+    ) {
+
+        return {
+
+            status:
+                "Needs Admin Review",
+
+            message:
+                "Text and an amount were extracted. Administrator confirmation is recommended."
+        };
+    }
+
+
+    return {
+
+        status:
+            "Needs Admin Review",
+
+        message:
+            "OCR information was extracted successfully. Administrator review is required."
+    };
+}
+
+
+/* =========================================================
+   AMOUNT EXTRACTION
+   ========================================================= */
+
+function extractAmount(text) {
+
+    const source =
+        String(text || "");
+
+
+    const patterns = [
+
+        /(?:₱|PHP)\s*([\d,]+(?:\.\d{1,2})?)/gi,
+
+        /(?:TOTAL|AMOUNT DUE|GRAND TOTAL)\s*:?\s*₱?\s*([\d,]+(?:\.\d{1,2})?)/gi
+
+    ];
+
+
+    const values = [];
+
+
+    patterns.forEach(
+        function (pattern) {
+
+            const matches =
+                [
+                    ...source.matchAll(
+                        pattern
+                    )
+                ];
+
+
+            matches.forEach(
+                function (match) {
+
+                    const number =
+                        Number(
+                            String(
+                                match[1]
+                            )
+                                .replaceAll(
+                                    ",",
+                                    ""
+                                )
+                        );
+
+
+                    if (
+                        Number.isFinite(
+                            number
+                        )
+                    ) {
+
+                        values.push(
+                            number
+                        );
+                    }
+                }
+            );
+        }
+    );
+
+
+    return values.length
+        ? Math.max(
+            ...values
+        )
+        : null;
+}
+
+
+/* =========================================================
+   VENDOR EXTRACTION
+   ========================================================= */
+
+function extractVendor(text) {
+
+    const lines =
+        String(text || "")
+            .split("\n")
+            .map(
+                function (line) {
+
+                    return line.trim();
+                }
+            )
+            .filter(
+                function (line) {
+
+                    return (
+                        line.length >= 3 &&
+                        !/^\d+$/.test(
+                            line
+                        )
+                    );
+                }
+            );
+
+
+    return (
+        lines[0] ||
+        "Unknown Vendor"
+    );
+}
+
+
+/* =========================================================
+   FILE VALIDATION
+   ========================================================= */
+
+function validateOCRFile(file) {
+
+    const extension =
+        getFileExtension(
+            file.name
+        );
+
+
+    if (
+        !OCR_EXTENSIONS.includes(
+            extension
+        )
+    ) {
+
+        return (
+            "Only PDF, Word, JPG, PNG, and WebP files are allowed."
+        );
+    }
+
+
+    if (
+        file.size >
+        MAX_OCR_FILE_SIZE
+    ) {
+
+        return (
+            "The OCR file must not exceed 5 MB."
+        );
+    }
+
+
+    return "";
+}
+
+
+function validateDocumentFile(file) {
+
+    const extension =
+        getFileExtension(
+            file.name
+        );
+
+
+    if (
+        !DOCUMENT_EXTENSIONS.includes(
+            extension
+        )
+    ) {
+
+        return (
+            "Unsupported document type."
+        );
+    }
+
+
+    if (
+        file.size >
+        MAX_DOCUMENT_FILE_SIZE
+    ) {
+
+        return (
+            "The document must not exceed 10 MB."
+        );
+    }
+
+
+    return "";
+}
+
+
+/* =========================================================
+   FILE HELPERS
+   ========================================================= */
+
+function isOCRImage(file) {
+
+    return [
         "jpg",
         "jpeg",
         "png",
         "webp"
-    ];
-
-    const extension =
+    ].includes(
         getFileExtension(
             file.name
-        );
-
-    if (
-        !allowedExtensions.includes(
-            extension
         )
-    ) {
-        return (
-            "Only PDF, Word, Excel, JPG, PNG, and WebP files are allowed."
-        );
-    }
-
-    if (
-        file.size >
-        MAX_PUBLIC_DOCUMENT_SIZE
-    ) {
-        return (
-            "The public document must not be larger than 10 MB."
-        );
-    }
-
-    return "";
+    );
 }
 
-function validateCorrectedPDF(file) {
+
+function getFileType(file) {
+
     const extension =
         getFileExtension(
             file.name
         );
 
-    if (
-        extension !== "pdf" ||
-        file.type !==
-            "application/pdf"
-    ) {
-        return (
-            "The corrected file must be a PDF."
-        );
-    }
 
     if (
-        file.size >
-        MAX_CORRECTED_PDF_SIZE
+        isOCRImage(file)
     ) {
-        return (
-            "The corrected PDF must not be larger than 5 MB."
-        );
+
+        return "Image Document";
     }
 
-    return "";
-}
-
-/* =====================================
-   STORAGE HELPERS
-===================================== */
-
-async function removeStorageFiles(
-    bucket,
-    paths
-) {
-    const validPaths =
-        [...new Set(
-            paths.filter(Boolean)
-        )];
-
-    if (validPaths.length === 0) {
-        return;
-    }
-
-    const { error } =
-        await supabaseClient.storage
-            .from(bucket)
-            .remove(validPaths);
-
-    if (error) {
-        console.warn(
-            `Storage cleanup failed for ${bucket}:`,
-            error.message
-        );
-    }
-}
-
-function extractStoragePathFromPublicUrl(
-    fileUrl,
-    bucket
-) {
-    if (!fileUrl) {
-        return "";
-    }
-
-    try {
-        const url =
-            new URL(fileUrl);
-
-        const marker =
-            `/storage/v1/object/public/${bucket}/`;
-
-        const index =
-            url.pathname.indexOf(
-                marker
-            );
-
-        if (index === -1) {
-            return "";
-        }
-
-        return decodeURIComponent(
-            url.pathname.slice(
-                index +
-                marker.length
-            )
-        );
-    } catch {
-        return "";
-    }
-}
-
-function validateExternalURL(value) {
-    const url =
-        new URL(value);
 
     if (
-        url.protocol !== "https:" &&
-        url.protocol !== "http:"
+        extension === "pdf"
     ) {
-        throw new Error(
-            "Invalid file URL."
-        );
+
+        return "PDF Document";
     }
 
-    return url.href;
-}
 
-function openSafeURL(value) {
-    try {
-        const url =
-            validateExternalURL(
-                value
-            );
+    if (
+        extension === "doc" ||
+        extension === "docx"
+    ) {
 
-        window.open(
-            url,
-            "_blank",
-            "noopener,noreferrer"
-        );
-    } catch {
-        alert(
-            "The document URL is invalid."
-        );
+        return "Word Document";
     }
+
+
+    return "Document";
 }
 
-/* =====================================
-   FILTERS AND SUMMARY
-===================================== */
 
-function searchAdminDocuments() {
-    renderAllRecords();
-}
+function getUploadMimeType(file) {
 
-function filterAdminDocuments() {
-    renderAllRecords();
-}
+    if (file.type) {
 
-function updateDocumentSummary() {
-    setText(
-        "totalDocuments",
-        adminDocuments.length +
-        adminOCRRecords.length
-    );
+        return file.type;
+    }
 
-    setText(
-        "financialReports",
-        adminDocuments.filter(
-            function (documentRecord) {
-                return (
-                    documentRecord.category ===
-                    "Financial Report"
-                );
-            }
-        ).length
-    );
 
-    setText(
-        "receiptDocuments",
-        adminDocuments.filter(
-            function (documentRecord) {
-                return (
-                    documentRecord.category ===
-                    "Receipt"
-                );
-            }
-        ).length +
-        adminOCRRecords.length
-    );
+    const extension =
+        getFileExtension(
+            file.name
+        );
 
-    setText(
-        "projectDocuments",
-        adminDocuments.filter(
-            function (documentRecord) {
-                return (
-                    documentRecord.category ===
-                    "Project Document"
-                );
-            }
-        ).length
+
+    const types = {
+
+        pdf:
+            "application/pdf",
+
+        doc:
+            "application/msword",
+
+        docx:
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+
+        xls:
+            "application/vnd.ms-excel",
+
+        xlsx:
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+
+        jpg:
+            "image/jpeg",
+
+        jpeg:
+            "image/jpeg",
+
+        png:
+            "image/png",
+
+        webp:
+            "image/webp"
+    };
+
+
+    return (
+        types[extension] ||
+        "application/octet-stream"
     );
 }
 
-/* =====================================
-   GENERAL HELPERS
-===================================== */
 
-function getOCRStatusClass(status) {
+/* =========================================================
+   DISPLAY HELPERS
+   ========================================================= */
+
+function getOCRStatusIcon(status) {
+
     const value =
         String(status || "")
             .toLowerCase();
 
+
     if (
         value.includes("valid")
     ) {
-        return "status-resolved";
+
+        return "✅";
     }
+
 
     if (
         value.includes("flag")
     ) {
-        return "status-flagged";
+
+        return "⚠️";
     }
 
-    return "status-review";
+
+    return "⏳";
 }
 
-function createSafeFileName(fileName) {
-    const safeName =
-        String(
-            fileName ||
-            "document"
-        )
-            .replace(
-                /[^a-zA-Z0-9._-]/g,
-                "-"
-            )
-            .replace(
-                /-+/g,
-                "-"
-            )
-            .slice(
-                0,
-                120
-            );
 
-    return (
-        safeName ||
-        "document"
+function getOCRStatusClass(status) {
+
+    const value =
+        String(status || "")
+            .toLowerCase();
+
+
+    if (
+        value.includes("valid")
+    ) {
+
+        return "ocr-valid";
+    }
+
+
+    if (
+        value.includes("flag")
+    ) {
+
+        return "ocr-flagged";
+    }
+
+
+    return "ocr-warning";
+}
+
+
+function formatDate(value) {
+
+    if (!value) {
+        return "N/A";
+    }
+
+
+    const date =
+        new Date(value);
+
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+
+        return "N/A";
+    }
+
+
+    return date.toLocaleDateString(
+        "en-PH",
+        {
+            year:
+                "numeric",
+
+            month:
+                "short",
+
+            day:
+                "numeric"
+        }
     );
 }
 
-function getFileExtension(fileName) {
+
+function formatPeso(amount) {
+
+    return new Intl.NumberFormat(
+        "en-PH",
+        {
+            style:
+                "currency",
+
+            currency:
+                "PHP",
+
+            minimumFractionDigits:
+                0,
+
+            maximumFractionDigits:
+                2
+        }
+    ).format(
+        Number(
+            amount || 0
+        )
+    );
+}
+
+
+function createSafeFileName(
+    fileName
+) {
+
     return String(
-        fileName || ""
+        fileName ||
+        "document"
+    )
+        .replace(
+            /[^a-zA-Z0-9._-]/g,
+            "-"
+        )
+        .replace(
+            /-+/g,
+            "-"
+        )
+        .slice(
+            0,
+            120
+        );
+}
+
+
+function createRandomToken() {
+
+    return Math.random()
+        .toString(36)
+        .slice(2, 10);
+}
+
+
+function getFileExtension(
+    fileName
+) {
+
+    return String(
+        fileName ||
+        ""
     )
         .split(".")
         .pop()
         .toLowerCase();
 }
 
-function makeBaseName(fileName) {
+
+function makeBaseName(
+    fileName
+) {
+
     return String(
-        fileName || "document"
+        fileName ||
+        "document"
     )
         .replace(
             /\.[^/.]+$/,
@@ -2140,164 +4358,180 @@ function makeBaseName(fileName) {
         );
 }
 
-function formatDate(dateValue) {
-    if (!dateValue) {
-        return "N/A";
-    }
 
-    const date =
-        new Date(dateValue);
+function validateExternalURL(
+    value
+) {
 
-    if (
-        Number.isNaN(
-            date.getTime()
-        )
-    ) {
-        return "N/A";
-    }
+    const url =
+        new URL(value);
 
-    return date.toLocaleDateString(
-        "en-PH",
-        {
-            year: "numeric",
-            month: "short",
-            day: "numeric"
-        }
-    );
-}
-
-function formatPeso(amount) {
-    return new Intl.NumberFormat(
-        "en-PH",
-        {
-            style: "currency",
-            currency: "PHP",
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2
-        }
-    ).format(
-        Number(amount || 0)
-    );
-}
-
-function formatFileSize(bytes) {
-    const size =
-        Number(bytes);
-
-    if (!Number.isFinite(size)) {
-        return "Unknown size";
-    }
-
-    if (size < 1024) {
-        return `${size} B`;
-    }
 
     if (
-        size <
-        1024 * 1024
+        url.protocol !== "https:" &&
+        url.protocol !== "http:"
     ) {
-        return (
-            `${(
-                size / 1024
-            ).toFixed(1)} KB`
+
+        throw new Error(
+            "Invalid file URL."
         );
     }
 
-    return (
-        `${(
-            size /
-            (1024 * 1024)
-        ).toFixed(1)} MB`
-    );
+
+    return url.href;
 }
 
-function setText(id, value) {
-    const element =
-        document.getElementById(id);
-
-    if (element) {
-        element.textContent =
-            String(
-                value ?? ""
-            );
-    }
-}
-
-function setInputValue(id, value) {
-    const element =
-        document.getElementById(id);
-
-    if (element) {
-        element.value =
-            value ?? "";
-    }
-}
 
 function escapeHTML(value) {
-    return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
+
+    return String(
+        value || ""
+    )
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
         .replaceAll(
             "'",
             "&#039;"
         );
 }
 
-/* =====================================
-   AUDIT LOG
-===================================== */
+async function toggleOCRPublication(id) {
 
-async function logAudit(
-    action,
-    module,
-    details,
-    publicVisible = true
-) {
+    const record =
+        adminOCRRecords.find(
+            function(item) {
+                return Number(item.id) === Number(id);
+            }
+        );
+
+
+    if (!record) {
+
+        alert("OCR record not found.");
+        return;
+
+    }
+
+
+    const newValue =
+        !Boolean(record.is_public);
+
+
+    const action =
+        newValue
+            ? "publish"
+            : "unpublish";
+
+
+    if (
+        !confirm(
+            `Are you sure you want to ${action} this OCR record?`
+        )
+    ) {
+
+        return;
+
+    }
+
+
     const {
-        data: { user }
+        error
     } =
-        await supabaseClient.auth
-            .getUser();
+        await supabaseClient
+            .from("ocr_records")
+            .update({
 
-    if (!user) {
-        console.warn(
-            "Audit log skipped: no logged-in user."
+                is_public:
+                    newValue
+
+            })
+            .eq(
+                "id",
+                record.id
+            );
+
+
+    if (error) {
+
+        console.error(
+            "OCR publication error:",
+            error
+        );
+
+
+        alert(
+            "Could not update OCR visibility."
         );
 
         return;
+
     }
 
-    const { data: profile } =
-        await supabaseClient
-            .from("profiles")
-            .select("full_name")
-            .eq("id", user.id)
-            .maybeSingle();
 
-    const { error } =
-        await supabaseClient
-            .from("audit_logs")
-            .insert([
-                {
-                    user_id:
-                        user.id,
-                    admin_name:
-                        profile?.full_name ||
-                        "Administrator",
-                    action,
-                    module,
-                    details,
-                    public_visible:
-                        publicVisible
-                }
-            ]);
+    alert(
+        newValue
+            ? "OCR record published. Residents can now see it."
+            : "OCR record unpublished."
+    );
 
-    if (error) {
-        console.warn(
-            "Audit log failed:",
-            error.message
-        );
-    }
+
+    await loadAdminOCRRecords();
+
 }
+
+/* =========================================================
+   GLOBAL COMPATIBILITY
+   ========================================================= */
+
+window.runAdminOCR =
+    runAdminOCR;
+
+window.openOCRReview =
+    openOCRReview;
+
+window.closeOCRReviewModal =
+    closeOCRReviewModal;
+
+window.saveOCRReview =
+    saveOCRReview;
+
+window.openOCRRecordFile =
+    openOCRRecordFile;
+
+window.searchAdminDocuments =
+    searchAdminDocuments;
+
+window.filterAdminDocuments =
+    filterAdminDocuments;
+
+window.editDocument =
+    editDocument;
+
+window.clearDocumentForm =
+    clearDocumentForm;
+
+window.toggleDocumentPublication =
+    toggleDocumentPublication;
+
+window.deleteDocument =
+    deleteDocument;
+
+window.viewOfficialDocument =
+    viewOfficialDocument;
+
+window.downloadOfficialDocument =
+    downloadOfficialDocument;

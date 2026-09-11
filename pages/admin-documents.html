@@ -1,155 +1,597 @@
 <!DOCTYPE html>
-<html lang="en" class="admin-auth-pending">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Documents | Katin-awan</title>
-<link
-    rel="icon"
-    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
->
+
+    <title>Admin Documents & OCR | Katin-awan</title>
+
+    <link
+        rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
+    >
+
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/dashboard.css">
     <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" href="../css/projects.css">
 </head>
+
 <body class="admin-documents-page">
 
 <header class="public-nav">
-    <a href="admin-dashboard.html" class="public-logo">🏛️ Katin-awan Admin</a>
+
+    <a
+        href="admin-dashboard.html"
+        class="public-logo"
+    >
+        🏛️ Katin-awan Admin
+    </a>
 
     <nav>
-        <a href="admin-dashboard.html">Dashboard</a>
-        <a href="admin-projects.html">Projects</a>
-        <a href="admin-budget.html">Budget</a>
-        <a href="admin-expenses.html">Expenses</a>
-        <a class="active" href="admin-documents.html">Documents/OCR</a>
-        <a href="admin-map.html">Map</a>
-        <a href="admin-feedback.html">Feedback</a>
-        <a href="admin-users.html">Users</a>
-        <a href="admin-audit.html">Audit Logs</a>
-        <button onclick="adminLogout()" class="logout-btn">Logout</button>
+
+        <a href="admin-dashboard.html">
+            Dashboard
+        </a>
+
+        <a href="admin-projects.html">
+            Projects
+        </a>
+
+        <a href="admin-budget.html">
+            Budget
+        </a>
+
+        <a href="admin-expenses.html">
+            Expenses
+        </a>
+
+        <a
+            class="active"
+            href="admin-documents.html"
+        >
+            Documents/OCR
+        </a>
+
+        <a href="admin-map.html">
+            Map
+        </a>
+
+        <a href="admin-feedback.html">
+            Feedback
+        </a>
+            <a href="admin-chat.html">
+Chat Inquiries
+</a>
+
+
+        <a href="admin-users.html">
+            Users
+        </a>
+
+        <a href="admin-audit.html">
+            Audit Logs
+        </a>
+
+        <button
+            type="button"
+            onclick="adminLogout()"
+            class="logout-btn"
+        >
+            Logout
+        </button>
+
     </nav>
+
 </header>
 
+
+<!-- =====================================================
+     HERO
+===================================================== -->
+
 <section class="public-hero">
+
     <div>
-        <span class="module-badge">Admin Module</span>
-        <h1>Manage Documents & OCR Records</h1>
+
+        <span class="module-badge">
+            Admin Module
+        </span>
+
+        <h1>
+            Manage Documents & OCR Records
+        </h1>
+
         <p>
-            Add, update, review, and delete barangay documents including financial reports, receipts, contracts, project files, and OCR records.
+            Upload official barangay documents, receipts,
+            invoices, project files, and other records.
+            Administrators can run OCR, review extracted
+            information, correct results, and publish
+            approved documents for residents to view.
         </p>
+
     </div>
 
-    <div class="hero-seal">📄</div>
+    <div class="hero-seal">
+        📄
+    </div>
+
 </section>
+
 
 <main class="public-container admin-documents-container">
 
-    <section class="public-grid admin-documents-grid">
 
-        <!-- Left Panel: Add Document -->
-        <div class="public-panel">
-            <h3>Add / Update Document</h3>
+<!-- =====================================================
+     ADMIN OCR UPLOAD
+===================================================== -->
 
-            <form id="addDocumentForm">
-                <input type="hidden" id="docId">
+<section class="section-title">
 
-                <label>Title</label>
-                <input type="text" id="docTitle" placeholder="Example: Q3 2025 Financial Report" required>
+    <h2>
+        Upload & Analyze Document
+    </h2>
 
-                <label>Category</label>
-                <select id="docCategory" required>
-                    <option value="Financial Report">Financial Report</option>
-                    <option value="Budget Document">Budget Document</option>
-                    <option value="Receipt">Receipt</option>
-                    <option value="Project Document">Project Document</option>
-                    <option value="Contract">Contract</option>
-                    <option value="Other">Other</option>
-                </select>
+    <p>
+        This upload and OCR function is available to
+        administrators only. 
+    </p>
 
-                <label>Description</label>
-                <textarea id="docDescription" rows="4" placeholder="Enter document description"></textarea>
-<label>Upload Document File</label>
-<input
-    type="file"
-    id="docFile"
-    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+</section>
 
-<input type="hidden" id="existingDocFileUrl">
 
-<small>
-    Upload PDF, Word, Excel, or image files. OCR extracted text is managed below under OCR Records.
-</small>
-                <div class="dashboard-actions">
-                    <button type="submit" class="public-blue-btn">Save Document</button>
-                    <button type="button" onclick="clearDocumentForm()" class="public-green-btn">Clear</button>
-                </div>
-            </form>
+<section class="ocr-layout">
+
+    <!-- =================================================
+         UPLOAD
+    ================================================== -->
+
+    <div class="ocr-upload-card">
+
+        <h3>
+            Upload Document
+        </h3>
+
+        <div class="ocr-dropbox">
+
+            <div class="ocr-icon">
+                📄
+            </div>
+
+            <p>
+                Select a PDF, Word document, receipt,
+                invoice, JPG, PNG, or WebP file.
+            </p>
+
+            <input
+                type="file"
+                id="ocrFile"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+            >
+
         </div>
 
-        <!-- Right Panel: Summary -->
-        <div class="public-panel">
-            <h3>Document Summary</h3>
 
-            <div class="report-item">
-                <b>Total Documents</b>
-                <p id="totalDocuments">0</p>
-            </div>
+        <button
+            type="button"
+            id="runOCRButton"
+            onclick="runAdminOCR()"
+            class="public-blue-btn"
+        >
+            Upload / Run OCR Analysis
+        </button>
 
-            <div class="report-item">
-                <b>Financial Reports</b>
-                <p id="financialReports">0</p>
-            </div>
 
-            <div class="report-item">
-                <b>Receipts</b>
-                <p id="receiptDocuments">0</p>
-            </div>
+        <div id="ocrProgress"></div>
 
-            <div class="report-item">
-                <b>Project Documents</b>
-                <p id="projectDocuments">0</p>
-            </div>
+
+        <small>
+            Image files are automatically scanned using OCR.
+            PDF and Word files are securely uploaded and
+            stored for administrator review.
+            Maximum file size: 5 MB.
+        </small>
+
+    </div>
+
+
+    <!-- =================================================
+         OCR RESULT
+    ================================================== -->
+
+    <div class="ocr-result-card">
+
+        <h3>
+            OCR / Upload Result
+        </h3>
+
+        <div id="ocrResult">
+
+            <p class="muted-text">
+                No document uploaded yet.
+            </p>
+
         </div>
 
-    </section>
+    </div>
 
-    <section class="section-title">
-        <h2>Document Records & OCR Records</h2>
-        <p>List of barangay documents managed by the administrator.</p>
-    </section>
+</section>
 
-    <!-- Search and Filter -->
-    <section class="tools-card">
-        <div class="tools-row">
+
+
+<!-- =====================================================
+     ADMIN DOCUMENT FORM
+===================================================== -->
+
+<section class="section-title">
+
+    <h2>
+        Add / Update Official Document
+    </h2>
+
+    <p>
+        After reviewing the uploaded document and OCR
+        information, administrators can save the official
+        document record and choose whether it should be
+        available to residents.
+    </p>
+
+</section>
+
+
+<section class="public-grid admin-documents-grid">
+
+
+    <!-- =================================================
+         DOCUMENT FORM
+    ================================================== -->
+
+    <div class="public-panel">
+
+        <h3>
+            Document Information
+        </h3>
+
+
+        <form id="addDocumentForm">
+
+            <input
+                type="hidden"
+                id="docId"
+            >
+
+
+            <label for="docTitle">
+                Title
+            </label>
+
             <input
                 type="text"
-                id="adminDocumentSearch"
-                placeholder="Search documents by title, category, or description..."
-                onkeyup="searchAdminDocuments()">
-<select id="adminDocumentFilter" onchange="filterAdminDocuments()">
-    <option value="All">All Categories</option>
-    <option value="OCR Record">OCR Records</option>
-    <option value="Financial Report">Financial Report</option>
-    <option value="Budget Document">Budget Document</option>
-    <option value="Receipt">Receipt</option>
-    <option value="Project Document">Project Document</option>
-    <option value="Contract">Contract</option>
-    <option value="Other">Other</option>
-</select>
-        </div>
-    </section>
+                id="docTitle"
+                placeholder="Example: Q3 2025 Financial Report"
+                required
+            >
 
-    <!-- Documents List -->
-    <section id="documentsContainer" class="documents-grid">
-        <!-- Populated dynamically by admin-documents.js -->
-    </section>
+
+            <label for="docCategory">
+                Category
+            </label>
+
+            <select
+                id="docCategory"
+                required
+            >
+
+                <option value="Financial Report">
+                    Financial Report
+                </option>
+
+                <option value="Budget Document">
+                    Budget Document
+                </option>
+
+                <option value="Receipt">
+                    Receipt
+                </option>
+
+                <option value="Project Document">
+                    Project Document
+                </option>
+
+                <option value="Contract">
+                    Contract
+                </option>
+
+                <option value="Other">
+                    Other
+                </option>
+
+            </select>
+
+
+            <label for="docDescription">
+                Description
+            </label>
+
+            <textarea
+                id="docDescription"
+                rows="4"
+                placeholder="Enter document description"
+            ></textarea>
+
+
+            <label for="docFile">
+                Official Document File
+            </label>
+
+            <input
+                type="file"
+                id="docFile"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp"
+            >
+
+
+            <input
+                type="hidden"
+                id="existingDocFileUrl"
+            >
+
+
+            <small>
+                Supported files:
+                PDF, Word, Excel, JPG, PNG, and WebP.
+                Maximum document size: 10 MB.
+            </small>
+
+
+            <!-- =========================================
+                 OCR STATUS
+            ========================================== -->
+
+            <div
+                id="ocrProcessingPanel"
+                class="ocr-result-card"
+                style="margin-top:16px;"
+            >
+
+                <h4>
+                    OCR Analysis
+                </h4>
+
+                <p
+                    id="ocrProcessingStatus"
+                    class="muted-text"
+                >
+                    Upload a document above and run OCR
+                    from the administrator OCR panel.
+                </p>
+
+                <div
+                    id="ocrProcessingResult"
+                ></div>
+
+            </div>
+
+
+            <div class="dashboard-actions">
+
+                <button
+                    type="submit"
+                    class="public-blue-btn"
+                >
+                    Save Document
+                </button>
+
+
+                <button
+                    type="button"
+                    onclick="clearDocumentForm()"
+                    class="public-green-btn"
+                >
+                    Clear
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+
+    <!-- =================================================
+         SUMMARY
+    ================================================== -->
+
+    <div class="public-panel">
+
+        <h3>
+            Document Summary
+        </h3>
+
+
+        <div class="report-item">
+
+            <b>
+                Total Documents
+            </b>
+
+            <p id="totalDocuments">
+                0
+            </p>
+
+        </div>
+
+
+        <div class="report-item">
+
+            <b>
+                Financial Reports
+            </b>
+
+            <p id="financialReports">
+                0
+            </p>
+
+        </div>
+
+
+        <div class="report-item">
+
+            <b>
+                Receipts
+            </b>
+
+            <p id="receiptDocuments">
+                0
+            </p>
+
+        </div>
+
+
+        <div class="report-item">
+
+            <b>
+                Project Documents
+            </b>
+
+            <p id="projectDocuments">
+                0
+            </p>
+
+        </div>
+
+
+        <div class="report-item">
+
+            <b>
+                OCR Records
+            </b>
+
+            <p id="ocrRecordsCount">
+                0
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+
+
+<!-- =====================================================
+     DOCUMENT RECORDS
+===================================================== -->
+
+<section class="section-title">
+
+    <h2>
+        Official Document Records
+    </h2>
+
+    <p>
+        Manage the official documents that may be
+        displayed on the resident Documents page.
+    </p>
+
+</section>
+
+
+<!-- =====================================================
+     SEARCH / FILTER
+===================================================== -->
+
+<section class="tools-card">
+
+    <div class="tools-row">
+
+        <input
+            type="text"
+            id="adminDocumentSearch"
+            placeholder="Search documents, OCR records, vendors..."
+            oninput="searchAdminDocuments()"
+        >
+
+
+        <select
+            id="adminDocumentFilter"
+            onchange="filterAdminDocuments()"
+        >
+
+            <option value="All">
+                All Categories
+            </option>
+
+            <option value="OCR Record">
+                OCR Records     
+            </option>
+
+            <option value="Financial Report">
+                Financial Report
+            </option>
+
+            <option value="Budget Document">
+                Budget Document
+            </option>
+
+            <option value="Receipt">
+                Receipt
+            </option>
+
+            <option value="Project Document">
+                Project Document
+            </option>
+
+            <option value="Contract">
+                Contract
+            </option>
+
+            <option value="Other">
+                Other
+            </option>
+
+        </select>
+
+    </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     DOCUMENT / OCR LIST
+===================================================== -->
+
+<section
+    id="documentsContainer"
+    class="documents-grid"
+>
+
+    <p class="muted-text">
+        Loading records...
+    </p>
+
+</section>
+
+
+
+<!-- =====================================================
+     OCR REVIEW MODAL
+===================================================== -->
 
 <div
     id="ocrReviewModal"
     class="project-modal"
+    style="display:none;"
 >
-    <div class="project-modal-content ocr-review-content">
+
+    <div
+        class="project-modal-content ocr-review-content"
+    >
 
         <button
             type="button"
@@ -159,34 +601,65 @@
             X
         </button>
 
-        <h2>Review OCR Record</h2>
+
+        <h2>
+            Review OCR Record
+        </h2>
+
 
         <input
             type="hidden"
             id="ocrReviewId"
         >
 
+
         <div class="ocr-review-summary">
+
             <p>
-                <b>File:</b>
+
+                <b>
+                    File:
+                </b>
+
                 <span id="ocrReviewFileName"></span>
+
             </p>
 
+
             <p>
-                <b>Detected Vendor:</b>
+
+                <b>
+                    Detected Vendor:
+                </b>
+
                 <span id="ocrReviewVendor"></span>
+
             </p>
 
+
             <p>
-                <b>Detected Amount:</b>
+
+                <b>
+                    Detected Amount:
+                </b>
+
                 <span id="ocrReviewAmount"></span>
+
             </p>
 
+
             <p>
-                <b>Confidence:</b>
+
+                <b>
+                    Confidence:
+                </b>
+
                 <span id="ocrReviewConfidence"></span>
+
             </p>
+
         </div>
+
 
         <div class="ocr-review-file-actions">
 
@@ -199,6 +672,7 @@
                 View Original
             </button>
 
+
             <button
                 type="button"
                 id="ocrDownloadOriginalBtn"
@@ -208,6 +682,7 @@
                 Download Original
             </button>
 
+
             <button
                 type="button"
                 id="ocrDownloadReportBtn"
@@ -216,6 +691,7 @@
             >
                 Download OCR PDF
             </button>
+
 
             <button
                 type="button"
@@ -228,6 +704,7 @@
 
         </div>
 
+
         <label for="ocrCorrectedText">
             Extracted / Corrected Text
         </label>
@@ -235,9 +712,10 @@
         <textarea
             id="ocrCorrectedText"
             class="admin-input"
-            rows="10"
+            rows="12"
             placeholder="Review and correct the OCR text here."
         ></textarea>
+
 
         <label for="ocrCorrectedPdfFile">
             Upload Manually Edited PDF
@@ -250,16 +728,19 @@
             accept=".pdf,application/pdf"
         >
 
-        <small class="form-help-text">
-            Upload the PDF after editing it using Adobe Acrobat,
-            Microsoft Word, or another PDF editor. Maximum size: 5 MB.
+
+        <small>
+            Optional. Upload the corrected PDF after
+            manually editing the document.
+            Maximum size: 5 MB.
         </small>
+
 
         <p
             id="ocrCorrectedPdfInfo"
-            class="receipt-file-info"
             hidden
         ></p>
+
 
         <label for="ocrReviewNotes">
             Admin Review Notes
@@ -268,9 +749,10 @@
         <textarea
             id="ocrReviewNotes"
             class="admin-input"
-            rows="3"
+            rows="4"
             placeholder="Enter findings, corrections, or reasons for flagging."
         ></textarea>
+
 
         <label for="ocrReviewStatus">
             Review Status
@@ -280,6 +762,7 @@
             id="ocrReviewStatus"
             class="admin-input"
         >
+
             <option value="Validated Expense">
                 Validated Expense
             </option>
@@ -291,7 +774,9 @@
             <option value="Flagged for Review">
                 Flagged for Review
             </option>
+
         </select>
+
 
         <div class="dashboard-actions">
 
@@ -302,6 +787,7 @@
             >
                 Save Review
             </button>
+
 
             <button
                 type="button"
@@ -314,15 +800,32 @@
         </div>
 
     </div>
+
 </div>
+
+
 </main>
 
+
+
+<!-- =====================================================
+     SCRIPTS
+===================================================== -->
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="../js/supabase.js"></script>
+
 <script src="../js/admin-auth.js"></script>
-<script src="../js/admin-documents.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="../js/admin-documents.js"></script>
+
 <script src="../js/backtotop.js"></script>
+
+
 </body>
 </html>

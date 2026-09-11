@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>
+Katin-awan Admin - Chat Inquiries
+</title>
+
+<link rel="stylesheet" href="../css/main.css">
+<link rel="stylesheet" href="../css/dashboard.css">
+<link rel="stylesheet" href="../css/admin.css">
+
+</head>
+
+
+<body>
+
+
+<nav class="public-nav">
+
+<div class="nav-brand">
+🏛 Katin-awan Admin
+</div>
+
+
+<div class="nav-links">
+
+<a href="admin-dashboard.html">Dashboard</a>
+<a href="admin-projects.html">Projects</a>
+<a href="admin-budget.html">Budget</a>
+<a href="admin-expenses.html">Expenses</a>
+<a href="admin-documents.html">Documents/OCR</a>
+<a href="admin-map.html">Map</a>
+<a href="admin-feedback.html">Feedback</a>
+<a class="active" href="admin-chat.html">
+    Chat Inquiries
+</a>
+<a href="admin-users.html">Users</a>
+<a href="audit-logs.html">Audit Logs</a>
+
+
+<button class="logout-btn">
+Logout
+</button>
+
+
+</div>
+
+</nav>
+
+
+
+
+<section class="public-hero">
+
+
+<div>
+
+
+
+<h1>
+AI Assistance Review
+</h1>
+
+
+<p>
+Review resident questions that require administrator responses.
+</p>
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+<main class="public-container">
+
+
+
+<div class="section-title">
+
+<h2>
+Chat Inquiries
+</h2>
+
+
+<p>
+Manage questions that the AI could not confidently answer.
+</p>
+
+</div>
+
+
+
+
+
+<div class="public-panel">
+
+
+<div id="inquiry-list">
+
+Loading inquiries...
+
+</div>
+
+
+
+</div>
+
+
+
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="../js/supabase.js"></script>
+
+<script src="../js/admin-auth.js"></script>
+
+<script src="../js/admin-chat.js"></script>
+
+<script src="../js/backtotop.js"></script>
+</body>
+
+</html>

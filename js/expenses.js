@@ -6,9 +6,15 @@ let filteredPublicExpenses = [];
 document.addEventListener(
     "DOMContentLoaded",
     async function () {
+        preparePublicExpenseFilters();
         await loadExpenses();
     }
 );
+
+
+/* =========================================================
+   LOAD EXPENSES
+   ========================================================= */
 
 async function loadExpenses() {
     const expenseTable =
@@ -26,10 +32,40 @@ async function loadExpenses() {
     expenseTable.innerHTML = `
         <tr>
             <td colspan="8">
-                Loading expense records...
+                Loading approved expense records...
             </td>
         </tr>
     `;
+
+    /*
+     * IMPORTANT:
+     *
+     * The database RLS policies are the real security layer.
+     *
+     * This query intentionally requests approved/valid
+     * transparency records only.
+     *
+     * RLS additionally determines which rows the current
+     * user is actually allowed to receive:
+     *
+     * - Public visitor:
+     *   approved expenses
+     *
+     * - Legacy resident:
+     *   approved public expenses
+     *
+     * - Verified resident:
+     *   approved expenses from their own barangay
+     *
+     * - Pending/rejected resident:
+     *   no protected expense records
+     *
+     * - Admin:
+     *   all records through the admin policy
+     *
+     * The client-side status filter below is only a
+     * consistency layer, NOT a security layer.
+     */
 
     const { data, error } =
         await supabaseClient
@@ -51,6 +87,15 @@ async function loadExpenses() {
                     title
                 )
             `)
+            .in(
+                "status",
+                [
+                    "Approved",
+                    "approved",
+                    "Valid",
+                    "valid"
+                ]
+            )
             .order(
                 "created_at",
                 {
@@ -79,18 +124,33 @@ async function loadExpenses() {
         return;
     }
 
+    /*
+     * Normalize the returned records.
+     *
+     * We still perform a client-side check so that only
+     * approved/valid records are rendered if the database
+     * contains an unexpected status value.
+     */
     publicExpenses =
-        (data || []).map(
-            function (expense) {
-                return {
-                    ...expense,
-                    normalized_status:
+        (data || [])
+            .filter(
+                function (expense) {
+                    return (
                         normalizeExpenseStatus(
                             expense.status
-                        )
-                };
-            }
-        );
+                        ) === "Approved"
+                    );
+                }
+            )
+            .map(
+                function (expense) {
+                    return {
+                        ...expense,
+                        normalized_status:
+                            "Approved"
+                    };
+                }
+            );
 
     updateExpenseStats(
         publicExpenses
@@ -98,6 +158,95 @@ async function loadExpenses() {
 
     applyExpenseFilters();
 }
+
+
+/* =========================================================
+   PREPARE FILTER UI
+   ========================================================= */
+
+function preparePublicExpenseFilters() {
+    const filterInput =
+        document.getElementById(
+            "expenseFilter"
+        );
+
+    if (!filterInput) {
+        return;
+    }
+
+    /*
+     * Residents should not have filters for Pending or
+     * Flagged records because those records are not part
+     * of the public transparency view.
+     *
+     * Remove those options if they still exist in the
+     * current HTML.
+     */
+
+    Array.from(
+        filterInput.options
+    ).forEach(
+        function (option) {
+            const value =
+                String(
+                    option.value || ""
+                )
+                    .trim()
+                    .toLowerCase();
+
+            const text =
+                String(
+                    option.textContent || ""
+                )
+                    .trim()
+                    .toLowerCase();
+
+            if (
+                value === "flagged" ||
+                value === "pending" ||
+                text === "flagged" ||
+                text === "pending"
+            ) {
+                option.remove();
+            }
+        }
+    );
+
+    /*
+     * Make sure "All" exists as the default.
+     *
+     * If the existing HTML does not have an "All" option,
+     * the script will still work normally.
+     */
+
+    const allOption =
+        Array.from(
+            filterInput.options
+        ).find(
+            function (option) {
+                return (
+                    String(
+                        option.value || ""
+                    )
+                        .trim()
+                        .toLowerCase() ===
+                    "all"
+                );
+            }
+        );
+
+    if (allOption) {
+        filterInput.value =
+            allOption.value;
+    } else {
+        filterInput.value = "All";
+    }
+}
+
+
+/* =========================================================
+   RENDER EXPENSES
+   ========================================================= */
 
 function renderExpenses(expenses) {
     const expenseTable =
@@ -116,7 +265,7 @@ function renderExpenses(expenses) {
         expenseTable.innerHTML = `
             <tr>
                 <td colspan="8">
-                    No expenses found.
+                    No approved expenses found.
                 </td>
             </tr>
         `;
@@ -130,10 +279,22 @@ function renderExpenses(expenses) {
             .join("");
 }
 
+
+/* =========================================================
+   CREATE EXPENSE ROW
+   ========================================================= */
+
 function createExpenseRow(expense) {
     const projectName =
         expense.project?.title ||
         "Unassigned / General Expense";
+
+    /*
+     * Residents only receive approved records.
+     *
+     * The status is still displayed for transparency,
+     * but it should always be Approved in this view.
+     */
 
     const status =
         normalizeExpenseStatus(
@@ -141,10 +302,13 @@ function createExpenseRow(expense) {
         );
 
     /*
-     * Residents only see whether a supporting
-     * document exists. Private storage paths
-     * and signed links are not exposed.
+     * Residents only see whether a supporting document
+     * exists.
+     *
+     * Private storage paths and signed links are not
+     * exposed to residents through the UI.
      */
+
     const hasSupportingFile =
         Boolean(
             expense.file_path ||
@@ -198,10 +362,12 @@ function createExpenseRow(expense) {
             </td>
 
             <td>
-                <span class="${
-                    getStatusClass(status)
-                }">
-                    ${escapeHTML(status)}
+                <span class="${getStatusClass(
+                    status
+                )}">
+                    ${escapeHTML(
+                        status
+                    )}
                 </span>
             </td>
 
@@ -218,13 +384,28 @@ function createExpenseRow(expense) {
     `;
 }
 
+
+/* =========================================================
+   SEARCH
+   ========================================================= */
+
 function searchExpenses() {
     applyExpenseFilters();
 }
 
+
+/* =========================================================
+   FILTER
+   ========================================================= */
+
 function filterExpenses() {
     applyExpenseFilters();
 }
+
+
+/* =========================================================
+   APPLY FILTERS
+   ========================================================= */
 
 function applyExpenseFilters() {
     const searchInput =
@@ -248,10 +429,21 @@ function applyExpenseFilters() {
     filteredPublicExpenses =
         publicExpenses.filter(
             function (expense) {
+                /*
+                 * Only approved records are allowed into
+                 * the resident transparency list.
+                 */
+
                 const status =
                     normalizeExpenseStatus(
                         expense.status
                     );
+
+                if (
+                    status !== "Approved"
+                ) {
+                    return false;
+                }
 
                 const projectName =
                     expense.project?.title ||
@@ -275,9 +467,19 @@ function applyExpenseFilters() {
                         keyword
                     );
 
+                /*
+                 * "All" shows every approved record.
+                 *
+                 * If the user selects Approved, the same
+                 * approved records are shown.
+                 */
+
                 const matchesStatus =
                     selectedStatus === "All" ||
-                    status === selectedStatus;
+                    selectedStatus === "" ||
+                    normalizeExpenseStatus(
+                        selectedStatus
+                    ) === "Approved";
 
                 return (
                     matchesKeyword &&
@@ -291,22 +493,18 @@ function applyExpenseFilters() {
     );
 }
 
-function updateExpenseStats(expenses) {
-    const totalAmount =
-        expenses.reduce(
-            function (sum, expense) {
-                return (
-                    sum +
-                    Number(
-                        expense.amount || 0
-                    )
-                );
-            },
-            0
-        );
 
-    const approvedCount =
-        expenses.filter(
+/* =========================================================
+   EXPENSE STATISTICS
+   ========================================================= */
+
+function updateExpenseStats(expenses) {
+    /*
+     * Only approved expenses are supplied to this function.
+     */
+
+    const approvedExpenses =
+        (expenses || []).filter(
             function (expense) {
                 return (
                     normalizeExpenseStatus(
@@ -314,33 +512,42 @@ function updateExpenseStats(expenses) {
                     ) === "Approved"
                 );
             }
-        ).length;
+        );
 
-    const flaggedCount =
-        expenses.filter(
-            function (expense) {
+    const totalAmount =
+        approvedExpenses.reduce(
+            function (
+                sum,
+                expense
+            ) {
                 return (
-                    normalizeExpenseStatus(
-                        expense.status
-                    ) === "Flagged"
+                    sum +
+                    Number(
+                        expense.amount ||
+                        0
+                    )
                 );
-            }
-        ).length;
+            },
+            0
+        );
 
-    const pendingCount =
-        expenses.filter(
-            function (expense) {
-                return (
-                    normalizeExpenseStatus(
-                        expense.status
-                    ) === "Pending"
-                );
-            }
-        ).length;
+    const approvedCount =
+        approvedExpenses.length;
+
+    /*
+     * Flagged and Pending are deliberately zero in the
+     * public transparency view because those records are
+     * not publicly exposed.
+     */
+
+    const flaggedCount = 0;
+    const pendingCount = 0;
 
     setText(
         "totalExpenses",
-        formatPeso(totalAmount)
+        formatPeso(
+            totalAmount
+        )
     );
 
     setText(
@@ -359,16 +566,24 @@ function updateExpenseStats(expenses) {
     );
 }
 
-function normalizeExpenseStatus(status) {
+
+/* =========================================================
+   STATUS NORMALIZATION
+   ========================================================= */
+
+function normalizeExpenseStatus(
+    status
+) {
     const normalized =
         String(status || "")
             .trim()
             .toLowerCase();
 
     /*
-     * Older records using Valid are displayed
-     * as Approved.
+     * Older records using "Valid" are displayed
+     * as "Approved".
      */
+
     if (
         normalized === "approved" ||
         normalized === "valid"
@@ -376,16 +591,33 @@ function normalizeExpenseStatus(status) {
         return "Approved";
     }
 
-    if (normalized === "flagged") {
+    /*
+     * These are retained for compatibility with existing
+     * records/functions, although resident RLS should
+     * prevent these records from being returned.
+     */
+
+    if (
+        normalized === "flagged"
+    ) {
         return "Flagged";
     }
 
     return "Pending";
 }
 
-function getStatusClass(status) {
+
+/* =========================================================
+   STATUS CSS CLASS
+   ========================================================= */
+
+function getStatusClass(
+    status
+) {
     switch (
-        normalizeExpenseStatus(status)
+        normalizeExpenseStatus(
+            status
+        )
     ) {
         case "Approved":
             return "status-resolved";
@@ -399,6 +631,11 @@ function getStatusClass(status) {
     }
 }
 
+
+/* =========================================================
+   CURRENCY FORMAT
+   ========================================================= */
+
 function formatPeso(amount) {
     return new Intl.NumberFormat(
         "en-PH",
@@ -409,17 +646,28 @@ function formatPeso(amount) {
             maximumFractionDigits: 2
         }
     ).format(
-        Number(amount || 0)
+        Number(
+            amount || 0
+        )
     );
 }
 
-function formatDate(dateValue) {
+
+/* =========================================================
+   DATE FORMAT
+   ========================================================= */
+
+function formatDate(
+    dateValue
+) {
     if (!dateValue) {
         return "N/A";
     }
 
     const date =
-        new Date(dateValue);
+        new Date(
+            dateValue
+        );
 
     if (
         Number.isNaN(
@@ -439,22 +687,55 @@ function formatDate(dateValue) {
     );
 }
 
-function setText(id, value) {
+
+/* =========================================================
+   SET TEXT
+   ========================================================= */
+
+function setText(
+    id,
+    value
+) {
     const element =
-        document.getElementById(id);
+        document.getElementById(
+            id
+        );
 
     if (element) {
         element.textContent =
-            String(value ?? "");
+            String(
+                value ?? ""
+            );
     }
 }
 
-function escapeHTML(value) {
-    return String(value || "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
+
+/* =========================================================
+   ESCAPE HTML
+   ========================================================= */
+
+function escapeHTML(
+    value
+) {
+    return String(
+        value || ""
+    )
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
         .replaceAll(
             "'",
             "&#039;"

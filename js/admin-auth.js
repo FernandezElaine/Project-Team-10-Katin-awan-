@@ -5,9 +5,7 @@ document.addEventListener("DOMContentLoaded", async function () {
      * Keep the administrator page hidden until access
      * has been verified.
      */
-    document.documentElement.classList.add(
-        "admin-auth-pending"
-    );
+    
 
     /**
      * Redirects to the shared login page.

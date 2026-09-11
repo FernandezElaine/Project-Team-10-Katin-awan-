@@ -23,7 +23,7 @@
         <a href="expenses.html">Expenses</a>
         <a class="active" href="documents.html">Documents</a>
         <a href="map.html">Map</a>
-        <a href="uploads.html">OCR Analysis</a>
+      
         <a href="chatbot.html">Chatbot</a>
         <a href="feedback.html">Feedback</a>
      <span id="authArea" class="auth-area">
@@ -54,6 +54,29 @@
 
 <main class="public-container">
 
+    <!-- LOGIN REQUIRED MESSAGE -->
+    <section id="loginRequired" style="display:none;">
+        <div class="public-panel" style="text-align:center; padding:40px;">
+            <h2>🔒 Login Required</h2>
+
+            <p>
+                Please log in to access official barangay documents.
+            </p>
+
+            <button
+                type="button"
+                class="public-blue-btn"
+                onclick="window.location.href='../index.html'">
+                Log In
+            </button>
+        </div>
+    </section>
+
+
+    <!-- DOCUMENTS CONTENT -->
+    <div id="documentsContent" style="display:none;">
+
+       
     <section class="section-title">
         <h2>Document Records</h2>
         <p>Search and view official barangay documents uploaded by the administrator.</p>
@@ -69,8 +92,12 @@
 
             <select id="documentFilter" onchange="filterDocuments()">
                 <option value="All">All Categories</option>
+                <option value="OCR Record">
+    OCR Record
+</option>
                 <option value="Financial Report">Financial Report</option>
                 <option value="Budget Document">Budget Document</option>
+                
                 <option value="Receipt">Receipt</option>
                 <option value="Project Document">Project Document</option>
                 <option value="Contract">Contract</option>
@@ -111,7 +138,7 @@
         <!-- Public audit logs from Supabase will appear here -->
     </section>
 
-    <!-- Document Details Modal -->
+     <!-- Document Details Modal -->
     <div id="documentModal" class="document-modal">
         <div class="document-modal-content">
             <button class="document-modal-close" onclick="closeDocumentModal()">X</button>
@@ -127,6 +154,8 @@
             </button>
         </div>
     </div>
+
+    </div> <!-- END documentsContent -->
 
 </main>
 

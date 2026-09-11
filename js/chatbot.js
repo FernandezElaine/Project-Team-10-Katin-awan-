@@ -231,7 +231,6 @@ console.log(
 reply = await getReply(text);
 
 
-
 if(!reply){
     reply = await askAI(text);
 }
@@ -265,8 +264,10 @@ async function askAI(message) {
                 }
             );
 
-        const data =
-            await response.json();
+     const data =
+    await response.json();
+
+console.log("GROQ RESPONSE:", data);
 
         if (!response.ok) {
             return (
@@ -370,11 +371,7 @@ async function getReply(text) {
     const msg = text.toLowerCase();
     // GREETINGS
 if(
-    msg.includes("hi") ||
-    msg.includes("hello") ||
-    msg.includes("hey") ||
-    msg.includes("musta") ||
-    msg.includes("kumusta")
+    /\b(hi|hello|hey|musta|kumusta)\b/.test(msg)
 ){
 
     if(currentLanguage === "bisaya"){

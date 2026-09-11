@@ -1,28 +1,27 @@
 // js/auth-nav.js
 
 document.addEventListener("DOMContentLoaded", async function () {
-    const authArea =
-        document.getElementById("authArea");
 
-    const accountAction =
-        document.getElementById("accountAction");
+    const authArea = document.getElementById("authArea");
+    const accountAction = document.getElementById("accountAction");
 
-    const heroPortalAction =
-        document.getElementById("heroPortalAction");
-
-    const heroLoginAction =
-        document.getElementById("heroLoginAction");
-
-    const heroRegisterAction =
-        document.getElementById("heroRegisterAction");
+    const heroPortalAction = document.getElementById("heroPortalAction");
+    const heroLoginAction = document.getElementById("heroLoginAction");
+    const heroRegisterAction = document.getElementById("heroRegisterAction");
 
     if (!authArea) {
         return;
     }
 
+    /*
+     * Determine whether the current page is inside /pages/
+     */
     const isInsidePagesFolder =
         window.location.pathname.includes("/pages/");
 
+    /*
+     * Build correct paths depending on location.
+     */
     function getPagePath(fileName) {
         return isInsidePagesFolder
             ? fileName
@@ -33,6 +32,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         ? "../index.html"
         : "index.html";
 
+    /*
+     * Create a navigation link.
+     */
     function createLink(text, href, className) {
         const link = document.createElement("a");
 
@@ -43,6 +45,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         return link;
     }
 
+    /*
+     * Create Logout button.
+     */
     function createLogoutButton() {
         const button = document.createElement("button");
 
@@ -55,26 +60,28 @@ document.addEventListener("DOMContentLoaded", async function () {
         return button;
     }
 
-    /**
-     * Configure the permanent account button used
-     * inside dashboard, projects, expenses, and other pages.
+    /*
+     * Configure the Login / Logout button
+     * used on pages inside /pages/.
      */
     function configureInternalAccountButton(isLoggedIn) {
+
         if (!accountAction) {
             return;
         }
 
         /*
-         * Remove old click behavior by cloning the button.
+         * Clone the existing button so any old
+         * click handlers are removed.
          */
-        const replacement =
-            accountAction.cloneNode(true);
+        const replacement = accountAction.cloneNode(true);
 
         accountAction.replaceWith(replacement);
 
         replacement.disabled = false;
 
         if (isLoggedIn) {
+
             replacement.textContent = "Logout";
             replacement.className = "logout-btn";
 
@@ -82,7 +89,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                 "click",
                 logoutUser
             );
+
         } else {
+
             replacement.textContent = "Login";
             replacement.className = "login-link";
 
@@ -96,18 +105,22 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    /**
-     * Landing-page navigation for visitors.
+    /*
+     * Navigation for logged-out visitors.
      */
     function showGuestNavigation() {
+
         if (isInsidePagesFolder) {
+
             configureInternalAccountButton(false);
+
             return;
         }
 
         authArea.innerHTML = "";
 
         if (heroPortalAction) {
+
             heroPortalAction.href =
                 getPagePath("dashboard.html");
 
@@ -124,12 +137,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    /**
-     * Landing-page navigation for residents.
+    /*
+     * Navigation for residents.
      */
     function showResidentNavigation() {
+
         if (isInsidePagesFolder) {
+
             configureInternalAccountButton(true);
+
             return;
         }
 
@@ -148,6 +164,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
 
         if (heroPortalAction) {
+
             heroPortalAction.href =
                 getPagePath("dashboard.html");
 
@@ -164,12 +181,15 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    /**
-     * Landing-page navigation for administrators.
+    /*
+     * Navigation for administrators.
      */
     function showAdminNavigation() {
+
         if (isInsidePagesFolder) {
+
             configureInternalAccountButton(true);
+
             return;
         }
 
@@ -188,6 +208,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
 
         if (heroPortalAction) {
+
             heroPortalAction.href =
                 getPagePath("admin-dashboard.html");
 
@@ -204,40 +225,63 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    /*
+     * Get the currently logged-in user
+     * and update navigation.
+     */
     async function renderAuthNavigation() {
+
         try {
+
             const {
                 data: { session },
                 error: sessionError
             } = await supabaseClient.auth.getSession();
 
+            /*
+             * If Supabase cannot retrieve the session,
+             * treat the visitor as logged out.
+             */
             if (sessionError) {
+
                 console.error(
                     "Session retrieval error:",
                     sessionError
                 );
 
                 showGuestNavigation();
-                return;
-            }
 
-            if (!session) {
-                showGuestNavigation();
                 return;
             }
 
             /*
-             * Internal public pages only need to activate
-             * the permanent Logout button.
+             * No session = logged out.
+             */
+            if (!session) {
+
+                showGuestNavigation();
+
+                return;
+            }
+
+            /*
+             * If we are inside /pages/,
+             * we only need to show Logout.
+             *
+             * Individual protected pages such as
+             * admin-ocr.html will perform their own
+             * role checks.
              */
             if (isInsidePagesFolder) {
+
                 configureInternalAccountButton(true);
+
                 return;
             }
 
             /*
-             * The landing page also checks the role so it
-             * can display the correct dashboard link.
+             * Landing page needs the user's role
+             * so it can display the correct dashboard.
              */
             const {
                 data: profile,
@@ -248,39 +292,71 @@ document.addEventListener("DOMContentLoaded", async function () {
                 .eq("id", session.user.id)
                 .maybeSingle();
 
-            if (profileError || !profile) {
+            if (profileError) {
+
                 console.error(
                     "Profile retrieval error:",
                     profileError
                 );
 
-                await supabaseClient.auth.signOut();
                 showGuestNavigation();
+
                 return;
             }
 
+            /*
+             * No profile found.
+             */
+            if (!profile) {
+
+                console.error(
+                    "No profile found for authenticated user."
+                );
+
+                showGuestNavigation();
+
+                return;
+            }
+
+            /*
+             * Normalize role.
+             */
             const role = String(profile.role || "")
                 .trim()
                 .toLowerCase();
 
+            /*
+             * Administrator.
+             */
             if (role === "admin") {
+
                 showAdminNavigation();
+
                 return;
             }
 
+            /*
+             * Resident.
+             */
             if (role === "resident") {
+
                 showResidentNavigation();
+
                 return;
             }
 
+            /*
+             * Unknown role.
+             */
             console.error(
                 "Invalid account role:",
                 profile.role
             );
 
-            await supabaseClient.auth.signOut();
             showGuestNavigation();
+
         } catch (error) {
+
             console.error(
                 "Authentication navigation error:",
                 error
@@ -290,7 +366,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    /*
+     * Logout user.
+     */
     async function logoutUser() {
+
         const confirmed = window.confirm(
             "Are you sure you want to log out?"
         );
@@ -300,10 +380,12 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         try {
+
             const { error } =
                 await supabaseClient.auth.signOut();
 
             if (error) {
+
                 console.error(
                     "Logout error:",
                     error
@@ -317,8 +399,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                 return;
             }
 
+            /*
+             * Return to homepage after logout.
+             */
             window.location.replace(homePage);
+
         } catch (error) {
+
             console.error(
                 "Unexpected logout error:",
                 error
@@ -330,18 +417,26 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
+    /*
+     * Initial authentication check.
+     */
     await renderAuthNavigation();
 
+    /*
+     * Listen for authentication changes.
+     */
     const {
         data: authListener
     } = supabaseClient.auth.onAuthStateChange(
         function (event) {
+
             if (
                 event === "SIGNED_IN" ||
                 event === "SIGNED_OUT" ||
                 event === "TOKEN_REFRESHED" ||
                 event === "USER_UPDATED"
             ) {
+
                 setTimeout(
                     renderAuthNavigation,
                     0
@@ -350,10 +445,17 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     );
 
+    /*
+     * Clean up the authentication listener
+     * when leaving the page.
+     */
     window.addEventListener(
         "pagehide",
         function () {
+
             authListener?.subscription?.unsubscribe();
+
         }
     );
+
 });

@@ -4,11 +4,16 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
-import {
-    httpServerHandler
-} from "cloudflare:node";
+import { createClient } from "@supabase/supabase-js";
 
 const app = express();
+
+app.use(cors());
+app.use(express.json());
+
+
+
+
 
 const PORT =
     Number(process.env.PORT) || 3000;
@@ -18,7 +23,9 @@ const GROQ_API_KEY =
 
 const GROQ_MODEL =
     process.env.GROQ_MODEL ||
-    "llama-3.1-8b-instant";
+    "llama-3.3-70b-versatile";
+    console.log("ENV MODEL:", process.env.GROQ_MODEL);
+console.log("FINAL MODEL:", GROQ_MODEL);
 
 const SUPABASE_URL =
     process.env.SUPABASE_URL;
@@ -36,6 +43,11 @@ const SUPABASE_API_KEY =
     process.env.SUPABASE_PUBLISHABLE_KEY ||
     process.env.SUPABASE_ANON_KEY ||
     process.env.SUPABASE_KEY;
+
+    const supabase = createClient(
+    SUPABASE_URL,
+    SUPABASE_API_KEY
+);
 
 const defaultAllowedOrigins = [
     "http://127.0.0.1:5500",
@@ -172,6 +184,12 @@ app.post(
         request,
         response
     ) {
+
+      
+        console.log("CHAT REQUEST RECEIVED");
+
+
+        // your existing code below continues{
         try {
            
 
@@ -258,7 +276,7 @@ console.log(
                                     0.2,
 
                                 max_tokens:
-                                    350,
+                                    300,
 
                                 messages: [
                                     {
@@ -310,6 +328,46 @@ console.log(
                     ?.choices?.[0]
                     ?.message?.content
                     ?.trim();
+                    console.log("AI REPLY:", reply);
+            if(
+    reply.includes("CONFIDENCE: LOW") ||
+    reply.includes("do not have access") ||
+    reply.includes("cannot verify") ||
+    reply.includes("check your local") ||
+    reply.includes("consult your local")
+) {
+
+    console.log("LOW CONFIDENCE DETECTED");
+
+
+
+    console.log("Saving admin inquiry...");
+
+ const { data, error } = await supabase
+.from("chat_inquiries")
+.insert([
+{
+    question: message,
+    ai_response: reply,
+    status:"pending"
+}
+])
+.select();
+
+
+console.log("INSERT DATA:", data);
+console.log("INSERT ERROR:", error);
+
+    if (error) {
+        console.error(
+            "Inquiry save error:",
+            error.message
+        );
+    }
+}
+
+                    const needsAdmin =
+    reply.includes("CONFIDENCE: LOW");
 
             if (!reply) {
                 response.status(502).json({
@@ -326,7 +384,7 @@ console.log(
         } catch (error) {
             console.error(
                 "Chat endpoint error:",
-                error.message
+                error
             );
 
             /*
@@ -358,6 +416,8 @@ async function verifySupabaseUser(accessToken) {
         process.env.SUPABASE_ANON_KEY ||
         process.env.SUPABASE_KEY;
 
+
+       
     if (!supabaseUrl) {
         throw new Error(
             "SUPABASE_URL is missing from backend/.env."
@@ -522,6 +582,7 @@ function getSystemInstructions(
     responseLanguage
 ) {
     return `
+    
 You are Katin-awan AI, a barangay transparency assistant.
 
 MANDATORY LANGUAGE RULE:
@@ -548,6 +609,9 @@ Rules:
 4. Never reveal private receipts, private OCR files, user profiles, feedback contents, or administrator-only information.
 5. Explain that OCR may contain mistakes and requires administrator review.
 6. Stay focused on Katin-awan and barangay transparency.
+
+
+
 `.trim();
 }
 
@@ -583,8 +647,21 @@ app.use(
 ===================================== */
 const WORKER_PORT = 3000;
 
-app.listen(WORKER_PORT);
+const server = app.listen(WORKER_PORT, () => {
+    console.log(`Chat server running on port ${WORKER_PORT}`);
+});
 
-export default httpServerHandler({
-    port: WORKER_PORT
+
+server.on("error", (error) => {
+    console.error("SERVER ERROR:", error);
+});
+
+
+process.on("uncaughtException", (error) => {
+    console.error("CRASH:", error);
+});
+
+
+process.on("unhandledRejection", (error) => {
+    console.error("PROMISE ERROR:", error);
 });

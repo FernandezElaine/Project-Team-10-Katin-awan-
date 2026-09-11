@@ -1,49 +1,422 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>Create Account | Katin-awan Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
 <link
-    rel="icon"
-    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
 >
-    <link rel="stylesheet" href="../css/main.css">
-    <link rel="stylesheet" href="../css/auth.css">
+    <link
+        rel="stylesheet"
+        href="../css/main.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="../css/auth.css"
+    >
 </head>
+
 <body>
 
 <div class="auth-page">
-    <div class="auth-card">
-        <a href="../index.html" class="auth-logo">🏛️ Katin-awan</a>
 
-        <h1>Create Account</h1>
-        <p>Register as a resident to access your account.</p>
+    <div class="auth-card">
+
+        <!-- LOGO -->
+
+        <a
+            href="../index.html"
+            class="auth-logo"
+        >
+            🏛️ Katin-awan
+        </a>
+
+
+        <!-- TITLE -->
+
+        <h1>
+            Create Account
+        </h1>
+
+
+        <!-- REGISTRATION FORM -->
 
         <form id="registerForm">
-            <label>Full Name</label>
-            <input type="text" id="fullName" placeholder="Enter your full name" required>
 
-            <label>Email Address</label>
-            <input type="email" id="email" placeholder="Enter your email" required>
 
-            <label>Password</label>
-            <input type="password" id="password" placeholder="Create a password" required>
+            <!-- FULL NAME -->
 
-            <button type="submit">Create Account</button>
+            <label for="fullName">
+                Full Name
+            </label>
+
+            <input
+                type="text"
+                id="fullName"
+                placeholder="Enter your full name"
+                autocomplete="name"
+                required
+            >
+
+
+            <!-- AGE -->
+
+            <label for="age">
+                Age
+            </label>
+
+            <input
+                type="number"
+                id="age"
+                placeholder="Enter your age"
+                min="0"
+                max="120"
+                required
+            >
+
+
+            <!-- GENDER -->
+
+            <label for="gender">
+                Gender
+            </label>
+
+            <select
+                id="gender"
+                required
+            >
+
+                <option value="">
+                    Select your gender
+                </option>
+
+                <option value="Male">
+                    Male
+                </option>
+
+                <option value="Female">
+                    Female
+                </option>
+
+            </select>
+
+
+            <!-- PWD -->
+
+            <label for="isPwd">
+                Person with Disability (PWD)
+            </label>
+
+            <select
+                id="isPwd"
+                required
+            >
+
+                <option value="">
+                    Select an option
+                </option>
+
+                <option value="false">
+                    No
+                </option>
+
+                <option value="true">
+                    Yes
+                </option>
+
+            </select>
+
+
+
+            <!-- =========================================
+                 ADDRESS PICKER
+            ========================================== -->
+
+            <div class="register-section-title">
+                Residential Address
+            </div>
+
+           
+
+            <label>
+                Region / Province / City / Barangay
+            </label>
+
+
+            <button
+                type="button"
+                id="openAddressPicker"
+                class="address-picker-trigger"
+            >
+
+                <span>
+
+                    <span
+                        id="addressPickerText"
+                        class="address-picker-placeholder"
+                    >
+                        Select your address
+                    </span>
+
+                </span>
+
+                <span class="address-picker-arrow">
+                    ›
+                </span>
+
+            </button>
+
+
+            <!-- HIDDEN ADDRESS VALUES -->
+
+            <input
+                type="hidden"
+                id="region"
+            >
+
+            <input
+                type="hidden"
+                id="province"
+            >
+
+            <input
+                type="hidden"
+                id="cityMunicipality"
+            >
+
+            <input
+                type="hidden"
+                id="organizationId"
+            >
+
+            <input
+                type="hidden"
+                id="barangay"
+            >
+
+
+            <!-- STREET -->
+
+            <label for="streetAddress">
+                Street / Purok / Sitio / House No.
+            </label>
+
+            <input
+                type="text"
+                id="streetAddress"
+                placeholder="Enter street, purok, sitio, or house number"
+                autocomplete="street-address"
+                required
+            >
+
+
+
+            <!-- =========================================
+                 ACCOUNT
+            ========================================== -->
+
+            <div class="register-section-title">
+                Account Information
+            </div>
+
+
+            <!-- EMAIL -->
+
+            <label for="email">
+                Email Address
+            </label>
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Enter your email"
+                autocomplete="email"
+                required
+            >
+
+
+            <!-- PASSWORD -->
+
+            <label for="password">
+                Password
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Create a password"
+                autocomplete="new-password"
+                minlength="6"
+                required
+            >
+
+
+            <!-- CONFIRM PASSWORD -->
+
+            <label for="confirmPassword">
+                Confirm Password
+            </label>
+
+            <input
+                type="password"
+                id="confirmPassword"
+                placeholder="Re-enter your password"
+                autocomplete="new-password"
+                minlength="6"
+                required
+            >
+
+
+            <!-- SUBMIT -->
+
+            <button
+                type="submit"
+                id="registerButton"
+            >
+                Create Account
+            </button>
+
         </form>
 
+
+        <!-- LOGIN -->
+
         <div class="auth-links">
-            <p>Already have an account?</p>
-            <a href="login.html">Log In</a>
+
+            <p>
+                Already have an account?
+            </p>
+
+            <a href="login.html">
+                Log In
+            </a>
+
         </div>
 
-        <a href="../index.html" class="back-link">← Back to Home</a>
+
+        <!-- BACK -->
+
+        <a
+            href="../index.html"
+            class="back-link"
+        >
+            ← Back to Home
+        </a>
+
     </div>
+
 </div>
+
+
+
+<!-- =========================================
+     ADDRESS PICKER OVERLAY
+========================================== -->
+
+<div
+    id="addressPickerOverlay"
+    class="address-picker-overlay"
+    aria-hidden="true"
+>
+
+    <div
+        class="address-picker-panel"
+        role="dialog"
+        aria-modal="true"
+    >
+
+
+        <!-- HEADER -->
+
+        <div class="address-picker-header">
+
+            <div>
+
+                <h3 id="addressPickerTitle">
+                    Select Region
+                </h3>
+
+                <p id="addressPickerSubtitle">
+                    Choose your residential address.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="closeAddressPicker"
+                class="address-picker-close"
+                aria-label="Close address picker"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+
+        <!-- BREADCRUMBS -->
+
+        <div
+            id="addressBreadcrumbs"
+            class="address-breadcrumbs"
+        ></div>
+
+
+
+        <!-- SEARCH -->
+
+        <div class="address-search-wrapper">
+
+            <span class="address-search-icon">
+                🔎
+            </span>
+
+            <input
+                type="search"
+                id="addressSearch"
+                placeholder="Search..."
+                autocomplete="off"
+            >
+
+        </div>
+
+
+
+        <!-- OPTIONS -->
+
+        <div
+            id="addressOptions"
+            class="address-options"
+        ></div>
+
+    </div>
+
+</div>
+
+
+
+<!-- SUPABASE -->
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script src="../js/supabase.js"></script>
+
 <script src="../js/auth-nav.js"></script>
+
 <script src="../js/register.js"></script>
 
 </body>
