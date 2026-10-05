@@ -49,8 +49,8 @@ body {
 
 .public-nav a.active,
 .public-nav a:hover {
-    background: #2563eb;
-    color: white;
+    background: #e23dae;
+    color: rgb(0, 0, 0);
 }
 
 .login-link {

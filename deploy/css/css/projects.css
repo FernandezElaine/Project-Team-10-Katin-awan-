@@ -38,6 +38,7 @@
     gap: 24px;
 }
 
+
 .project-full-card {
     background: white;
     border-radius: 16px;
@@ -55,6 +56,7 @@
 .project-full-card p {
     color: #64748b;
 }
+
 
 .project-meta {
     background: #eff6ff;

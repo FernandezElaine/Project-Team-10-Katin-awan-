@@ -1,289 +1,289 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0"
+        >
+
+        <title>Admin Feedback | Katin-awan</title>
+    <link
+        rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
     >
+        <link rel="stylesheet" href="../css/main.css">
+        <link rel="stylesheet" href="../css/dashboard.css">
+        <link rel="stylesheet" href="../css/admin.css">
+    </head>
 
-    <title>Admin Feedback | Katin-awan</title>
-<link
-    rel="icon"
-    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏛️</text></svg>"
->
-    <link rel="stylesheet" href="../css/main.css">
-    <link rel="stylesheet" href="../css/dashboard.css">
-    <link rel="stylesheet" href="../css/admin.css">
-</head>
+    <body>
 
-<body>
-
-<header class="public-nav">
-
-    <a
-        href="admin-dashboard.html"
-        class="public-logo"
-    >
-        🏛️ Katin-awan Admin
-    </a>
-
-    <nav>
-        <a href="admin-dashboard.html">
-            Dashboard
-        </a>
-
-        <a href="admin-projects.html">
-            Projects
-        </a>
-
-        <a href="admin-budget.html">
-            Budget
-        </a>
-
-        <a href="admin-expenses.html">
-            Expenses
-        </a>
-
-        <a href="admin-documents.html">
-            Documents/OCR
-        </a>
-
-        <a href="admin-map.html">
-            Map
-        </a>
+    <header class="public-nav">
 
         <a
-            class="active"
-            href="admin-feedback.html"
+            href="admin-dashboard.html"
+            class="public-logo"
         >
-            Feedback
-        </a>
-    <a href="admin-chat.html">
-Chat Inquiries
-</a>
-
-        <a href="admin-users.html">
-            Users
+            🏛️ Katin-awan Admin
         </a>
 
-        <a href="admin-audit.html">
-            Audit Logs
-        </a>
+        <nav>
+            <a href="admin-dashboard.html">
+                Dashboard
+            </a>
 
-        <button
-            type="button"
-            onclick="adminLogout()"
-            class="logout-btn"
-        >
-            Logout
-        </button>
-    </nav>
-</header>
+            <a href="admin-projects.html">
+                Projects
+            </a>
 
-<section class="public-hero">
+            <a href="admin-budget.html">
+                Budget
+            </a>
 
-    <div>
-        <span class="module-badge">
-            Admin Module
-        </span>
+            <a href="admin-expenses.html">
+                Expenses
+            </a>
 
-        <h1>Manage Feedback</h1>
+            <a href="admin-documents.html">
+                Documents/OCR
+            </a>
 
-        <p>
-            Review concerns, suggestions, complaints,
-            praise, and project-related feedback
-            submitted by residents.
-        </p>
-    </div>
+            <a href="admin-map.html">
+                Map
+            </a>
 
-    <div class="hero-seal">
-        📢
-    </div>
+            <a
+                class="active"
+                href="admin-feedback.html"
+            >
+                Feedback
+            </a>
+        <a href="admin-chat.html">
+    Chat Inquiries
+    </a>
 
-</section>
+            <a href="admin-users.html">
+                Users
+            </a>
 
-<main class="public-container">
+            <a href="admin-audit.html">
+                Audit Logs
+            </a>
 
-    <!-- GLOBAL SEARCH -->
-    <section class="search-bar-section">
+            <button
+                type="button"
+                onclick="adminLogout()"
+                class="logout-btn"
+            >
+                Logout
+            </button>
+        </nav>
+    </header>
 
-        <input
-            type="text"
-            id="adminGlobalSearch"
-            placeholder="🔍 Search projects, expenses, users..."
-            onkeyup="handleAdminGlobalSearch()"
-        >
+    <section class="public-hero">
 
-        <button
-            type="button"
-            class="search-btn"
-            onclick="handleAdminGlobalSearch()"
-        >
-            Search
-        </button>
+        <div>
+            <span class="module-badge">
+                Admin Module
+            </span>
 
-        <div
-            id="adminGlobalSearchResults"
-            class="search-results"
-        ></div>
+            <h1>Manage Feedback</h1>
+
+            <p>
+                Review concerns, suggestions, complaints,
+                praise, and project-related feedback
+                submitted by residents.
+            </p>
+        </div>
+
+        <div class="hero-seal">
+            📢
+        </div>
 
     </section>
 
-    <!-- FEEDBACK STATISTICS -->
-    <section class="public-stats">
+    <main class="public-container">
 
-        <div class="public-stat-card">
-            <div>
-                <p>Total Feedback</p>
-
-                <h3 id="totalFeedback">
-                    0
-                </h3>
-
-                <span class="blue-text">
-                    All submissions
-                </span>
-            </div>
-
-            <div class="stat-icon blue-bg">
-                📢
-            </div>
-        </div>
-
-        <div class="public-stat-card">
-            <div>
-                <p>Resolved</p>
-
-                <h3 id="resolvedFeedback">
-                    0
-                </h3>
-
-                <span class="green-text">
-                    Completed reviews
-                </span>
-            </div>
-
-            <div class="stat-icon green-bg">
-                ✅
-            </div>
-        </div>
-
-        <div class="public-stat-card">
-            <div>
-                <p>Under Review</p>
-
-                <h3 id="reviewFeedback">
-                    0
-                </h3>
-
-                <span class="blue-text">
-                    Being checked
-                </span>
-            </div>
-
-            <div class="stat-icon cyan-bg">
-                🔍
-            </div>
-        </div>
-
-    <div class="public-stat-card">
-    <div>
-        <p>Open</p>
-
-        <h3 id="openFeedback">
-            0
-        </h3>
-
-        <span class="blue-text">
-            New public concerns
-        </span>
-    </div>
-
-    <div class="stat-icon yellow-bg">
-        📬
-    </div>
-</div>
-
-    </section>
-
-    <section class="section-title">
-        <h2>Feedback Records</h2>
-
-     <p>
-    Review resident submissions, provide responses,
-    update their status, and hide inappropriate or
-    abusive feedback when necessary.
-</p>
-    </section>
-
-    <!-- SEARCH AND FILTER -->
-    <section class="tools-card">
-
-        <div class="tools-row">
+        <!-- GLOBAL SEARCH -->
+        <section class="search-bar-section">
 
             <input
                 type="text"
-                id="adminFeedbackSearch"
-                placeholder="Search by subject, category, description, response, or status..."
-                onkeyup="searchAdminFeedback()"
+                id="adminGlobalSearch"
+                placeholder="🔍 Search projects, expenses, users..."
+                onkeyup="handleAdminGlobalSearch()"
             >
-
-      <select
-    id="adminFeedbackFilter"
-    onchange="filterAdminFeedback()"
->
-    <option value="All">
-        All Status
-    </option>
-
-    <option value="Open">
-        Open
-    </option>
-
-    <option value="Under Review">
-        Under Review
-    </option>
-
-    <option value="Resolved">
-        Resolved
-    </option>
-
-    <option value="Hidden">
-        Hidden / Troll / Spam
-    </option>
-</select>
 
             <button
                 type="button"
                 class="search-btn"
-                onclick="loadAdminFeedback()"
+                onclick="handleAdminGlobalSearch()"
             >
-                Refresh
+                Search
             </button>
 
+            <div
+                id="adminGlobalSearchResults"
+                class="search-results"
+            ></div>
+
+        </section>
+
+        <!-- FEEDBACK STATISTICS -->
+        <section class="public-stats">
+
+            <div class="public-stat-card">
+                <div>
+                    <p>Total Feedback</p>
+
+                    <h3 id="totalFeedback">
+                        0
+                    </h3>
+
+                    <span class="blue-text">
+                        All submissions
+                    </span>
+                </div>
+
+                <div class="stat-icon blue-bg">
+                    📢
+                </div>
+            </div>
+
+            <div class="public-stat-card">
+                <div>
+                    <p>Resolved</p>
+
+                    <h3 id="resolvedFeedback">
+                        0
+                    </h3>
+
+                    <span class="green-text">
+                        Completed reviews
+                    </span>
+                </div>
+
+                <div class="stat-icon green-bg">
+                    ✅
+                </div>
+            </div>
+
+            <div class="public-stat-card">
+                <div>
+                    <p>Under Review</p>
+
+                    <h3 id="reviewFeedback">
+                        0
+                    </h3>
+
+                    <span class="blue-text">
+                        Being checked
+                    </span>
+                </div>
+
+                <div class="stat-icon cyan-bg">
+                    🔍
+                </div>
+            </div>
+
+        <div class="public-stat-card">
+        <div>
+            <p>Open</p>
+
+            <h3 id="openFeedback">
+                0
+            </h3>
+
+            <span class="blue-text">
+                New public concerns
+            </span>
         </div>
 
-    </section>
+        <div class="stat-icon yellow-bg">
+            📬
+        </div>
+    </div>
 
-    <!-- FEEDBACK RECORDS -->
-    <section
-        id="feedbackContainer"
-        class="feedback-grid"
+        </section>
+
+        <section class="section-title">
+            <h2>Feedback Records</h2>
+
+        <p>
+        Review resident submissions, provide responses,
+        update their status, and hide inappropriate or
+        abusive feedback when necessary.
+    </p>
+        </section>
+
+        <!-- SEARCH AND FILTER -->
+        <section class="tools-card">
+
+            <div class="tools-row">
+
+                <input
+                    type="text"
+                    id="adminFeedbackSearch"
+                    placeholder="Search by subject, category, description, response, or status..."
+                    onkeyup="searchAdminFeedback()"
+                >
+
+        <select
+        id="adminFeedbackFilter"
+        onchange="filterAdminFeedback()"
     >
-        <div class="document-card">
-            <p>Loading feedback records...</p>
-        </div>
-    </section>
+        <option value="All">
+            All Status
+        </option>
 
-</main>
+        <option value="Open">
+            Open
+        </option>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
-<script src="../js/admin-auth.js"></script>
-<script src="../js/admin-feedback.js"></script>
-<script src="../js/backtotop.js"></script>
+        <option value="Under Review">
+            Under Review
+        </option>
 
-</body>
-</html>
+        <option value="Resolved">
+            Resolved
+        </option>
+
+        <option value="Hidden">
+            Hidden / Troll / Spam
+        </option>
+    </select>
+
+                <button
+                    type="button"
+                    class="search-btn"
+                    onclick="loadAdminFeedback()"
+                >
+                    Refresh
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- FEEDBACK RECORDS -->
+        <section
+            id="feedbackContainer"
+            class="feedback-grid"
+        >
+            <div class="document-card">
+                <p>Loading feedback records...</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="../js/supabase.js"></script>
+    <script src="../js/admin-auth.js"></script>
+    <script src="../js/admin-feedback.js"></script>
+    <script src="../js/backtotop.js"></script>
+
+    </body>
+    </html>

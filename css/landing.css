@@ -87,7 +87,7 @@ body {
     color: #93c5fd;
 }
 
-/* HERO */
+
 .landing-hero {
     width: 94%;
     max-width: 1400px;
@@ -379,16 +379,15 @@ body {
     width: 94%;
     max-width: 1400px;
     margin: 0 auto 70px;
-    display: grid;
-    grid-template-columns: 1.2fr 0.8fr;
-    gap: 28px;
+    display: block;
 }
 
 .about-text {
+    width: 100%;
     background: white;
     border: 1px solid #dbeafe;
     border-radius: 18px;
-    padding: 36px;
+    padding: 45px;
     box-shadow: 0 4px 15px rgba(30, 58, 138, 0.05);
     border-left: 5px solid #2563eb;
 }

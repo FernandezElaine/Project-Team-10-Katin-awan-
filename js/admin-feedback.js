@@ -12,7 +12,11 @@ let filteredAdminFeedback = [];
 let adminFeedbackLoading = false;
 
 document.addEventListener("DOMContentLoaded", () => {
+
     loadAdminFeedback();
+
+    listenForFeedbackRealtime();
+
 });
 
 /*
@@ -66,6 +70,8 @@ async function loadAdminFeedback() {
         );
 
         applyAdminFeedbackFilters();
+
+        loadAdminFeedback();
 
     } catch (error) {
         console.error(
@@ -193,11 +199,11 @@ function updateAdminFeedbackStats(records) {
         ) === "under review"
     ).length;
 
-    const pending = records.filter(record =>
-        normalizeAdminFeedbackStatus(
-            record.status
-        ) === "open"
-    ).length;
+const openCount = records.filter(record =>
+    normalizeAdminFeedbackStatus(
+        record.status
+    ) === "open"
+).length;
 
     setAdminFeedbackText(
         "totalFeedback",
@@ -214,9 +220,9 @@ function updateAdminFeedbackStats(records) {
         underReview
     );
 
-   setAdminFeedbackText(
+  setAdminFeedbackText(
     "openFeedback",
-    open
+    openCount
 );
 }
 
@@ -960,7 +966,56 @@ function setAdminFeedbackText(id, value) {
             String(value);
     }
 }
+function listenForFeedbackRealtime(){
 
+    supabaseClient
+    .channel("feedback-live-updates")
+    .on(
+        "postgres_changes",
+        {
+            event: "INSERT",
+            schema: "public",
+            table: "feedback"
+        },
+        payload => {
+            console.log("New feedback:", payload);
+            loadAdminFeedback();
+        }
+    )
+    .on(
+        "postgres_changes",
+        {
+            event: "UPDATE",
+            schema: "public",
+            table: "feedback"
+        },
+        payload => {
+            console.log("Feedback updated:", payload);
+            loadAdminFeedback();
+        }
+    )
+    .on(
+        "postgres_changes",
+        {
+            event: "DELETE",
+            schema: "public",
+            table: "feedback"
+        },
+        payload => {
+            console.log("Feedback deleted:", payload);
+            loadAdminFeedback();
+        }
+    )
+    .subscribe(status => {
+
+        console.log(
+            "Feedback realtime:",
+            status
+        );
+
+    });
+
+}
 /*
  * Make functions available to the HTML onclick attributes.
  */
@@ -972,3 +1027,6 @@ window.searchAdminFeedback =
 
 window.filterAdminFeedback =
     filterAdminFeedback;
+
+    window.listenForFeedbackRealtime =
+    listenForFeedbackRealtime;
