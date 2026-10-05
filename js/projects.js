@@ -466,12 +466,7 @@ function updateProjectScopeDisplay(
             break;
 
 
-        case "legacy":
-
-            element.textContent =
-                "Legacy account — showing public project information. Complete your profile and barangay assignment to receive barangay-specific access.";
-
-            break;
+      
 
 
         case "resident":
@@ -930,8 +925,11 @@ function createProjectCard(
             `;
 
 
-    return `
-        <article class="project-full-card">
+return `
+    <article
+        class="project-full-card"
+        data-project-id="${Number(project.id)}"
+    >
 
             ${photoMarkup}
 

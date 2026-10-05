@@ -36,7 +36,12 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
+    
 }
+.project-full-card[data-project-id="17"] {
+    background: white;
+}
+
 
 .project-full-card {
     background: white;
@@ -970,7 +975,7 @@
 
 
 }
-/* Resident project cards */
+
 .project-full-card {
     overflow: hidden;
 }
@@ -1047,7 +1052,7 @@
 .project-card-details div {
     padding: 11px;
     border-radius: 10px;
-    background: #f8fafc;
+    background: #f9fcf8;
 }
 
 .project-card-details small {

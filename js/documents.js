@@ -1,59 +1,29 @@
-
 let publicDocuments = [];
+
 let transparencyLogs = [];
 
-
-/*
- * Admin Documents/OCR currently stores files
- * in this Supabase Storage bucket.
- */
-const DOCUMENT_STORAGE_BUCKET =
-    "ocr-files";
-
-
-
-/* ============================================================
-   INITIALIZATION
-============================================================ */
+const DOCUMENT_STORAGE_BUCKET = "ocr-files";
 
 document.addEventListener(
     "DOMContentLoaded",
     async function () {
-
         await checkLoginAndLoad();
-
     }
 );
 
-
-
-/* ============================================================
-   LOGIN CHECK
-============================================================ */
-
 async function checkLoginAndLoad() {
-
     const loginRequired =
-        document.getElementById(
-            "loginRequired"
-        );
-
+        document.getElementById("loginRequired");
 
     const documentsContent =
-        document.getElementById(
-            "documentsContent"
-        );
-
+        document.getElementById("documentsContent");
 
     if (
         !loginRequired ||
         !documentsContent
     ) {
-
         return;
-
     }
-
 
     const {
         data: {
@@ -61,117 +31,57 @@ async function checkLoginAndLoad() {
         },
         error
     } =
-        await supabaseClient.auth
-            .getSession();
-
+        await supabaseClient.auth.getSession();
 
     if (error) {
-
         console.error(
             "Session check failed:",
             error
         );
 
-
         showLoginRequired();
 
-
         return;
-
     }
-
-
-
-    /* ========================================================
-       NOT LOGGED IN
-    ======================================================== */
 
     if (!session) {
-
         showLoginRequired();
 
-
         return;
-
     }
 
+    loginRequired.style.display = "none";
 
-
-    /* ========================================================
-       LOGGED IN
-    ======================================================== */
-
-    loginRequired.style.display =
-        "none";
-
-
-    documentsContent.style.display =
-        "block";
-
+    documentsContent.style.display = "block";
 
     await loadDocuments();
 
     await loadTransparencyLogs();
-
 }
-
-
-
-/* ============================================================
-   SHOW LOGIN REQUIRED
-============================================================ */
 
 function showLoginRequired() {
-
     const loginRequired =
-        document.getElementById(
-            "loginRequired"
-        );
-
+        document.getElementById("loginRequired");
 
     const documentsContent =
-        document.getElementById(
-            "documentsContent"
-        );
-
+        document.getElementById("documentsContent");
 
     if (loginRequired) {
-
-        loginRequired.style.display =
-            "block";
-
+        loginRequired.style.display = "block";
     }
-
 
     if (documentsContent) {
-
-        documentsContent.style.display =
-            "none";
-
+        documentsContent.style.display = "none";
     }
-
 }
 
-
-
-/* ============================================================
-   LOAD PUBLIC DOCUMENTS
-============================================================ */
-
 async function loadDocuments() {
-
     const documentsList =
-        document.getElementById(
-            "documentsList"
-        );
-
+        document.getElementById("documentsList");
 
     if (!documentsList) {
-
         return;
-
     }
-
 
     documentsList.innerHTML = `
         <div
@@ -184,165 +94,86 @@ async function loadDocuments() {
         </div>
     `;
 
-
     try {
-
-        /* ====================================================
-           NORMAL OFFICIAL DOCUMENTS
-        ==================================================== */
-
         const {
             data: documents,
             error: documentsError
         } =
             await supabaseClient
-
-                .from(
-                    "documents"
-                )
-
-                .select(
-                    "*"
-                )
-
-                .eq(
-                    "is_public",
-                    true
-                )
-
+                .from("documents")
+                .select("*")
+                .eq("is_public", true)
                 .order(
                     "created_at",
                     {
-                        ascending:
-                            false
+                        ascending: false
                     }
                 );
 
-
         if (documentsError) {
-
             throw new Error(
                 "Unable to load official documents: " +
                 documentsError.message
             );
-
         }
-
-
-
-        /* ====================================================
-           PUBLISHED OCR RECORDS
-        ==================================================== */
 
         const {
             data: ocrRecords,
             error: ocrError
         } =
             await supabaseClient
-
-                .from(
-                    "ocr_records"
-                )
-
-                .select(
-                    "*"
-                )
-
-                .eq(
-                    "is_public",
-                    true
-                )
-
+                .from("ocr_records")
+                .select("*")
+                .eq("is_public", true)
                 .order(
                     "created_at",
                     {
-                        ascending:
-                            false
+                        ascending: false
                     }
                 );
 
-
         if (ocrError) {
-
             throw new Error(
                 "Unable to load published OCR records: " +
                 ocrError.message
             );
-
         }
-
-
-
-        /* ====================================================
-           NORMALIZE OFFICIAL DOCUMENTS
-        ==================================================== */
 
         const normalizedDocuments =
             (
-                documents ||
-                []
+                documents || []
             ).map(
-                function (
-                    documentRecord
-                ) {
-
+                function (documentRecord) {
                     return {
-
                         ...documentRecord,
-
                         _key:
                             "document-" +
                             documentRecord.id,
-
                         record_type:
                             "document",
-
                         category:
                             documentRecord.category ||
                             "Other",
-
                         title:
                             documentRecord.title ||
                             "Untitled Document",
-
                         description:
                             documentRecord.description ||
                             "No description provided."
-
                     };
-
                 }
             );
 
-
-
-        /* ====================================================
-           NORMALIZE OCR RECORDS
-        ==================================================== */
-
         const normalizedOCR =
             (
-                ocrRecords ||
-                []
+                ocrRecords || []
             ).map(
-                function (
-                    ocr
-                ) {
-
-                    /*
-                     * Resident file priority:
-                     *
-                     * 1. Corrected PDF
-                     * 2. OCR generated PDF
-                     * 3. Original file
-                     */
-
+                function (ocr) {
                     const preferredPath =
                         ocr.corrected_pdf_path ||
                         ocr.ocr_pdf_path ||
                         ocr.original_file_path ||
                         null;
-
 
                     const preferredURL =
                         ocr.corrected_pdf_url ||
@@ -350,162 +181,100 @@ async function loadDocuments() {
                         ocr.file_url ||
                         null;
 
-
                     let description =
                         ocr.review_notes ||
                         ocr.message ||
                         "";
 
-
                     if (!description) {
-
                         if (ocr.corrected_text) {
-
                             description =
                                 "Reviewed and corrected OCR document.";
-
                         } else {
-
                             description =
                                 "Published OCR document.";
-
                         }
-
                     }
 
-
                     return {
-
                         _key:
                             "ocr-" +
                             ocr.id,
-
                         id:
                             ocr.id,
-
                         source_id:
                             ocr.id,
-
                         record_type:
                             "ocr",
-
                         title:
                             ocr.file_name ||
                             "OCR Document",
-
                         category:
                             "OCR Record",
-
                         description:
                             description,
-
                         created_at:
                             ocr.created_at,
-
                         file_path:
                             preferredPath,
-
                         file_url:
                             preferredURL,
-
                         detected_vendor:
                             ocr.detected_vendor ||
                             "",
-
                         detected_amount:
                             ocr.detected_amount,
-
                         confidence:
                             ocr.confidence,
-
                         review_status:
                             ocr.review_status ||
                             ocr.status ||
                             "",
-
                         corrected_text:
                             ocr.corrected_text ||
                             "",
-
                         extracted_text:
                             ocr.extracted_text ||
                             ""
-
                     };
-
                 }
             );
 
-
-
-        /* ====================================================
-           COMBINE
-        ==================================================== */
-
         publicDocuments = [
-
             ...normalizedDocuments,
-
             ...normalizedOCR
-
         ];
 
-
-
-        /* ====================================================
-           NEWEST FIRST
-        ==================================================== */
-
         publicDocuments.sort(
-            function (
-                a,
-                b
-            ) {
-
+            function (a, b) {
                 const dateA =
                     new Date(
-                        a.created_at ||
-                        0
+                        a.created_at || 0
                     );
-
 
                 const dateB =
                     new Date(
-                        b.created_at ||
-                        0
+                        b.created_at || 0
                     );
 
-
-                return (
-                    dateB -
-                    dateA
-                );
-
+                return dateB - dateA;
             }
         );
-
 
         renderDocuments(
             publicDocuments
         );
-
-
-    } catch (
-        error
-    ) {
-
+    } catch (error) {
         console.error(
             "Failed to load public documents:",
             error
         );
-
 
         documentsList.innerHTML = `
             <div
                 class="public-panel"
                 style="grid-column:1/-1;"
             >
-
                 <p style="color:red;">
                     Failed to load documents:
                     ${escapeHTML(
@@ -513,79 +282,47 @@ async function loadDocuments() {
                         "Unknown error."
                     )}
                 </p>
-
             </div>
         `;
-
     }
-
 }
 
-
-
-/* ============================================================
-   RENDER DOCUMENTS
-============================================================ */
-
-function renderDocuments(
-    docs
-) {
-
+function renderDocuments(docs) {
     const documentsList =
-        document.getElementById(
-            "documentsList"
-        );
-
+        document.getElementById("documentsList");
 
     if (!documentsList) {
-
         return;
-
     }
-
 
     if (
         !docs ||
         docs.length === 0
     ) {
-
         documentsList.innerHTML = `
             <div
                 class="public-panel"
                 style="grid-column:1/-1;"
             >
-
                 <p>
                     No public documents found.
                 </p>
-
             </div>
         `;
 
-
         return;
-
     }
-
 
     documentsList.innerHTML =
         docs
             .map(
-                function (
-                    doc
-                ) {
-
+                function (doc) {
                     const isOCR =
-                        doc.record_type ===
-                        "ocr";
+                        doc.record_type === "ocr";
 
-
-                    let extraDetails =
-                        "";
-
+                    let extraDetails = "";
 
                     if (isOCR) {
-
                         const vendor =
                             doc.detected_vendor
                                 ? `
@@ -593,7 +330,6 @@ function renderDocuments(
                                         <b>
                                             Vendor:
                                         </b>
-
                                         ${escapeHTML(
                                             doc.detected_vendor
                                         )}
@@ -601,29 +337,21 @@ function renderDocuments(
                                 `
                                 : "";
 
-
                         const amount =
-                            doc.detected_amount !==
-                                null &&
-                            doc.detected_amount !==
-                                undefined &&
-                            doc.detected_amount !==
-                                ""
-
+                            doc.detected_amount !== null &&
+                            doc.detected_amount !== undefined &&
+                            doc.detected_amount !== ""
                                 ? `
                                     <p>
                                         <b>
                                             Amount:
                                         </b>
-
                                         ${formatPeso(
                                             doc.detected_amount
                                         )}
                                     </p>
                                 `
-
                                 : "";
-
 
                         const status =
                             doc.review_status
@@ -632,7 +360,6 @@ function renderDocuments(
                                         <b>
                                             Review Status:
                                         </b>
-
                                         ${escapeHTML(
                                             doc.review_status
                                         )}
@@ -640,36 +367,27 @@ function renderDocuments(
                                 `
                                 : "";
 
-
                         extraDetails =
                             vendor +
                             amount +
                             status;
-
                     }
-
 
                     return `
                         <div class="document-card">
-
                             <div class="doc-icon">
-
                                 ${getDocumentIcon(
                                     doc.category
                                 )}
-
                             </div>
 
-
                             <div>
-
                                 <h3>
                                     ${escapeHTML(
                                         doc.title ||
                                         "Untitled Document"
                                     )}
                                 </h3>
-
 
                                 <p>
                                     Updated:
@@ -678,7 +396,6 @@ function renderDocuments(
                                     )}
                                 </p>
 
-
                                 <span>
                                     ${escapeHTML(
                                         doc.category ||
@@ -686,21 +403,15 @@ function renderDocuments(
                                     )}
                                 </span>
 
-
                                 ${extraDetails}
 
-
                                 <p class="document-preview">
-
                                     ${escapeHTML(
                                         doc.description ||
                                         "No description provided."
                                     )}
-
                                 </p>
-
                             </div>
-
 
                             <button
                                 type="button"
@@ -710,42 +421,25 @@ function renderDocuments(
                             >
                                 View
                             </button>
-
                         </div>
                     `;
-
                 }
             )
             .join("");
-
 }
 
-
-
-/* ============================================================
-   SEARCH DOCUMENTS
-============================================================ */
-
 function searchDocuments() {
-
     const searchInput =
-        document.getElementById(
-            "documentSearch"
-        );
-
+        document.getElementById("documentSearch");
 
     if (!searchInput) {
-
         return;
-
     }
-
 
     const keyword =
         searchInput.value
             .toLowerCase()
             .trim();
-
 
     const selectedCategory =
         document.getElementById(
@@ -753,165 +447,93 @@ function searchDocuments() {
         )?.value ||
         "All";
 
-
-    let filtered =
-        [
-            ...publicDocuments
-        ];
-
-
-
-    /* ========================================================
-       CATEGORY FILTER
-    ======================================================== */
+    let filtered = [
+        ...publicDocuments
+    ];
 
     if (
         selectedCategory !==
         "All"
     ) {
-
         filtered =
             filtered.filter(
-                function (
-                    doc
-                ) {
-
+                function (doc) {
                     return (
                         doc.category ===
                         selectedCategory
                     );
-
                 }
             );
-
     }
 
-
-
-    /* ========================================================
-       SEARCH
-    ======================================================== */
-
     if (keyword) {
-
         filtered =
             filtered.filter(
-                function (
-                    doc
-                ) {
-
+                function (doc) {
                     const title =
                         String(
                             doc.title ||
                             ""
-                        )
-                            .toLowerCase();
-
+                        ).toLowerCase();
 
                     const category =
                         String(
                             doc.category ||
                             ""
-                        )
-                            .toLowerCase();
-
+                        ).toLowerCase();
 
                     const description =
                         String(
                             doc.description ||
                             ""
-                        )
-                            .toLowerCase();
-
+                        ).toLowerCase();
 
                     const vendor =
                         String(
                             doc.detected_vendor ||
                             ""
-                        )
-                            .toLowerCase();
-
+                        ).toLowerCase();
 
                     const status =
                         String(
                             doc.review_status ||
                             ""
-                        )
-                            .toLowerCase();
-
+                        ).toLowerCase();
 
                     return (
-
                         title.includes(
                             keyword
-                        )
-
-                        ||
-
+                        ) ||
                         category.includes(
                             keyword
-                        )
-
-                        ||
-
+                        ) ||
                         description.includes(
                             keyword
-                        )
-
-                        ||
-
+                        ) ||
                         vendor.includes(
                             keyword
-                        )
-
-                        ||
-
+                        ) ||
                         status.includes(
                             keyword
                         )
-
                     );
-
                 }
             );
-
     }
-
 
     renderDocuments(
         filtered
     );
-
 }
-
-
-
-/* ============================================================
-   FILTER DOCUMENTS
-============================================================ */
 
 function filterDocuments() {
-
     searchDocuments();
-
 }
 
-
-
-/* ============================================================
-   VIEW DOCUMENT DETAILS
-============================================================ */
-
-function viewDocumentDetails(
-    key
-) {
-
+function viewDocumentDetails(key) {
     const doc =
         publicDocuments.find(
-            function (
-                item
-            ) {
-
+            function (item) {
                 return (
                     String(
                         item._key
@@ -920,112 +542,76 @@ function viewDocumentDetails(
                         key
                     )
                 );
-
             }
         );
 
-
     if (!doc) {
-
         alert(
             "Document not found."
         );
 
-
         return;
-
     }
-
 
     const modal =
         document.getElementById(
             "documentModal"
         );
 
-
     if (!modal) {
-
         return;
-
     }
-
 
     const title =
         document.getElementById(
             "documentModalTitle"
         );
 
-
     const description =
         document.getElementById(
             "documentModalDescription"
         );
-
 
     const date =
         document.getElementById(
             "documentModalDate"
         );
 
-
     const category =
         document.getElementById(
             "documentModalCategory"
         );
-
 
     const viewBtn =
         document.getElementById(
             "documentModalViewBtn"
         );
 
-
-
-    /* ========================================================
-       TITLE
-    ======================================================== */
-
     if (title) {
-
         title.textContent =
             doc.title ||
             "Untitled Document";
-
     }
 
-
-
-    /* ========================================================
-       DESCRIPTION
-    ======================================================== */
-
     if (description) {
-
         let modalDescription =
             doc.description ||
             "No description provided.";
-
 
         if (
             doc.record_type ===
             "ocr"
         ) {
-
-            const details =
-                [];
-
+            const details = [];
 
             if (
                 doc.detected_vendor
             ) {
-
                 details.push(
                     "Vendor: " +
                     doc.detected_vendor
                 );
-
             }
-
 
             if (
                 doc.detected_amount !==
@@ -1035,153 +621,149 @@ function viewDocumentDetails(
                 doc.detected_amount !==
                     ""
             ) {
-
                 details.push(
                     "Amount: " +
                     formatPeso(
                         doc.detected_amount
                     )
                 );
-
             }
-
 
             if (
                 doc.review_status
             ) {
-
                 details.push(
                     "Status: " +
                     doc.review_status
                 );
-
             }
-
 
             if (
                 details.length
             ) {
-
                 modalDescription +=
                     "\n\n" +
                     details.join(
                         "\n"
                     );
-
             }
-
         }
-
 
         description.textContent =
             modalDescription;
 
-
         description.style.whiteSpace =
             "pre-line";
-
     }
 
-
-
-    /* ========================================================
-       DATE
-    ======================================================== */
-
     if (date) {
-
         date.textContent =
             "Updated: " +
             formatDate(
                 doc.created_at
             );
-
     }
 
-
-
-    /* ========================================================
-       CATEGORY
-    ======================================================== */
-
     if (category) {
-
         category.textContent =
             doc.category ||
             "Other";
-
     }
 
-
-
-    /* ========================================================
-       OPEN DOCUMENT BUTTON
-    ======================================================== */
-
     if (viewBtn) {
-
         const hasFile =
             Boolean(
                 doc.file_path ||
                 doc.file_url
             );
 
-
         if (hasFile) {
-
             viewBtn.style.display =
                 "inline-block";
 
-
             viewBtn.onclick =
                 async function () {
-
                     await openResidentDocument(
                         doc
                     );
-
                 };
-
         } else {
-
             viewBtn.style.display =
                 "none";
-
         }
-
     }
-
 
     modal.classList.add(
         "active"
     );
-
 }
 
+async function logResidentDocumentView(doc) {
+    try {
+        const {
+            data: {
+                user
+            },
+            error: userError
+        } =
+            await supabaseClient.auth.getUser();
 
+        if (
+            userError ||
+            !user
+        ) {
+            console.warn(
+                "Resident audit log skipped: no logged-in user."
+            );
 
-/* ============================================================
-   OPEN RESIDENT DOCUMENT
-============================================================ */
+            return;
+        }
 
-async function openResidentDocument(
-    doc
-) {
+        const {
+            error
+        } =
+            await supabaseClient
+                .from("audit_logs")
+                .insert([
+                    {
+                        user_id:
+                            user.id,
+                        admin_name:
+                            "Resident",
+                        action:
+                            "Viewed Document",
+                        module:
+                            "Documents",
+                        details:
+                            "Resident viewed: " +
+                            (
+                                doc.title ||
+                                "Untitled Document"
+                            ),
+                        public_visible:
+                            true
+                    }
+                ]);
 
-    let pendingWindow =
-        null;
+        if (error) {
+            console.warn(
+                "Resident document audit log failed:",
+                error.message
+            );
+        }
+    } catch (error) {
+        console.warn(
+            "Resident document audit log error:",
+            error
+        );
+    }
+}
 
+async function openResidentDocument(doc) {
+    let pendingWindow = null;
 
     try {
-
-        let url =
-            "";
-
-
-        /*
-         * Open the blank tab immediately so the browser
-         * does not block it after awaiting Supabase.
-         */
+        let url = "";
 
         pendingWindow =
             window.open(
@@ -1189,120 +771,78 @@ async function openResidentDocument(
                 "_blank"
             );
 
-
-
-        /* ====================================================
-           STORAGE PATH
-        ==================================================== */
-
         if (
             doc.file_path
         ) {
-
             const {
                 data,
                 error
             } =
                 await supabaseClient
                     .storage
-
                     .from(
                         DOCUMENT_STORAGE_BUCKET
                     )
-
                     .createSignedUrl(
                         doc.file_path,
                         300
                     );
 
-
             if (
                 error ||
                 !data?.signedUrl
             ) {
-
                 throw new Error(
                     error?.message ||
                     "Unable to create document link."
                 );
-
             }
-
 
             url =
                 data.signedUrl;
-
-        }
-
-
-
-        /* ====================================================
-           LEGACY / EXTERNAL URL
-        ==================================================== */
-
-        else if (
+        } else if (
             doc.file_url
         ) {
-
             url =
                 validateDocumentURL(
                     doc.file_url
                 );
-
         }
 
-
-
         if (!url) {
-
             throw new Error(
                 "No document file is available."
             );
-
         }
 
-
-
-        /* ====================================================
-           OPEN
-        ==================================================== */
+        await logResidentDocumentView(
+            doc
+        );
 
         if (pendingWindow) {
-
             pendingWindow.opener =
                 null;
 
-
             pendingWindow.location.href =
                 url;
-
         } else {
-
             window.open(
                 url,
                 "_blank",
                 "noopener,noreferrer"
             );
-
         }
 
-
-    } catch (
-        error
-    ) {
-
+        await loadTransparencyLogs();
+    } catch (error) {
         if (pendingWindow) {
-
             pendingWindow.close();
-
         }
-
 
         console.error(
             "Resident document open error:",
             error
         );
-
 
         alert(
             "Unable to open this document:\n\n" +
@@ -1311,88 +851,50 @@ async function openResidentDocument(
                 "Unknown error."
             )
         );
-
     }
-
 }
 
-
-
-/* ============================================================
-   CLOSE DOCUMENT MODAL
-============================================================ */
-
 function closeDocumentModal() {
-
     const modal =
         document.getElementById(
             "documentModal"
         );
 
-
     if (modal) {
-
         modal.classList.remove(
             "active"
         );
-
     }
-
 }
-
-
-
-/* ============================================================
-   CLOSE MODAL WHEN CLICKING OUTSIDE
-============================================================ */
 
 document.addEventListener(
     "click",
-    function (
-        event
-    ) {
-
+    function (event) {
         const modal =
             document.getElementById(
                 "documentModal"
             );
 
-
         if (
             modal &&
-            event.target ===
-                modal
+            event.target === modal
         ) {
-
             modal.classList.remove(
                 "active"
             );
-
         }
-
     }
 );
 
-
-
-/* ============================================================
-   TRANSPARENCY LOGS
-============================================================ */
-
 async function loadTransparencyLogs() {
-
     const logsList =
         document.getElementById(
             "transparencyLogsList"
         );
 
-
     if (!logsList) {
-
         return;
-
     }
-
 
     logsList.innerHTML = `
         <div
@@ -1405,26 +907,17 @@ async function loadTransparencyLogs() {
         </div>
     `;
 
-
     const {
         data,
         error
     } =
         await supabaseClient
-
-            .from(
-                "audit_logs"
-            )
-
-            .select(
-                "*"
-            )
-
+            .from("audit_logs")
+            .select("*")
             .eq(
                 "public_visible",
                 true
             )
-
             .order(
                 "created_at",
                 {
@@ -1433,133 +926,99 @@ async function loadTransparencyLogs() {
                 }
             );
 
-
     if (error) {
-
         console.error(
             "Failed to load transparency logs:",
             error
         );
 
-
         logsList.innerHTML = `
             <div class="public-panel">
-
                 <p style="color:red;">
-
                     Failed to load transparency logs:
-
                     ${escapeHTML(
                         error.message
                     )}
-
                 </p>
-
             </div>
         `;
 
-
         return;
-
     }
 
-
     transparencyLogs =
-        data ||
-        [];
-
+        data || [];
 
     renderTransparencyLogs(
         transparencyLogs
     );
-
 }
 
-
-
-/* ============================================================
-   RENDER TRANSPARENCY LOGS
-============================================================ */
-
-function renderTransparencyLogs(
-    logs
-) {
-
+function renderTransparencyLogs(logs) {
     const logsList =
         document.getElementById(
             "transparencyLogsList"
         );
 
-
     if (!logsList) {
-
         return;
-
     }
-
 
     if (
         !logs ||
         logs.length === 0
     ) {
-
         logsList.innerHTML = `
             <div
                 class="public-panel"
                 style="grid-column:1/-1;"
             >
-
                 <p>
                     No public transparency logs found.
                 </p>
-
             </div>
         `;
 
-
         return;
-
     }
-
 
     logsList.innerHTML =
         logs
             .map(
-                function (
-                    log
-                ) {
+                function (log) {
+                    const isResident =
+                        String(
+                            log.admin_name ||
+                            ""
+                        ).toLowerCase() ===
+                        "resident";
 
-                    const adminName =
+                    const actorLabel =
+                        isResident
+                            ? "Activity by:"
+                            : "Changed by:";
+
+                    const actorName =
                         log.admin_name ||
                         "Administrator";
 
-
                     return `
                         <div class="document-card">
-
                             <div class="doc-icon">
-
                                 ${getLogIcon(
                                     log.module
                                 )}
-
                             </div>
 
-
                             <div>
-
                                 <h3>
-
                                     ${escapeHTML(
                                         log.action ||
                                         "System Activity"
                                     )}
-
                                 </h3>
 
-
                                 <p>
-
                                     <b>
                                         Module:
                                     </b>
@@ -1568,78 +1027,52 @@ function renderTransparencyLogs(
                                         log.module ||
                                         "General"
                                     )}
-
                                 </p>
 
-
                                 <p>
-
                                     <b>
-                                        Changed by:
+                                        ${actorLabel}
                                     </b>
 
                                     ${escapeHTML(
-                                        adminName
+                                        actorName
                                     )}
-
                                 </p>
 
-
                                 <p>
-
                                     ${escapeHTML(
                                         log.details ||
                                         "No details provided."
                                     )}
-
                                 </p>
 
-
                                 <span>
-
                                     ${formatDateTime(
                                         log.created_at
                                     )}
-
                                 </span>
-
                             </div>
-
                         </div>
                     `;
-
                 }
             )
             .join("");
-
 }
 
-
-
-/* ============================================================
-   SEARCH TRANSPARENCY LOGS
-============================================================ */
-
 function searchTransparencyLogs() {
-
     const searchInput =
         document.getElementById(
             "logSearch"
         );
 
-
     if (!searchInput) {
-
         return;
-
     }
-
 
     const keyword =
         searchInput.value
             .toLowerCase()
             .trim();
-
 
     const selectedModule =
         document.getElementById(
@@ -1647,60 +1080,34 @@ function searchTransparencyLogs() {
         )?.value ||
         "All";
 
-
-    let filtered =
-        [
-            ...transparencyLogs
-        ];
-
-
-
-    /* ========================================================
-       MODULE FILTER
-    ======================================================== */
+    let filtered = [
+        ...transparencyLogs
+    ];
 
     if (
         selectedModule !==
         "All"
     ) {
-
         filtered =
             filtered.filter(
-                function (
-                    log
-                ) {
-
+                function (log) {
                     return (
                         log.module ===
                         selectedModule
                     );
-
                 }
             );
-
     }
 
-
-
-    /* ========================================================
-       SEARCH
-    ======================================================== */
-
     if (keyword) {
-
         filtered =
             filtered.filter(
-                function (
-                    log
-                ) {
-
+                function (log) {
                     const adminName =
                         log.admin_name ||
                         "Administrator";
 
-
                     return (
-
                         String(
                             log.action ||
                             ""
@@ -1708,10 +1115,7 @@ function searchTransparencyLogs() {
                             .toLowerCase()
                             .includes(
                                 keyword
-                            )
-
-                        ||
-
+                            ) ||
                         String(
                             log.module ||
                             ""
@@ -1719,10 +1123,7 @@ function searchTransparencyLogs() {
                             .toLowerCase()
                             .includes(
                                 keyword
-                            )
-
-                        ||
-
+                            ) ||
                         String(
                             log.details ||
                             ""
@@ -1730,10 +1131,7 @@ function searchTransparencyLogs() {
                             .toLowerCase()
                             .includes(
                                 keyword
-                            )
-
-                        ||
-
+                            ) ||
                         String(
                             adminName ||
                             ""
@@ -1742,314 +1140,163 @@ function searchTransparencyLogs() {
                             .includes(
                                 keyword
                             )
-
                     );
-
                 }
             );
-
     }
-
 
     renderTransparencyLogs(
         filtered
     );
-
 }
-
-
-
-/* ============================================================
-   FILTER TRANSPARENCY LOGS
-============================================================ */
 
 function filterTransparencyLogs() {
-
     searchTransparencyLogs();
-
 }
 
-
-
-/* ============================================================
-   FORMAT DATE
-============================================================ */
-
-function formatDate(
-    dateValue
-) {
-
+function formatDate(dateValue) {
     if (!dateValue) {
-
         return "N/A";
-
     }
-
 
     const date =
         new Date(
             dateValue
         );
 
-
     if (
         Number.isNaN(
             date.getTime()
         )
     ) {
-
         return "N/A";
-
     }
-
 
     return date.toLocaleDateString(
         "en-PH",
         {
-            year:
-                "numeric",
-
-            month:
-                "short",
-
-            day:
-                "numeric"
+            year: "numeric",
+            month: "short",
+            day: "numeric"
         }
     );
-
 }
 
-
-
-/* ============================================================
-   FORMAT DATE + TIME
-============================================================ */
-
-function formatDateTime(
-    dateValue
-) {
-
+function formatDateTime(dateValue) {
     if (!dateValue) {
-
         return "N/A";
-
     }
-
 
     const date =
         new Date(
             dateValue
         );
 
-
     if (
         Number.isNaN(
             date.getTime()
         )
     ) {
-
         return "N/A";
-
     }
-
 
     return date.toLocaleString(
         "en-PH",
         {
-            year:
-                "numeric",
-
-            month:
-                "short",
-
-            day:
-                "numeric",
-
-            hour:
-                "2-digit",
-
-            minute:
-                "2-digit"
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
         }
     );
-
 }
 
-
-
-/* ============================================================
-   DOCUMENT ICON
-============================================================ */
-
-function getDocumentIcon(
-    category
-) {
-
-    switch (
-        category
-    ) {
-
+function getDocumentIcon(category) {
+    switch (category) {
         case "Financial Report":
-
             return "📊";
-
 
         case "Budget Document":
-
             return "💰";
-
 
         case "Receipt":
-
             return "🧾";
 
-
         case "Project Document":
-
             return "🏗️";
-
 
         case "Contract":
-
             return "📑";
 
-
         case "OCR Record":
-
             return "🔍";
 
-
         default:
-
             return "📄";
-
     }
-
 }
 
-
-
-/* ============================================================
-   LOG ICON
-============================================================ */
-
-function getLogIcon(
-    module
-) {
-
-    switch (
-        module
-    ) {
-
+function getLogIcon(module) {
+    switch (module) {
         case "Projects":
-
             return "🏗️";
 
-
         case "Documents":
-
             return "📄";
 
-
         case "Expenses":
-
             return "💰";
 
-
         case "Feedback":
-
             return "📢";
 
-
         case "Budget":
-
             return "📊";
 
-
         case "Users":
-
             return "👥";
 
-
         case "Documents/OCR":
-
             return "🔍";
 
-
         default:
-
             return "📋";
-
     }
-
 }
 
-
-
-/* ============================================================
-   PESO FORMAT
-============================================================ */
-
-function formatPeso(
-    value
-) {
-
+function formatPeso(value) {
     const number =
-        Number(
-            value
-        );
-
+        Number(value);
 
     if (
         !Number.isFinite(
             number
         )
     ) {
-
         return "₱0.00";
-
     }
-
 
     return new Intl.NumberFormat(
         "en-PH",
         {
-            style:
-                "currency",
-
-            currency:
-                "PHP",
-
-            minimumFractionDigits:
-                2,
-
-            maximumFractionDigits:
-                2
+            style: "currency",
+            currency: "PHP",
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         }
     ).format(
         number
     );
-
 }
 
-
-
-/* ============================================================
-   VALIDATE URL
-============================================================ */
-
-function validateDocumentURL(
-    value
-) {
-
+function validateDocumentURL(value) {
     try {
-
         const url =
             new URL(
                 value,
                 window.location.origin
             );
-
 
         if (
             url.protocol !==
@@ -2057,83 +1304,47 @@ function validateDocumentURL(
             url.protocol !==
                 "https:"
         ) {
-
             throw new Error(
                 "Invalid document URL."
             );
-
         }
 
-
         return url.href;
-
-
-    } catch (
-        error
-    ) {
-
+    } catch (error) {
         throw new Error(
             "The stored document link is invalid."
         );
-
     }
-
 }
 
-
-
-/* ============================================================
-   ESCAPE HTML
-============================================================ */
-
-function escapeHTML(
-    value
-) {
-
+function escapeHTML(value) {
     return String(
-        value ??
-        ""
+        value ?? ""
     )
-
         .replaceAll(
             "&",
             "&amp;"
         )
-
         .replaceAll(
             "<",
             "&lt;"
         )
-
         .replaceAll(
             ">",
             "&gt;"
         )
-
         .replaceAll(
             '"',
             "&quot;"
         )
-
         .replaceAll(
             "'",
             "&#039;"
         );
-
 }
 
-
-
-/* ============================================================
-   ESCAPE ATTRIBUTE
-============================================================ */
-
-function escapeAttribute(
-    value
-) {
-
+function escapeAttribute(value) {
     return escapeHTML(
         value
     );
-
 }

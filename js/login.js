@@ -12,11 +12,7 @@ const togglePasswordButton =
 
 const eyeSlash =
     document.getElementById("eyeSlash");
-    /*
-     * Stop the script when the login form is not present.
-     * This prevents errors when login.js is accidentally loaded
-     * on another page.
-     */
+  
     if (!loginForm) {
         console.error(
             'Login form with id="loginForm" was not found.'
@@ -24,10 +20,6 @@ const eyeSlash =
         return;
     }
 
-    /*
-     * Pages that each role is allowed to access after login.
-     * This protects the redirect query parameter.
-     */
     const allowedRedirects = {
         admin: [
             "admin-dashboard.html",
@@ -53,18 +45,13 @@ const eyeSlash =
         ]
     };
 
-    /*
-     * Default dashboard for each role.
-     */
+ 
     const defaultPages = {
         admin: "admin-dashboard.html",
         resident: "dashboard.html"
     };
 
-    /*
-     * Restore the email saved by Remember Me.
-     * Only the email is stored. The password is never stored.
-     */
+  
     const rememberedEmail = localStorage.getItem(
         "katinawanRememberedEmail"
     );
@@ -77,11 +64,7 @@ const eyeSlash =
         }
     }
 
-    /*
-     * Returns a safe redirect page.
-     * Residents cannot be redirected to admin pages.
-     * External website redirects are also rejected.
-     */
+ 
     function getSafeRedirect(role) {
         const params = new URLSearchParams(
             window.location.search
@@ -93,14 +76,6 @@ const eyeSlash =
             return defaultPages[role];
         }
 
-        /*
-         * Remove folders, query strings, and fragments.
-         *
-         * Example:
-         * ../pages/projects.html?id=2
-         * becomes:
-         * projects.html
-         */
         const pageName = requestedRedirect
             .replace(/\\/g, "/")
             .split("?")[0]
@@ -220,18 +195,13 @@ if (
                     return;
                 }
 
-                /*
-                 * Retrieve the role and name from the profiles table.
-                 *
-                 * maybeSingle() is used instead of single().
-                 * It avoids a 406 response when no profile is found.
-                 */
+           
                 const {
                     data: profile,
                     error: profileError
                 } = await supabaseClient
                     .from("profiles")
-                    .select("role, full_name")
+                   .select("role, full_name, verification_status, rejection_reason")
                     .eq("id", data.user.id)
                     .maybeSingle();
 
@@ -258,13 +228,44 @@ if (
                     return;
                 }
 
-                /*
-                 * Normalize the role to avoid differences such as:
-                 * Admin, ADMIN, admin, or spaces.
-                 */
                 const role = String(profile.role || "")
                     .trim()
                     .toLowerCase();
+
+if (role === "resident") {
+
+    const verificationStatus =
+        String(profile.verification_status || "")
+            .trim()
+            .toLowerCase();
+
+    if (verificationStatus !== "verified") {
+
+        await supabaseClient.auth.signOut();
+
+        if (verificationStatus === "rejected") {
+
+            alert(
+                "Your registration has been rejected.\n\n" +
+                "Reason: " +
+                (
+                    profile.rejection_reason ||
+                    "No reason was provided."
+                )
+            );
+
+        } else {
+
+            alert(
+                "Your account is still pending barangay verification.\n\n" +
+                "Please wait for an administrator to verify your registration."
+            );
+
+        }
+
+        return;
+    }
+}
 
                 if (
                     role !== "admin" &&

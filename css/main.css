@@ -174,7 +174,6 @@ label {
     box-shadow: var(--shadow-md);
 }
 
-/* Badges */
 .badge {
     display: inline-flex;
     align-items: center;
@@ -195,7 +194,7 @@ label {
     color: #047857;
 }
 
-/* Modals */
+
 .modal {
     display: none;
     position: fixed;

@@ -1042,12 +1042,7 @@ registerForm.addEventListener(
                 .value;
 
 
-        const isPwdValue =
-            document
-                .getElementById(
-                    "isPwd"
-                )
-                .value;
+       
 
 
         const streetAddress =
@@ -1090,22 +1085,15 @@ registerForm.addEventListener(
                 ageValue
             );
 
-
-
-        /* =====================================================
-           VALIDATE
-        ===================================================== */
-
-        if (
-            !fullName ||
-            !ageValue ||
-            !gender ||
-            !isPwdValue ||
-            !streetAddress ||
-            !email ||
-            !password ||
-            !confirmPassword
-        ) {
+if (
+    !fullName ||
+    !ageValue ||
+    !gender ||
+    !streetAddress ||
+    !email ||
+    !password ||
+    !confirmPassword
+) {
 
             alert(
                 "Please complete all required fields."
@@ -1223,12 +1211,7 @@ registerForm.addEventListener(
                             gender:
                                 gender,
 
-                            is_pwd:
-                                (
-                                    isPwdValue ===
-                                    "true"
-                                ),
-
+                          
                             region:
                                 regionInput.value,
 
@@ -1320,9 +1303,7 @@ registerForm.addEventListener(
 
 
 
-/* =========================================================
-   ESCAPE HTML
-========================================================= */
+
 
 function escapeHTML(
     value
