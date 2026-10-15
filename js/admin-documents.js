@@ -179,27 +179,11 @@ function showAdminAccessError(message) {
 
 function setupAdminEvents() {
 
-    const ocrButton =
-        document.getElementById(
-            "runOCRButton"
-        );
-
-    if (ocrButton) {
-
-        ocrButton.addEventListener(
-            "click",
-            runAdminOCR
-        );
-    }
-
 
     const documentForm =
-        document.getElementById(
-            "addDocumentForm"
-        );
+        document.getElementById("addDocumentForm");
 
     if (documentForm) {
-
         documentForm.addEventListener(
             "submit",
             handleDocumentFormSubmit
@@ -233,9 +217,69 @@ async function getCurrentAdmin() {
 }
 
 
-/* =========================================================
-   ADMIN OCR
-   ========================================================= */
+
+
+async function preprocessOCRImage(file) {
+    const bitmap = await createImageBitmap(file);
+
+    try {
+        const scale = Math.min(
+            3,
+            Math.max(2, 2400 / Math.max(bitmap.width, bitmap.height))
+        );
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+
+        const ctx = canvas.getContext("2d", {
+            willReadFrequently: true
+        });
+
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(
+            bitmap,
+            0, 0,
+            canvas.width,
+            canvas.height
+        );
+
+        const image = ctx.getImageData(
+            0, 0,
+            canvas.width,
+            canvas.height
+        );
+
+        const pixels = image.data;
+
+        for (let i = 0; i < pixels.length; i += 4) {
+            const gray =
+                0.299 * pixels[i] +
+                0.587 * pixels[i + 1] +
+                0.114 * pixels[i + 2];
+
+            const enhanced = Math.max(
+                0,
+                Math.min(255, (gray - 128) * 1.5 + 128)
+            );
+
+            pixels[i] = enhanced;
+            pixels[i + 1] = enhanced;
+            pixels[i + 2] = enhanced;
+            pixels[i + 3] = 255;
+        }
+
+        ctx.putImageData(image, 0, 0);
+
+        return canvas;
+    } finally {
+        bitmap.close();
+    }
+}
 
 async function runAdminOCR() {
 
@@ -331,9 +375,7 @@ async function runAdminOCR() {
 
     try {
 
-        /* -------------------------------------------------
-           UPLOAD ORIGINAL
-        ------------------------------------------------- */
+      
 
         if (progress) {
             progress.textContent =
@@ -350,10 +392,6 @@ async function runAdminOCR() {
         originalPath =
             upload.path;
 
-
-        /* -------------------------------------------------
-           FILE INFORMATION
-        ------------------------------------------------- */
 
         const fileType =
             getFileType(file);
@@ -381,9 +419,7 @@ async function runAdminOCR() {
         };
 
 
-        /* -------------------------------------------------
-           IMAGE OCR
-        ------------------------------------------------- */
+     
 
         if (isImage) {
 
@@ -402,35 +438,28 @@ async function runAdminOCR() {
             }
 
 
-            const result =
-                await Tesseract.recognize(
-                    file,
-                    "eng",
-                    {
-                        logger: function (message) {
+  
+const processedImage = await preprocessOCRImage(file);
 
-                            if (
-                                message.status ===
-                                "recognizing text"
-                            ) {
-
-                                const percent =
-                                    Math.round(
-                                        (
-                                            message.progress ||
-                                            0
-                                        ) * 100
-                                    );
-
-                                if (progress) {
-
-                                    progress.textContent =
-                                        `OCR Progress: ${percent}%`;
-                                }
-                            }
-                        }
-                    }
+const result = await Tesseract.recognize(
+    processedImage,
+    "eng",
+    {
+        logger: function(message) {
+            if (message.status === "recognizing text") {
+                const percent = Math.round(
+                    (message.progress || 0) * 100
                 );
+
+                if (progress) {
+                    progress.textContent =
+                        `Enhanced OCR Progress: ${percent}%`;
+                }
+            }
+        }
+    }
+);
+
 
 
             extractedText =
@@ -457,17 +486,15 @@ async function runAdminOCR() {
                 );
 
 
-            validation =
-                validateOCRResult(
-                    extractedText,
-                    detectedAmount,
-                    confidence
-                );
+          validation =
+    validateOCRResult(
+        extractedText,
+        detectedAmount,
+        confidence,
+        detectedVendor
+    );
 
 
-            /* -------------------------------------------------
-               CREATE OCR PDF
-            ------------------------------------------------- */
 
             if (progress) {
 
@@ -543,10 +570,6 @@ async function runAdminOCR() {
         }
 
 
-        /* -------------------------------------------------
-           SAVE OCR DATABASE RECORD
-        ------------------------------------------------- */
-
         if (progress) {
 
             progress.textContent =
@@ -582,9 +605,6 @@ async function runAdminOCR() {
             });
 
 
-        /* -------------------------------------------------
-           DISPLAY RESULT
-        ------------------------------------------------- */
 
         if (resultBox) {
 
@@ -676,11 +696,6 @@ async function runAdminOCR() {
     }
 }
 
-
-/* =========================================================
-   OCR FILE UPLOAD
-   ========================================================= */
-
 async function uploadOCRFile(
     file,
     userId,
@@ -736,9 +751,7 @@ async function uploadOCRFile(
 }
 
 
-/* =========================================================
-   REMOVE OCR FILES
-   ========================================================= */
+
 
 async function removeOCRFiles(paths) {
 
@@ -1007,9 +1020,7 @@ function renderAdminOCRRecords() {
 }
 
 
-/* =========================================================
-   OCR CARD
-   ========================================================= */
+
 
 function createAdminOCRCard(record) {
 
@@ -1102,6 +1113,15 @@ function createAdminOCRCard(record) {
                     </span>
                 </p>
 
+                
+<p>
+    <b>Automatic Validation:</b><br>
+    ${escapeHTML(
+        record.message || "No validation result available."
+    )}
+</p>
+
+
                 <p>
                     <small>
                         Uploaded:
@@ -1112,6 +1132,14 @@ function createAdminOCRCard(record) {
                 </p>
 
                 <div class="admin-card-actions">
+                ${status === "Auto-Checked" ? `
+    <button
+        type="button"
+        onclick="window.location.href='admin-expenses.html?ocr_id=${Number(record.id)}'"
+    >
+        Use in Expenses
+    </button>
+` : ""}
 
                     <button
                         type="button"
@@ -3819,183 +3847,184 @@ function createCorrectedOCRPDF(info) {
 }
 
 
-/* =========================================================
-   OCR VALIDATION
-   ========================================================= */
 
-function validateOCRResult(
-    text,
-    amount,
-    confidence
-) {
 
-    if (
-        !String(text || "").trim()
-    ) {
 
+
+function validateOCRResult(text, amount, confidence, vendor) {
+    const extractedText = String(text || "").trim();
+    const confidenceScore = Number(confidence);
+    const vendorName = String(vendor || "").trim();
+
+    const invalidVendor =
+        vendorName.length < 3 ||
+        ["unknown vendor", "not scanned", "not detected"]
+            .includes(vendorName.toLowerCase()) ||
+        /\b(street|poblacion|receipt|invoice|upload logo)\b/i
+            .test(vendorName) ||
+        /[|@]/.test(vendorName);
+
+    const validAmount =
+        amount !== null &&
+        amount !== undefined &&
+        Number.isFinite(Number(amount)) &&
+        Number(amount) > 0;
+
+    const issues = [];
+
+    if (!extractedText) {
+        issues.push("No readable text extracted");
+    }
+
+    if (!Number.isFinite(confidenceScore) ||
+        confidenceScore < 60) {
+        issues.push("OCR confidence is too low");
+    }
+
+    if (invalidVendor) {
+        issues.push("Vendor name is missing or suspicious");
+    }
+
+    if (!validAmount) {
+        issues.push("Total amount is missing or invalid");
+    }
+
+    if (issues.length > 0) {
         return {
-
-            status:
-                "Flagged for Review",
-
-            message:
-                "No readable text was extracted. Manual administrator review is required."
+            status: "Flagged for Review",
+            message: "Automatic checks detected: " +
+                issues.join("; ") +
+                ". Only these exceptions require correction."
         };
     }
 
-
-    if (
-        Number(confidence) < 60
-    ) {
-
+    if (confidenceScore < 85) {
         return {
-
-            status:
-                "Flagged for Review",
-
+            status: "Needs Admin Review",
             message:
-                "OCR confidence is low. Manual administrator checking is required."
+                "Extracted fields detected, but OCR confidence " +
+                "is below the automatic checking threshold."
         };
     }
-
-
-    if (
-        Number(confidence) >= 80 &&
-        amount !== null
-    ) {
-
-        return {
-
-            status:
-                "Needs Admin Review",
-
-            message:
-                "Text and an amount were extracted. Administrator confirmation is recommended."
-        };
-    }
-
 
     return {
-
-        status:
-            "Needs Admin Review",
-
+        status: "Auto-Checked",
         message:
-            "OCR information was extracted successfully. Administrator review is required."
+            "Automatic preliminary checks passed. " +
+            "No manual data extraction required. " +
+            "Official financial approval and publication remain separate."
     };
 }
 
 
-/* =========================================================
-   AMOUNT EXTRACTION
-   ========================================================= */
+
+
 
 function extractAmount(text) {
+    const lines = String(text || "")
+        .split(/\r?\n/)
+        .map(line => line.trim())
+        .filter(Boolean);
 
-    const source =
-        String(text || "");
+    const totalPattern =
+        /\b(grand\s*total|total\s*amount\s*due|total\s*amount|amount\s*due|total\s*due|net\s*payable|balance\s*due|total(?:\s*\((?:PHP|USD)\))?)\b/i;
 
+    const excludedPattern =
+        /\b(subtotal|sub\s*total|total\s*items|total\s*qty|total\s*savings)\b/i;
 
-    const patterns = [
+    const moneyPattern =
+        /(?:₱|PHP|USD|\$)?\s*(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+\.\d{2})\b/gi;
 
-        /(?:₱|PHP)\s*([\d,]+(?:\.\d{1,2})?)/gi,
+    const candidates = [];
 
-        /(?:TOTAL|AMOUNT DUE|GRAND TOTAL)\s*:?\s*₱?\s*([\d,]+(?:\.\d{1,2})?)/gi
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
 
-    ];
-
-
-    const values = [];
-
-
-    patterns.forEach(
-        function (pattern) {
-
-            const matches =
-                [
-                    ...source.matchAll(
-                        pattern
-                    )
-                ];
-
-
-            matches.forEach(
-                function (match) {
-
-                    const number =
-                        Number(
-                            String(
-                                match[1]
-                            )
-                                .replaceAll(
-                                    ",",
-                                    ""
-                                )
-                        );
-
-
-                    if (
-                        Number.isFinite(
-                            number
-                        )
-                    ) {
-
-                        values.push(
-                            number
-                        );
-                    }
-                }
-            );
+        if (!totalPattern.test(line) ||
+            excludedPattern.test(line)) {
+            continue;
         }
-    );
 
+        const match = totalPattern.exec(line);
 
-    return values.length
-        ? Math.max(
-            ...values
-        )
-        : null;
+        const remainingText =
+            line.slice(match.index + match[0].length);
+
+        let values = [...remainingText.matchAll(moneyPattern)];
+
+        if (values.length === 0 && i + 1 < lines.length) {
+            values = [...lines[i + 1].matchAll(moneyPattern)];
+        }
+
+        if (values.length === 1) {
+            const amount = Number(
+                values[0][1].replace(/,/g, "")
+            );
+
+            if (Number.isFinite(amount) && amount > 0) {
+                candidates.push(amount);
+            }
+        }
+    }
+
+    const unique = [...new Set(candidates)];
+
+    return unique.length === 1 ? unique[0] : null;
 }
 
 
-/* =========================================================
-   VENDOR EXTRACTION
-   ========================================================= */
+
 
 function extractVendor(text) {
+    const lines = String(text || "")
+        .split(/\r?\n/)
+        .map(line => line.trim().replace(/\s+/g, " "))
+        .filter(Boolean);
 
-    const lines =
-        String(text || "")
-            .split("\n")
-            .map(
-                function (line) {
+    const excluded =
+        /\b(receipt|invoice|billed to|subtotal|total|cashier|transaction|payment|upload logo|tel no|vat registered|tin:|date:|time:)\b/i;
 
-                    return line.trim();
-                }
-            )
-            .filter(
-                function (line) {
+    const address =
+        /\b(street|st\.|poblacion|barangay|cavite|city|province|road|avenue|zip)\b/i;
 
-                    return (
-                        line.length >= 3 &&
-                        !/^\d+$/.test(
-                            line
-                        )
-                    );
-                }
-            );
+    const candidates = lines.slice(0, 12)
+        .filter(line => {
+            if (line.length < 4 || line.length > 65) {
+                return false;
+            }
 
+            if (!/[a-zA-Z]{4}/.test(line)) {
+                return false;
+            }
 
-    return (
-        lines[0] ||
-        "Unknown Vendor"
-    );
+            if (excluded.test(line) || address.test(line)) {
+                return false;
+            }
+
+            if (/[|@]/.test(line)) {
+                return false;
+            }
+
+            if (/^\d/.test(line)) {
+                return false;
+            }
+
+            return true;
+        })
+        .sort((a, b) => {
+            const businessPattern =
+                /\b(merchandise|trading|hardware|store|company|inc|enterprise|supplies|mart)\b/i;
+
+            const scoreA = businessPattern.test(a) ? 1 : 0;
+            const scoreB = businessPattern.test(b) ? 1 : 0;
+
+            return scoreB - scoreA;
+        });
+
+    return candidates[0] || "Unknown Vendor";
 }
 
 
-/* =========================================================
-   FILE VALIDATION
-   ========================================================= */
 
 function validateOCRFile(file) {
 
@@ -4175,62 +4204,45 @@ function getUploadMimeType(file) {
 }
 
 
-/* =========================================================
-   DISPLAY HELPERS
-   ========================================================= */
+
+
 
 function getOCRStatusIcon(status) {
-
-    const value =
-        String(status || "")
-            .toLowerCase();
-
+    const value = String(status || "").toLowerCase();
 
     if (
-        value.includes("valid")
+        value === "auto-checked" ||
+        value === "validated expense"
     ) {
-
         return "✅";
     }
 
-
-    if (
-        value.includes("flag")
-    ) {
-
+    if (value.includes("flag")) {
         return "⚠️";
     }
-
 
     return "⏳";
 }
 
 
+
 function getOCRStatusClass(status) {
-
-    const value =
-        String(status || "")
-            .toLowerCase();
-
+    const value = String(status || "").toLowerCase();
 
     if (
-        value.includes("valid")
+        value === "auto-checked" ||
+        value === "validated expense"
     ) {
-
         return "ocr-valid";
     }
 
-
-    if (
-        value.includes("flag")
-    ) {
-
+    if (value.includes("flag")) {
         return "ocr-flagged";
     }
 
-
     return "ocr-warning";
 }
+
 
 
 function formatDate(value) {

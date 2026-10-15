@@ -60,6 +60,7 @@ document.addEventListener(
         }
 
         await loadExpensePageData();
+        await prefillExpenseFromOCR();
     }
 );
 
@@ -849,6 +850,14 @@ function createExpenseCard(expense) {
             </div>
 
             <div class="admin-card-actions">
+            ${status === "Auto-Checked" ? `
+    <button
+        type="button"
+        onclick="window.location.href='admin-expenses.html?ocr_id=${Number(record.id)}'"
+    >
+        Use in Expenses
+    </button>
+` : ""}
                 <button
                     type="button"
                     data-action="view-file"
@@ -1644,5 +1653,84 @@ async function logAudit(
             "Audit log failed:",
             error.message
         );
+    }
+}
+async function prefillExpenseFromOCR() {
+    const params = new URLSearchParams(window.location.search);
+    const rawId = params.get("ocr_id");
+
+    if (!rawId) return;
+
+    const ocrId = Number(rawId);
+
+    if (!Number.isSafeInteger(ocrId) || ocrId <= 0) {
+        alert("Invalid OCR record ID.");
+        return;
+    }
+
+    try {
+        const { data: record, error } = await supabaseClient
+            .from("ocr_records")
+            .select(
+                "id, detected_vendor, detected_amount, confidence, status, review_status"
+            )
+            .eq("id", ocrId)
+            .single();
+
+        if (error) throw error;
+
+        const status = String(
+            record.review_status || record.status || ""
+        ).trim();
+
+        const vendor = String(
+            record.detected_vendor || ""
+        ).trim();
+
+        const amount = Number(record.detected_amount);
+        
+const invalidVendor =
+    vendor.length < 3 ||
+    ["unknown vendor", "not scanned", "not detected"]
+        .includes(vendor.toLowerCase()) ||
+    /\b(description|unit\s*price|qty|quantity|subtotal|receipt|invoice|street|poblacion|upload logo)\b/i
+        .test(vendor) ||
+    /[|@]/.test(vendor);
+
+        if (
+            status !== "Auto-Checked" ||
+            invalidVendor ||
+            !Number.isFinite(amount) ||
+            amount <= 0 ||
+            Number(record.confidence) < 85
+        ) {
+            alert(
+                "This OCR record did not pass the required preliminary checks. " +
+                "Please correct it in Documents/OCR first."
+            );
+            return;
+        }
+
+        document.getElementById("expenseTitle").value =
+            `Purchase from ${vendor}`;
+
+        document.getElementById("expenseAmount").value =
+            amount.toFixed(2);
+
+        document.getElementById("expenseDescription").value =
+            `OCR reference #${record.id}. Detected vendor: ${vendor}. ` +
+            `Amount extracted automatically from the uploaded document.`;
+
+        document.getElementById("expenseStatus").value = "Pending";
+
+        window.history.replaceState(
+            {},
+            "",
+            window.location.pathname
+        );
+
+    } catch (error) {
+        console.error("OCR expense prefill error:", error);
+        alert("Could not load OCR information: " + error.message);
     }
 }

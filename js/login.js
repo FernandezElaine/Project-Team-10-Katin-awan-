@@ -239,8 +239,10 @@ if (role === "resident") {
             .trim()
             .toLowerCase();
 
-    if (verificationStatus !== "verified") {
-
+   if (
+    verificationStatus !== "verified" &&
+    verificationStatus !== "legacy"
+) {
         await supabaseClient.auth.signOut();
 
         if (verificationStatus === "rejected") {

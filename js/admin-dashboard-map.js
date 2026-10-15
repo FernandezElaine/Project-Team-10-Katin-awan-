@@ -469,6 +469,32 @@ const controls =
                 ${progress}%
             </p>
 
+
+            ${
+    project.ai_estimated_progress !== null &&
+    project.ai_estimated_progress !== undefined
+        ? `
+            <p style="margin-top:8px;">
+                <b>AI Estimated Progress:</b>
+                ${Math.round(Number(project.ai_estimated_progress))}%
+            </p>
+
+            <div style="background:#e5e7eb;height:8px;border-radius:8px;overflow:hidden;">
+                <div style="
+                    background:#d97706;
+                    width:${Math.min(100, Math.max(0, Number(project.ai_estimated_progress)))}%;
+                    height:100%;
+                "></div>
+            </div>
+
+            <small style="color:#92400e;">
+                ${escapeHTML(project.ai_confidence || "unknown")} confidence
+                · Unverified AI estimate
+            </small>
+        `
+        : ""
+}
+
             <p>
                 <b>Budget:</b>
                 ${formatPeso(project.budget)}
@@ -996,7 +1022,46 @@ if (saveButton) {
     setProjectProgressUI(
         project.progress || 0
     );
+// Show the saved AI estimate when reopening a project.
+let aiSuggestion = document.getElementById("mapAiProgressSuggestion");
 
+if (!aiSuggestion) {
+    aiSuggestion = document.createElement("p");
+    aiSuggestion.id = "mapAiProgressSuggestion";
+    aiSuggestion.style.cssText =
+        "color:#92400e;font-size:13px;margin-top:8px;font-weight:600;";
+
+    const progressNumber = document.getElementById(
+        "mapProjectProgressNumber"
+    );
+
+    if (progressNumber) {
+        progressNumber.insertAdjacentElement(
+            "afterend",
+            aiSuggestion
+        );
+    }
+}
+
+if (aiSuggestion) {
+    const aiProgress = project.ai_estimated_progress;
+
+    if (
+        aiProgress !== null &&
+        aiProgress !== undefined &&
+        Number.isFinite(Number(aiProgress))
+    ) {
+        aiSuggestion.textContent =
+            `AI suggested progress: ${Math.round(Number(aiProgress))}% ` +
+            `(${project.ai_confidence || "unknown"} confidence). ` +
+            `Not verified. You can adjust the official progress manually.`;
+
+        aiSuggestion.style.display = "block";
+    } else {
+        aiSuggestion.textContent = "";
+        aiSuggestion.style.display = "none";
+    }
+}
     currentMapProjectPhotos =
         normalizeProjectPhotos(
             project.photos
@@ -1438,7 +1503,7 @@ const projectId =
         )?.value.trim() || "";
 
 
-    const status =
+    let status =
         document.getElementById(
             "mapProjectStatus"
         )?.value || "Planned";
@@ -1564,21 +1629,13 @@ const projectId =
     }
 
 
-    // -------------------------
-    // STATUS / PROGRESS
-    // -------------------------
-
-    if (status === "Completed") {
-
-        progress = 100;
-
-    } else if (
-        status === "Planned" ||
-        status === "Pending"
-    ) {
-
-        progress = 0;
-    }
+if (progress > 0 && progress < 100) {
+    status = "Ongoing";
+} else if (status === "Completed") {
+    progress = 100;
+} else if (progress === 0 && status === "Ongoing") {
+    status = "Planned";
+}
 
 
     progress =
@@ -1710,11 +1767,7 @@ const saveError =
 
 if (saveError) {
 
-    /*
-     * If the database save failed,
-     * remove only the NEW photos
-     * uploaded during this attempt.
-     */
+ 
     const paths =
         uploadedPhotos.map(
             photo => photo.path
@@ -1732,9 +1785,154 @@ if (saveError) {
     throw saveError;
 }
 
-        // -------------------------
-        // AUDIT LOG
-        // -------------------------
+
+if (selectedPhotos.length > 0 && savedProject?.id) {
+    try {
+        const {
+            data: { session },
+            error: sessionError
+        } = await supabaseClient.auth.getSession();
+
+        if (sessionError || !session?.access_token) {
+            throw new Error("Administrator session unavailable.");
+        }
+
+        const aiResponse = await fetch(
+            "http://localhost:3000/analyze-project-photo",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                    projectId: Number(savedProject.id)
+                })
+            }
+        );
+
+        const aiResult = await aiResponse.json();
+
+        console.log("GROQ MAP RESULT:", {
+    httpStatus: aiResponse.status,
+    ok: aiResponse.ok,
+    progressPercentage: aiResult.progressPercentage,
+    confidence: aiResult.confidence,
+    error: aiResult.error || null,
+    explanation: aiResult.explanation || null
+});
+        const estimate = aiResult.progressPercentage;
+        // Save the AI suggestion separately from official progress.
+if (
+    aiResponse.ok &&
+    typeof estimate === "number" &&
+    Number.isFinite(estimate) &&
+    estimate >= 0 &&
+    estimate <= 100
+) {
+    const confidence = ["low", "medium", "high"].includes(
+        aiResult.confidence
+    )
+        ? aiResult.confidence
+        : "low";
+
+    const { error: suggestionError } = await supabaseClient
+        .from("projects")
+        .update({
+            ai_estimated_progress: Math.round(estimate),
+            ai_confidence: confidence
+        })
+        .eq("id", savedProject.id);
+
+    if (suggestionError) {
+        console.warn(
+            "Could not save AI suggestion:",
+            suggestionError
+        );
+    } else {
+        console.log(
+            "AI suggestion saved:",
+            Math.round(estimate) + "%",
+            confidence
+        );
+    }
+}
+
+        if (
+    aiResponse.ok &&
+    typeof estimate === "number" &&
+    Number.isFinite(estimate) &&
+    estimate >= 0 &&
+    estimate <= 100
+) {
+    const progressInput = document.getElementById("mapProjectProgress");
+    const progressNumber = document.getElementById("mapProjectProgressNumber");
+
+    const suggestionText =
+        `AI suggested progress: ${Math.round(estimate)}% ` +
+        `(${aiResult.confidence || "unknown"} confidence). ` +
+        `Not verified. Manual progress remains unchanged.`;
+
+    let suggestion = document.getElementById("mapAiProgressSuggestion");
+
+    if (!suggestion && progressNumber) {
+        suggestion = document.createElement("p");
+        suggestion.id = "mapAiProgressSuggestion";
+        suggestion.style.cssText =
+            "color:#92400e;font-size:13px;margin-top:8px;font-weight:600;";
+
+        (progressInput?.parentElement || progressNumber.parentElement)
+            .insertAdjacentElement("afterend", suggestion);
+    }
+
+    if (suggestion) {
+        suggestion.textContent = suggestionText;
+    }
+}
+
+    if (
+    aiResponse.ok &&
+    typeof estimate === "number" &&
+    Number.isFinite(estimate) &&
+    estimate >= 0 &&
+    estimate <= 100
+) {
+            const newProgress = Math.round(estimate);
+
+            const { error: progressError } = await supabaseClient
+                .from("projects")
+                .update({
+                    progress: newProgress,
+                    status: newProgress === 100
+                        ? "Ongoing"
+                        : newProgress > 0
+                            ? "Ongoing"
+                            : savedProject.status
+                })
+                .eq("id", savedProject.id);
+
+            if (progressError) {
+                throw progressError;
+            }
+
+            savedProject.progress = newProgress;
+
+            setProjectProgressUI(newProgress);
+
+            if (newProgress > 0) {
+                savedProject.status = "Ongoing";
+            }
+
+            console.log("AI progress estimate:", newProgress + "%");
+        } else {
+            console.log(
+                "AI could not determine supported progress. Manual value preserved."
+            );
+        }
+    } catch (error) {
+        console.warn("Automatic AI progress estimation failed:", error);
+    }
+}
 
         await logMapProjectAudit(
     savedProject,

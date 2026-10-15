@@ -81,13 +81,52 @@ if (selectedPhoto) {
 }
     const photos = photoUrl ? [photoUrl] : [];
 
+    // Automatically estimate progress when a new photo is uploaded.
+let automaticProgress = progress;
+
+if (selectedPhoto && id) {
+    try {
+        const {
+            data: { session }
+        } = await supabaseClient.auth.getSession();
+
+        if (session?.access_token) {
+            const aiResponse = await fetch(
+                "http://localhost:3000/analyze-project-photo",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({
+                        projectId: Number(id)
+                    })
+                }
+            );
+
+            const aiResult = await aiResponse.json();
+
+            if (
+                aiResponse.ok &&
+                aiResult.confidence !== "low" &&
+                Number.isFinite(aiResult.progressPercentage)
+            ) {
+                automaticProgress = aiResult.progressPercentage;
+            }
+        }
+    } catch (error) {
+        console.warn("Automatic progress estimation unavailable:", error);
+    }
+}
+
     const projectData = {
         title,
         description,
         budget,
         timeline,
         status,
-        progress,
+    progress: automaticProgress,
        contractor,
 bidder,
         category,
@@ -172,6 +211,8 @@ function displayAdminProjects() {
 
         list.appendChild(card);
     });
+
+
 }
 
 function viewAdminProjectDetails(projectId) {

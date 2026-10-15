@@ -24,6 +24,11 @@ const GROQ_API_KEY =
 const GROQ_MODEL =
     process.env.GROQ_MODEL ||
     "llama-3.3-70b-versatile";
+
+    const GROQ_VISION_MODEL =
+    process.env.GROQ_VISION_MODEL ||
+    "qwen/qwen3.8-27b";
+
     console.log("ENV MODEL:", process.env.GROQ_MODEL);
 console.log("FINAL MODEL:", GROQ_MODEL);
 
@@ -460,6 +465,301 @@ async function verifySupabaseUser(accessToken) {
 
     return authResponse.json();
 }
+
+async function verifyAdminAccess(accessToken) {
+    if (!accessToken) {
+        return null;
+    }
+
+    const user = await verifySupabaseUser(accessToken);
+
+    console.log("AI AUTH CHECK:", {
+    tokenReceived: Boolean(accessToken),
+    userVerified: Boolean(user?.id)
+});
+
+    if (!user?.id) {
+        return null;
+    }
+
+ const userSupabase = createClient(
+    SUPABASE_URL,
+    SUPABASE_API_KEY,
+    {
+        global: {
+            headers: {
+                Authorization: `Bearer ${accessToken}`
+            }
+        }
+    }
+);
+
+const { data: profile, error } = await userSupabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+    if (error || !profile) {
+        console.error(
+            "Admin role verification failed:",
+            error?.message || "Profile not found"
+        );
+        return null;
+    }
+
+    if (
+        String(profile.role || "")
+            .trim()
+            .toLowerCase() !== "admin"
+    ) {
+        return null;
+    }
+
+    return user;
+}
+
+
+app.post("/analyze-project-photo", async (request, response) => {
+    try {
+        const authHeader = request.headers.authorization || "";
+        const token = authHeader.startsWith("Bearer ")
+            ? authHeader.slice(7).trim()
+            : "";
+
+        const admin = await verifyAdminAccess(token);
+
+        if (!admin) {
+            return response.status(403).json({
+                error: "Administrator access required."
+            });
+        }
+
+        const projectId = Number(request.body?.projectId);
+
+        if (!Number.isSafeInteger(projectId) || projectId <= 0) {
+            return response.status(400).json({
+                error: "A valid project ID is required."
+            });
+        }
+
+        // Use the administrator's token for database access.
+        const adminSupabase = createClient(
+            SUPABASE_URL,
+            SUPABASE_API_KEY,
+            {
+                global: {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            }
+        );
+
+        const { data: project, error: projectError } =
+            await adminSupabase
+                .from("projects")
+                .select("id, title, description, photos")
+                .eq("id", projectId)
+                .single();
+
+        if (projectError || !project) {
+            return response.status(404).json({
+                error: "Project not found or access denied."
+            });
+        }
+
+        let photos = project.photos;
+
+        if (typeof photos === "string") {
+            try {
+                photos = JSON.parse(photos);
+            } catch {
+                photos = [photos];
+            }
+        }
+
+        if (!Array.isArray(photos) || photos.length === 0) {
+            return response.status(400).json({
+                error: "This project has no uploaded photo."
+            });
+        }
+
+        const photoUrl = photos[photos.length - 1];
+
+        // Only allow images from this application's
+        // public Supabase project-photos bucket.
+        const expectedBase = new URL(SUPABASE_URL);
+        const parsedUrl = new URL(photoUrl);
+
+        const expectedPath =
+            "/storage/v1/object/public/project-photos/";
+
+        if (
+            parsedUrl.protocol !== "https:" ||
+            parsedUrl.origin !== expectedBase.origin ||
+            !parsedUrl.pathname.startsWith(expectedPath) ||
+            parsedUrl.pathname.length <= expectedPath.length ||
+            parsedUrl.username ||
+            parsedUrl.password
+        ) {
+            return response.status(400).json({
+                error: "Unsupported project photo URL."
+            });
+        }
+
+        if (!GROQ_API_KEY) {
+            return response.status(503).json({
+                error: "Groq is not configured."
+            });
+        }
+
+        const groqResponse = await fetch(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${GROQ_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: GROQ_VISION_MODEL,
+                    temperature: 0.2,
+                    max_completion_tokens: 500,
+                    messages: [
+                        {
+                            role: "system",
+                            content: `
+You are an AI construction progress estimation assistant
+for the Katin-awan barangay transparency portal.
+
+Analyze the uploaded construction photo together with
+the project's title and description.
+
+Your task is to estimate visible construction progress,
+while recognizing that visible work is not always the
+same as overall project completion.
+
+Return ONLY valid JSON in this format:
+
+{
+  "estimated_progress": null,
+  "confidence": "low",
+  "observed_work": "",
+  "explanation": ""
+}
+
+Rules:
+1. estimated_progress must be a number from 0 to 100,
+   or null if there is insufficient evidence.
+2. Do not invent measurements, milestones, or completed work.
+3. Never treat a design, rendering, or unrelated photo as
+   evidence of completed construction.
+4. Assess the visible construction stage against the
+   project description.
+5. For genuine construction-site photos, provide a rough visual-stage
+   percentage estimate from 0 to 100 when a construction stage is
+   recognizable. Treat this as an illustrative estimate, not actual
+   overall completion. Explain what information is missing.
+   For unrelated images, renderings, or photos with no recognizable
+   construction work, return null.
+6. Confidence must be "low", "medium", or "high".
+7. Briefly explain the estimate and its limitations.
+8. Do not include Markdown or text outside the JSON.
+`
+                        },
+                        {
+                            role: "user",
+                            content: [
+                                {
+                                    type: "text",
+                                    text:
+                                        `Project: ${String(project.title || "").slice(0, 200)}\n` +
+                                        `Description: ${String(project.description || "").slice(0, 1000)}\n` +
+                                        "Review this project photo. " +
+                                        "Explain the visible construction " +
+                                        "work and what cannot be verified."
+                                },
+                                {
+                                    type: "image_url",
+                                    image_url: {
+                                        url: photoUrl
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                })
+            }
+        );
+
+        const result = await groqResponse.json();
+
+        if (!groqResponse.ok) {
+            console.error("Groq vision request failed:", result.error);
+
+            return response.status(502).json({
+                error: "Groq could not analyze the project photo."
+            });
+        }
+
+ const assessment =
+    result.choices?.[0]?.message?.content;
+
+if (!assessment || typeof assessment !== "string") {
+    return response.status(502).json({
+        error: "Groq returned no usable assessment."
+    });
+}
+
+let aiResult;
+
+try {
+    const cleanResponse = assessment
+        .replace(/```json/gi, "")
+        .replace(/```/g, "")
+        .trim();
+
+    aiResult = JSON.parse(cleanResponse);
+} catch {
+    return response.status(502).json({
+        error: "Groq returned an invalid progress assessment."
+    });
+}
+
+const rawProgress = aiResult.estimated_progress;
+
+const progressPercentage =
+    typeof rawProgress === "number" &&
+    Number.isFinite(rawProgress) &&
+    rawProgress >= 0 &&
+    rawProgress <= 100
+        ? Math.round(rawProgress)
+        : null;
+
+return response.json({
+    projectId,
+    progressPercentage,
+    confidence: ["low", "medium", "high"].includes(
+        aiResult.confidence
+    )
+        ? aiResult.confidence
+        : "low",
+    observedWork: String(aiResult.observed_work || ""),
+    explanation: String(aiResult.explanation || ""),
+    verified: false
+});
+
+    } catch (error) {
+        console.error("Project photo analysis error:", error);
+
+        return response.status(500).json({
+            error: "Project photo analysis failed."
+        });
+    }
+});
+
+
 function detectResponseLanguage(message) {
     const words =
         String(message || "")

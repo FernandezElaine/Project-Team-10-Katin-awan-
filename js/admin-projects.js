@@ -529,13 +529,12 @@ async function saveProject() {
     if (id) {
 
         result =
-            await supabaseClient
-                .from("projects")
-                .update(projectData)
-                .eq(
-                    "id",
-                    Number(id)
-                );
+    await supabaseClient
+        .from("projects")
+        .update(projectData)
+        .eq("id", Number(id))
+        .select("id")
+        .single();
 
     }
 
@@ -546,12 +545,12 @@ async function saveProject() {
 
     else {
 
-        result =
-            await supabaseClient
-                .from("projects")
-                .insert([
-                    projectData
-                ]);
+      result =
+    await supabaseClient
+        .from("projects")
+        .insert([projectData])
+        .select("id")
+        .single();
     }
 
 
@@ -598,6 +597,72 @@ async function saveProject() {
     );
 
 
+if (selectedPhoto && result.data?.id) {
+    try {
+        const {
+            data: { session },
+            error: sessionError
+        } = await supabaseClient.auth.getSession();
+
+        if (sessionError || !session?.access_token) {
+            throw new Error("Administrator session unavailable.");
+        }
+
+        const aiResponse = await fetch(
+            "http://localhost:3000/analyze-project-photo",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                    projectId: Number(result.data.id)
+                })
+            }
+        );
+
+        const aiResult = await aiResponse.json();
+
+        const estimate = aiResult.progressPercentage;
+
+   if (
+    aiResponse.ok &&
+    typeof estimate === "number" &&
+    Number.isFinite(estimate) &&
+    estimate >= 0 &&
+    estimate <= 100
+) {
+            const { error: progressError } = await supabaseClient
+                .from("projects")
+                .update({
+                    progress: Math.round(estimate)
+                })
+                .eq("id", result.data.id);
+
+            if (progressError) {
+                throw progressError;
+            }
+
+            console.log(
+                "AI-estimated progress saved:",
+                Math.round(estimate) + "%"
+            );
+        } else {
+            console.log(
+                "AI progress not updated: insufficient evidence or analysis unavailable."
+            );
+        }
+    } catch (error) {
+        console.warn(
+            "Automatic AI progress estimation failed:",
+            error
+        );
+    }
+}
+
+
+
     clearProjectForm();
 
     await loadAdminProjects();
@@ -608,137 +673,132 @@ async function saveProject() {
    DISPLAY PROJECTS
 ========================================================= */
 
+
 function displayAdminProjects() {
-
-    const list =
-        document.getElementById(
-            "adminProjectList"
-        );
-
+    const list = document.getElementById("adminProjectList");
     if (!list) return;
-
 
     list.innerHTML = "";
 
-
-    if (
-        !adminFilteredProjects ||
-        adminFilteredProjects.length === 0
-    ) {
-
+    if (!adminFilteredProjects || adminFilteredProjects.length === 0) {
         list.innerHTML = `
-
-            <div class="admin-project-simple-card">
-
-                <div class="admin-project-simple-left">
-
-                    <div class="doc-icon">
-                        📭
-                    </div>
-
-                    <div>
-
-                        <h3>
-                            No projects found
-                        </h3>
-
-                        <span class="status-pending">
-                            Empty
-                        </span>
-
-                    </div>
-
-                </div>
-
+            <div class="public-panel">
+                <p>No projects found.</p>
             </div>
         `;
-
         return;
     }
 
+    adminFilteredProjects.forEach(project => {
+        const photos = getProjectPhotos(project);
 
-    adminFilteredProjects.forEach(
-        project => {
+        const photo = photos.find(url => {
+            try {
+                const parsed = new URL(url);
+                return ["https:", "http:"].includes(parsed.protocol);
+            } catch {
+                return false;
+            }
+        });
 
-            const card =
-                document.createElement(
-                    "div"
-                );
+     const savedProgress = Number(project.progress) || 0;
 
+const progress = Math.min(
+    100,
+    Math.max(
+        0,
+        savedProgress > 0
+            ? savedProgress
+            : project.ai_estimated_progress != null
+                ? Number(project.ai_estimated_progress)
+                : savedProgress
+    )
+);
 
-            card.classList.add(
-                "admin-project-simple-card"
-            );
+const aiProgress =
+    project.ai_estimated_progress !== null &&
+    project.ai_estimated_progress !== undefined
+        ? Math.min(
+            100,
+            Math.max(0, Number(project.ai_estimated_progress) || 0)
+          )
+        : null;
 
+const aiConfidence = project.ai_confidence || "unknown";
+        const card = document.createElement("div");
+        card.className = "admin-project-resident-card";
 
-            card.innerHTML = `
+     
 
-                <div class="admin-project-simple-left">
+        const photoHTML = photo
+            ? `<img
+                class="admin-project-card-image"
+                src="${escapeHTML(photo)}"
+                alt="Project photo"
+                loading="lazy"
+              >`
+            : `<div class="admin-project-card-placeholder">
+                   🏗️
+                   <small>No project photo</small>
+               </div>`;
 
-                    <div class="doc-icon">
-                        🏗️
-                    </div>
+        card.innerHTML = `
+            ${photoHTML}
 
+            <div class="admin-project-card-body">
+                <div class="admin-project-card-meta">
+                    <span class="${getStatusClass(project.status)}">
+                        ${escapeHTML(project.status || "Planned")}
+                    </span>
+                    <small>${escapeHTML(project.category || "General")}</small>
+                </div>
+
+                <h3>${escapeHTML(project.title || "Untitled Project")}</h3>
+
+                <p>📍 ${escapeHTML(project.location || "No location")}</p>
+
+                <p>${escapeHTML(project.description || "No description")}</p>
+
+                <div class="admin-project-card-info">
                     <div>
-
-                        <h3>
-                            ${escapeHTML(
-                                project.title ||
-                                "Untitled Project"
-                            )}
-                        </h3>
-
-                        <p>
-                            ${escapeHTML(
-                                project.category ||
-                                "General"
-                            )}
-
-                            •
-                            
-                            ${escapeHTML(
-                                project.location ||
-                                "No location"
-                            )}
-                        </p>
-
-                        <span class="${getStatusClass(
-                            project.status
-                        )}">
-
-                            ${escapeHTML(
-                                project.status ||
-                                "Planned"
-                            )}
-
-                        </span>
-
+                        <small>Budget</small>
+                        <strong>${formatPeso(project.budget)}</strong>
                     </div>
+                    <div>
+                        <small>Target Date</small>
+                        <strong>${escapeHTML(project.timeline || "Not specified")}</strong>
+                    </div>
+                </div>
 
+                <div class="admin-project-card-progress-label">
+                    <span>Progress</span>
+                    <strong>${progress}%</strong>
+                </div>
+
+                <div class="admin-project-card-progress-track">
+                    <div style="width:${progress}%"></div>
                 </div>
 
 
+ 
+
                 <button
-                    class="view-details-btn"
-                    onclick="viewAdminProjectDetails(${project.id})"
+                    type="button"
+                    class="public-blue-btn"
+                    onclick="viewAdminProjectDetails(${Number(project.id)})"
                 >
                     View Details
                 </button>
+       
+ 
+            </div>
 
-            `;
+        `;
 
-
-            list.appendChild(
-                card
-            );
-        }
-    );
+        list.appendChild(card);
+    });
 }
 
-
-/* =========================================================
-   VIEW PROJECT DETAILS
-========================================================= */
 
 function viewAdminProjectDetails(
     projectId
@@ -763,6 +823,46 @@ function viewAdminProjectDetails(
 
     if (!modal) return;
 
+const photoContainer =
+    document.getElementById("adminProjectDetailsPhotos");
+
+if (photoContainer) {
+    photoContainer.replaceChildren();
+
+    const photos = getProjectPhotos(project);
+
+    const validPhotos = photos.filter(function (url) {
+        try {
+            const parsed = new URL(url);
+            return (
+                parsed.protocol === "https:" ||
+                parsed.protocol === "http:"
+            );
+        } catch {
+            return false;
+        }
+    });
+
+    if (validPhotos.length === 0) {
+        photoContainer.textContent =
+            "No project photos uploaded.";
+    } else {
+        validPhotos.forEach(function (url) {
+            const image = document.createElement("img");
+
+            image.src = url;
+            image.alt = "Project progress photo";
+            image.loading = "lazy";
+
+            image.style.width = "100%";
+            image.style.height = "130px";
+            image.style.objectFit = "cover";
+            image.style.borderRadius = "10px";
+
+            photoContainer.appendChild(image);
+        });
+    }
+}
 
     document.getElementById(
         "adminProjectDetailsTitle"
@@ -828,11 +928,23 @@ function viewAdminProjectDetails(
         "Not specified";
 
 
-    document.getElementById(
-        "adminProjectDetailsProgress"
-    ).textContent =
-        (project.progress || 0) +
-        "%";
+  const savedProgress = Number(project.progress) || 0;
+
+const displayedProgress = Math.min(
+    100,
+    Math.max(
+        0,
+        savedProgress > 0
+            ? savedProgress
+            : project.ai_estimated_progress != null
+                ? Number(project.ai_estimated_progress)
+                : savedProgress
+    )
+);
+
+document.getElementById(
+    "adminProjectDetailsProgress"
+).textContent = displayedProgress + "%";
 
 
     const progressBar =
@@ -841,12 +953,9 @@ function viewAdminProjectDetails(
         );
 
 
-    if (progressBar) {
-
-        progressBar.style.width =
-            (project.progress || 0) +
-            "%";
-    }
+if (progressBar) {
+    progressBar.style.width = displayedProgress + "%";
+}
 
 
     const statusEl =
@@ -2172,16 +2281,38 @@ if (projectPhotoInput) {
 }
 
 
-/* =========================================================
-   INITIALIZE
-========================================================= */
 
-async function initializeAdminProjects() {
+ 
+function setupAutomaticProjectStatus() {
+    const progressInput = document.getElementById("projectProgress");
+    const statusSelect = document.getElementById("projectStatus");
 
-    await loadProjectOrganizations();
+    if (!progressInput || !statusSelect) return;
 
-    await loadAdminProjects();
+    progressInput.addEventListener("input", function () {
+        if (progressInput.value.trim() === "") return;
+
+        const progress = Number(progressInput.value);
+
+        if (!Number.isFinite(progress) || progress < 0 || progress > 100) {
+            return;
+        }
+
+        if (progress > 0 && progress < 100) {
+            statusSelect.value = "Ongoing";
+        }
+
+        if (progress === 0 && statusSelect.value === "Ongoing") {
+            statusSelect.value = "Planned";
+        }
+    });
 }
 
+async function initializeAdminProjects() {
+    setupAutomaticProjectStatus();
+
+    await loadProjectOrganizations();
+    await loadAdminProjects();
+}
 
 initializeAdminProjects();

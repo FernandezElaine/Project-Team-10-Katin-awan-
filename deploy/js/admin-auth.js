@@ -1,19 +1,12 @@
 // js/admin-auth.js
 
 document.addEventListener("DOMContentLoaded", async function () {
-    /*
-     * Keep the administrator page hidden until access
-     * has been verified.
-     */
+
     document.documentElement.classList.add(
         "admin-auth-pending"
     );
 
-    /**
-     * Redirects to the shared login page.
-     * The current administrator page is included so a verified
-     * admin can return after logging in.
-     */
+ 
     function redirectToLogin() {
         const currentPage =
             window.location.pathname
@@ -27,10 +20,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         window.location.replace(loginUrl);
     }
 
-    /**
-     * Displays the administrator page after successful
-     * authentication and role verification.
-     */
     function showAdminPage() {
         document.documentElement.classList.remove(
             "admin-auth-pending"
@@ -41,16 +30,10 @@ document.addEventListener("DOMContentLoaded", async function () {
         );
     }
 
-    /**
-     * Checks whether the current authenticated account
-     * has an administrator profile.
-     */
+
     async function checkAdminAccess() {
         try {
-            /*
-             * getUser() verifies the user through Supabase Auth
-             * instead of relying only on locally stored session data.
-             */
+        
             const {
                 data: { user },
                 error: userError
@@ -66,9 +49,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 return false;
             }
 
-            /*
-             * Retrieve the corresponding application profile.
-             */
+       
             const {
                 data: profile,
                 error: profileError
@@ -114,10 +95,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 .trim()
                 .toLowerCase();
 
-            /*
-             * Keep residents logged in, but redirect them to
-             * the resident dashboard.
-             */
+         
             if (role !== "admin") {
                 console.warn(
                     "Non-admin attempted administrator access:",
@@ -135,10 +113,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 return false;
             }
 
-            /*
-             * Display the administrator's name when the current
-             * page contains an element with id="adminName".
-             */
+        
             const adminName =
                 document.getElementById("adminName");
 
@@ -166,9 +141,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    /**
-     * Administrator logout.
-     */
+  
     async function adminLogout() {
         const confirmed = window.confirm(
             "Are you sure you want to log out?"
@@ -213,10 +186,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
 
-    /*
-     * Make adminLogout available to existing HTML buttons
-     * that use onclick="adminLogout()".
-     */
+
     window.adminLogout = adminLogout;
 
     await checkAdminAccess();
