@@ -1649,7 +1649,7 @@ if (progress > 0 && progress < 100) {
 
     try {
 
-        // Disable button while saving
+       
         if (saveButton) {
 
             saveButton.disabled =
@@ -1930,7 +1930,12 @@ if (
             );
         }
     } catch (error) {
-        console.warn("Automatic AI progress estimation failed:", error);
+       console.error("Automatic AI progress estimation failed:", error);
+
+alert(
+    "Project photo uploaded, but AI analysis failed:\n" +
+    error.message
+); 
     }
 }
 

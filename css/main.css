@@ -819,3 +819,12 @@ color:white;
     cursor: pointer;
     text-decoration: none;
 }
+#expenseTable .status-resolved {
+    display: inline-block;
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+}

@@ -37,35 +37,6 @@ async function loadExpenses() {
         </tr>
     `;
 
-    /*
-     * IMPORTANT:
-     *
-     * The database RLS policies are the real security layer.
-     *
-     * This query intentionally requests approved/valid
-     * transparency records only.
-     *
-     * RLS additionally determines which rows the current
-     * user is actually allowed to receive:
-     *
-     * - Public visitor:
-     *   approved expenses
-     *
-     * - Legacy resident:
-     *   approved public expenses
-     *
-     * - Verified resident:
-     *   approved expenses from their own barangay
-     *
-     * - Pending/rejected resident:
-     *   no protected expense records
-     *
-     * - Admin:
-     *   all records through the admin policy
-     *
-     * The client-side status filter below is only a
-     * consistency layer, NOT a security layer.
-     */
 
     const { data, error } =
         await supabaseClient
@@ -82,20 +53,19 @@ async function loadExpenses() {
                 file_path,
                 file_name,
                 created_at,
+                ocr_record_id,
                 project:projects (
                     id,
                     title
                 )
             `)
-            .in(
-                "status",
-                [
-                    "Approved",
-                    "approved",
-                    "Valid",
-                    "valid"
-                ]
-            )
+      .in("status", [
+    "Approved",
+    "approved",
+    "Valid",
+    "valid",
+    "Pending"
+])
             .order(
                 "created_at",
                 {
@@ -124,24 +94,18 @@ async function loadExpenses() {
         return;
     }
 
-    /*
-     * Normalize the returned records.
-     *
-     * We still perform a client-side check so that only
-     * approved/valid records are rendered if the database
-     * contains an unexpected status value.
-     */
+
     publicExpenses =
         (data || [])
-            .filter(
-                function (expense) {
-                    return (
-                        normalizeExpenseStatus(
-                            expense.status
-                        ) === "Approved"
-                    );
-                }
-            )
+          .filter(function (expense) {
+    return (
+        normalizeExpenseStatus(expense.status) === "Approved" ||
+        (
+            expense.status === "Pending" &&
+            expense.ocr_record_id != null
+        )
+    );
+})
             .map(
                 function (expense) {
                     return {
@@ -280,34 +244,20 @@ function renderExpenses(expenses) {
 }
 
 
-/* =========================================================
-   CREATE EXPENSE ROW
-   ========================================================= */
+
 
 function createExpenseRow(expense) {
     const projectName =
         expense.project?.title ||
         "Unassigned / General Expense";
 
-    /*
-     * Residents only receive approved records.
-     *
-     * The status is still displayed for transparency,
-     * but it should always be Approved in this view.
-     */
 
     const status =
         normalizeExpenseStatus(
             expense.status
         );
 
-    /*
-     * Residents only see whether a supporting document
-     * exists.
-     *
-     * Private storage paths and signed links are not
-     * exposed to residents through the UI.
-     */
+
 
     const hasSupportingFile =
         Boolean(
@@ -365,9 +315,11 @@ function createExpenseRow(expense) {
                 <span class="${getStatusClass(
                     status
                 )}">
-                    ${escapeHTML(
-                        status
-                    )}
+                  ${escapeHTML(
+    status === "Pending" && expense.ocr_record_id != null
+        ? "Approved"
+        : status
+)}
                 </span>
             </td>
 
@@ -385,9 +337,7 @@ function createExpenseRow(expense) {
 }
 
 
-/* =========================================================
-   SEARCH
-   ========================================================= */
+
 
 function searchExpenses() {
     applyExpenseFilters();
@@ -439,11 +389,12 @@ function applyExpenseFilters() {
                         expense.status
                     );
 
-                if (
-                    status !== "Approved"
-                ) {
-                    return false;
-                }
+             if (
+    status !== "Approved" &&
+    !(status === "Pending" && expense.ocr_record_id != null)
+) {
+    return false;
+}
 
                 const projectName =
                     expense.project?.title ||
@@ -467,19 +418,12 @@ function applyExpenseFilters() {
                         keyword
                     );
 
-                /*
-                 * "All" shows every approved record.
-                 *
-                 * If the user selects Approved, the same
-                 * approved records are shown.
-                 */
+            
 
-                const matchesStatus =
-                    selectedStatus === "All" ||
-                    selectedStatus === "" ||
-                    normalizeExpenseStatus(
-                        selectedStatus
-                    ) === "Approved";
+               const matchesStatus =
+    selectedStatus === "All" ||
+    selectedStatus === "" ||
+    normalizeExpenseStatus(selectedStatus) === status;
 
                 return (
                     matchesKeyword &&
@@ -494,9 +438,7 @@ function applyExpenseFilters() {
 }
 
 
-/* =========================================================
-   EXPENSE STATISTICS
-   ========================================================= */
+
 
 function updateExpenseStats(expenses) {
     /*
@@ -591,11 +533,6 @@ function normalizeExpenseStatus(
         return "Approved";
     }
 
-    /*
-     * These are retained for compatibility with existing
-     * records/functions, although resident RLS should
-     * prevent these records from being returned.
-     */
 
     if (
         normalized === "flagged"
@@ -607,34 +544,18 @@ function normalizeExpenseStatus(
 }
 
 
-/* =========================================================
-   STATUS CSS CLASS
-   ========================================================= */
-
-function getStatusClass(
-    status
-) {
-    switch (
-        normalizeExpenseStatus(
-            status
-        )
-    ) {
+function getStatusClass(status) {
+    switch (normalizeExpenseStatus(status)) {
         case "Approved":
             return "status-resolved";
-
         case "Flagged":
             return "status-pending";
-
-        case "Pending":
         default:
             return "status-review";
     }
 }
 
 
-/* =========================================================
-   CURRENCY FORMAT
-   ========================================================= */
 
 function formatPeso(amount) {
     return new Intl.NumberFormat(

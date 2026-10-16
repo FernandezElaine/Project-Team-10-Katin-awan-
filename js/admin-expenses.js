@@ -1556,16 +1556,15 @@ function formatDate(dateValue) {
         return "N/A";
     }
 
-    return new Date(
-        dateValue
-    ).toLocaleDateString(
-        "en-PH",
-        {
-            year: "numeric",
-            month: "short",
-            day: "numeric"
-        }
-    );
+    return new Date(dateValue).toLocaleString("en-PH", {
+        timeZone: "Asia/Manila",
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+    });
 }
 
 function formatPeso(amount) {

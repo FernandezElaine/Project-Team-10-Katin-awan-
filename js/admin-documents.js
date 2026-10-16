@@ -218,7 +218,6 @@ async function getCurrentAdmin() {
 
 
 
-
 async function preprocessOCRImage(file) {
     const bitmap = await createImageBitmap(file);
 
@@ -241,20 +240,14 @@ async function preprocessOCRImage(file) {
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(
-            bitmap,
-            0, 0,
-            canvas.width,
-            canvas.height
-        );
+        ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
 
         const image = ctx.getImageData(
-            0, 0,
-            canvas.width,
-            canvas.height
+            0, 0, canvas.width, canvas.height
         );
 
         const pixels = image.data;
+        const contrast = 1.25;
 
         for (let i = 0; i < pixels.length; i += 4) {
             const gray =
@@ -264,7 +257,7 @@ async function preprocessOCRImage(file) {
 
             const enhanced = Math.max(
                 0,
-                Math.min(255, (gray - 128) * 1.5 + 128)
+                Math.min(255, (gray - 128) * contrast + 128)
             );
 
             pixels[i] = enhanced;
@@ -280,7 +273,6 @@ async function preprocessOCRImage(file) {
         bitmap.close();
     }
 }
-
 async function runAdminOCR() {
 
     const admin =
@@ -460,6 +452,10 @@ const result = await Tesseract.recognize(
     }
 );
 
+console.log(
+    "OCR Recognition Confidence:",
+    result?.data?.confidence
+);
 
 
             extractedText =
@@ -604,6 +600,25 @@ const result = await Tesseract.recognize(
                 validation
             });
 
+            if (saved.review_status === "Auto-Checked") {
+    try {
+        await createExpenseFromOCR(saved);
+        console.log(
+            "Expense automatically created from OCR:",
+            saved.id
+        );
+    } catch (expenseError) {
+        console.error(
+            "Automatic expense creation failed:",
+            expenseError
+        );
+
+        alert(
+            "OCR was saved, but the expense could not be created: " +
+            expenseError.message
+        );
+    }
+}
 
 
         if (resultBox) {
@@ -784,9 +799,59 @@ async function removeOCRFiles(paths) {
 }
 
 
-/* =========================================================
-   SAVE OCR RECORD
-   ========================================================= */
+
+
+async function deleteOCRRecord(id) {
+    const confirmed = confirm(
+        "Delete this OCR record and its uploaded files?\n\n" +
+        "Any linked expense will be kept for financial recordkeeping."
+    );
+
+    if (!confirmed) return;
+
+    try {
+        const record = adminOCRRecords.find(
+            item => Number(item.id) === Number(id)
+        );
+
+        if (!record) {
+            alert("OCR record not found.");
+            return;
+        }
+
+        // Prevent the expense from referencing a deleted OCR record.
+        const { error: unlinkError } = await supabaseClient
+            .from("expenses")
+            .update({ ocr_record_id: null })
+            .eq("ocr_record_id", id);
+
+        if (unlinkError) throw unlinkError;
+
+        // Delete OCR database record.
+        const { error: deleteError } = await supabaseClient
+            .from("ocr_records")
+            .delete()
+            .eq("id", id);
+
+        if (deleteError) throw deleteError;
+
+        // Delete associated OCR files.
+        await removeOCRFiles([
+            record.original_file_path,
+            record.ocr_pdf_path,
+            record.corrected_pdf_path
+        ].filter(Boolean));
+
+        alert("OCR record deleted successfully.");
+
+        await loadAdminOCRRecords();
+        await loadAdminDocuments();
+
+    } catch (error) {
+        console.error("Delete OCR error:", error);
+        alert("Could not delete OCR record: " + error.message);
+    }
+}
 
 async function saveOCRRecord(record) {
 
@@ -876,10 +941,53 @@ async function saveOCRRecord(record) {
     return data;
 }
 
+async function createExpenseFromOCR(record) {
+    const ocrId = Number(record.id);
+    const amount = Number(record.detected_amount);
+    const vendor = String(record.detected_vendor || "").trim();
 
-/* =========================================================
-   LOAD OCR RECORDS
-   ========================================================= */
+    if (
+        !Number.isSafeInteger(ocrId) ||
+        ocrId <= 0 ||
+        !Number.isFinite(amount) ||
+        amount <= 0 ||
+        vendor.length < 3
+    ) {
+        throw new Error("OCR expense details are incomplete.");
+    }
+
+    if (record.review_status !== "Auto-Checked") {
+        return;
+    }
+
+    const expenseData = {
+        ocr_record_id: ocrId,
+        project_id: null,
+        title: `Purchase from ${vendor}`,
+        category: "Other",
+        amount: amount,
+       status: "Approved",
+        description: `OCR-recorded purchase from ${vendor}.`,
+    };
+
+    const { data, error } = await supabaseClient
+        .from("expenses")
+        .upsert(expenseData, {
+            onConflict: "ocr_record_id",
+            ignoreDuplicates: true
+        })
+        .select("id");
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    console.log(
+        "Automatic OCR expense saved:",
+        data
+    );
+}
+
 
 async function loadAdminOCRRecords() {
 
@@ -1132,14 +1240,7 @@ function createAdminOCRCard(record) {
                 </p>
 
                 <div class="admin-card-actions">
-                ${status === "Auto-Checked" ? `
-    <button
-        type="button"
-        onclick="window.location.href='admin-expenses.html?ocr_id=${Number(record.id)}'"
-    >
-        Use in Expenses
-    </button>
-` : ""}
+          
 
                     <button
                         type="button"
@@ -1156,13 +1257,7 @@ function createAdminOCRCard(record) {
                         View Original
                     </button>
 
-                    <button
-                        type="button"
-                        onclick="openOCRRecordFile(${Number(record.id)}, 'original', true)"
-                        ${hasOriginal ? "" : "disabled"}
-                    >
-                        Download Original
-                    </button>
+                   
 
                     <button
                         type="button"
@@ -1180,6 +1275,14 @@ function createAdminOCRCard(record) {
                         Download Corrected PDF
                     </button>
 
+                    <button
+    type="button"
+    class="danger-btn"
+    onclick="deleteOCRRecord(${Number(record.id)})"
+>
+    Delete Record
+</button>
+
                 </div>
 
             </div>
@@ -1189,9 +1292,7 @@ function createAdminOCRCard(record) {
 }
 
 
-/* =========================================================
-   OCR REVIEW
-   ========================================================= */
+
 
 function openOCRReview(id) {
 
@@ -4547,3 +4648,4 @@ window.viewOfficialDocument =
 
 window.downloadOfficialDocument =
     downloadOfficialDocument;
+    window.deleteOCRRecord = deleteOCRRecord;
